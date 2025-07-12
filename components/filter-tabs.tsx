@@ -85,15 +85,8 @@ export function FilterTabs({ members }: FilterTabsProps) {
 
       {/* Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredMembers.map((member, index) => (
-          <div
-            key={member.id}
-            className="animate-fade-in-up"
-            style={{
-              animationDelay: `${index * 100}ms`,
-              animationFillMode: "both",
-            }}
-          >
+        {filteredMembers.map((member) => (
+          <div key={member.id}>
             <MemberCard member={member} />
           </div>
         ))}
@@ -104,7 +97,7 @@ export function FilterTabs({ members }: FilterTabsProps) {
         <div className="text-center py-20">
           <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto mb-6 rounded-xl relative">
             <span className="text-3xl">🔍</span>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center animate-ping">
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
               <span className="text-xs">!</span>
             </div>
           </div>
@@ -113,22 +106,6 @@ export function FilterTabs({ members }: FilterTabsProps) {
           </p>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

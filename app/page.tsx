@@ -1,5 +1,3 @@
-"use client";
-
 import { MemberCard } from "@/components/member-card";
 import { FilterTabs } from "@/components/filter-tabs";
 import { AnimatedBackground } from "@/components/animated-background";
@@ -22,9 +20,9 @@ export default async function HomePage() {
             <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-white mb-4">
               Global PBL Team
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400 font-medium max-w-2xl mx-auto">
+            {/* <p className="text-xl text-gray-600 dark:text-gray-400 font-medium max-w-2xl mx-auto">
               혁신적인 프로젝트를 통해 세상을 바꾸는 개발자들의 팀입니다.
-            </p>
+            </p> */}
           </div>
         </div>
       </header>

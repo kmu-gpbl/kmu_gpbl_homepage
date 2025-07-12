@@ -46,6 +46,15 @@ export interface UserSummary {
   specialties: string[];
 }
 
+// Media Types
+export interface ProjectMedia {
+  id: string;
+  type: "video" | "presentation" | "url";
+  title: string;
+  url: string;
+  description?: string;
+}
+
 // Project Types
 export interface Project {
   id: string;
@@ -58,6 +67,7 @@ export interface Project {
   type: "web" | "mobile" | "ai" | "infrastructure" | "other";
   technologies: string[];
   memberIds: string[];
+  media?: ProjectMedia[];
   createdAt: string;
   updatedAt: string;
 }

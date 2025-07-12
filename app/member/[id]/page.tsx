@@ -4,14 +4,8 @@ import Link from "next/link";
 import { getUserById } from "@/lib/api/users";
 import { getProjectsByMemberId } from "@/lib/api/projects";
 import { ProjectTimeline } from "@/components/project-timeline";
-import {
-  ArrowLeft,
-  Github,
-  Linkedin,
-  ExternalLink,
-  Mail,
-  MapPin,
-} from "lucide-react";
+import { PageHeader } from "@/components/page-header";
+import { MapPin, Mail, Github, Linkedin, ExternalLink } from "lucide-react";
 
 interface MemberPageProps {
   params: Promise<{ id: string }>;
@@ -27,11 +21,8 @@ const specialtyColors = {
 
 export default async function MemberPage({ params }: MemberPageProps) {
   const { id } = await params;
-
-  const [userResponse, projectsResponse] = await Promise.all([
-    getUserById(id),
-    getProjectsByMemberId(id),
-  ]);
+  const userResponse = await getUserById(id);
+  const projectsResponse = await getProjectsByMemberId(id);
 
   if (userResponse.status === 404 || !userResponse.data) {
     notFound();
@@ -46,18 +37,7 @@ export default async function MemberPage({ params }: MemberPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-6">
-          <Link
-            href="/"
-            className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium transition-colors duration-200"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            팀으로 돌아가기
-          </Link>
-        </div>
-      </header>
+      <PageHeader showBackButton={true} showHomeButton={true} />
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
@@ -257,54 +237,12 @@ export default async function MemberPage({ params }: MemberPageProps) {
                         className="flex items-center gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
                       >
                         <ExternalLink className="w-4 h-4" />
-                        <span className="text-sm">Portfolio</span>
+                        <span className="text-sm">포트폴리오</span>
                       </a>
                     )}
                   </div>
                 </div>
               </div>
-
-              {/* Quick Stats */}
-              {projects && (
-                <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                  <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                      프로젝트 통계
-                    </h3>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        총 프로젝트
-                      </span>
-                      <span className="font-bold text-gray-900 dark:text-white">
-                        {projects.length}개
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        완료된 프로젝트
-                      </span>
-                      <span className="font-bold text-green-600">
-                        {
-                          projects.filter((p) => p.status === "completed")
-                            .length
-                        }
-                        개
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        진행중인 프로젝트
-                      </span>
-                      <span className="font-bold text-yellow-600">
-                        {projects.filter((p) => p.status === "ongoing").length}
-                        개
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

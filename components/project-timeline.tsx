@@ -37,22 +37,6 @@ const statusLabels = {
 };
 
 export function ProjectTimelineComponent({ projects }: ProjectTimelineProps) {
-  const [visibleItems, setVisibleItems] = useState<number>(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setVisibleItems((prev) => {
-        if (prev < projects.length) {
-          return prev + 1;
-        }
-        clearInterval(timer);
-        return prev;
-      });
-    }, 300);
-
-    return () => clearInterval(timer);
-  }, [projects.length]);
-
   const sortedProjects = [...projects].sort(
     (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
   );
@@ -61,7 +45,7 @@ export function ProjectTimelineComponent({ projects }: ProjectTimelineProps) {
     <div className="relative">
       {/* Timeline Start */}
       <div className="relative flex items-center mb-8">
-        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 border-4 border-white dark:border-gray-900 animate-pulse" />
+        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 border-4 border-white dark:border-gray-900" />
         <div className="ml-6 text-gray-500 dark:text-gray-400 font-medium">
           계속해서 새로운 프로젝트를 진행중입니다... 🚀
         </div>
@@ -72,7 +56,7 @@ export function ProjectTimelineComponent({ projects }: ProjectTimelineProps) {
         <div
           className="w-full bg-gradient-to-b from-blue-500 to-purple-500 transition-all duration-1000 ease-out"
           style={{
-            height: `${(visibleItems / projects.length) * 100}%`,
+            height: "100%",
           }}
         />
       </div>
@@ -80,36 +64,24 @@ export function ProjectTimelineComponent({ projects }: ProjectTimelineProps) {
       {/* Timeline Items */}
       <div className="space-y-8">
         {sortedProjects.map((project, index) => (
-          <div
-            key={project.id}
-            className={`relative flex items-start transition-all duration-500 ease-out ${
-              index < visibleItems
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 translate-x-8"
-            }`}
-            style={{
-              transitionDelay: `${index * 100}ms`,
-            }}
-          >
+          <div key={project.id} className="relative flex items-start">
             {/* Timeline Dot */}
             <div className="relative z-10 flex-shrink-0">
               <div
                 className={`w-4 h-4 rounded-full border-4 border-white dark:border-gray-900 ${
                   typeColors[project.type]
-                } transition-all duration-300 hover:scale-125`}
+                } transition-all duration-200 hover:scale-110`}
               />
-              {/* Pulse Effect for Ongoing Projects */}
+              {/* Simple indicator for Ongoing Projects */}
               {project.status === "ongoing" && (
-                <div className="absolute inset-0 w-4 h-4 rounded-full bg-yellow-400 animate-ping opacity-75" />
+                <div className="absolute inset-0 w-4 h-4 rounded-full bg-yellow-400 opacity-50" />
               )}
             </div>
 
             {/* Project Card */}
             <Link
               href={`/project/${project.id}`}
-              className={`ml-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-300 hover:scale-105 group cursor-pointer block ${
-                index % 2 === 0 ? "hover:rotate-1" : "hover:-rotate-1"
-              }`}
+              className={`ml-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group cursor-pointer block`}
             >
               {/* Project Header */}
               <div className="flex items-start justify-between mb-4">
@@ -152,20 +124,13 @@ export function ProjectTimelineComponent({ projects }: ProjectTimelineProps) {
                 ))}
               </div>
 
-              {/* Hover Effect Line */}
-              <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-300 rounded-b-xl" />
+              {/* Simple hover effect */}
+              <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-200 rounded-b-xl" />
             </Link>
 
             {/* Connection Line to Next Item */}
             {index < sortedProjects.length - 1 && (
-              <div
-                className={`absolute left-8 top-8 w-0.5 h-8 bg-gradient-to-b from-blue-500 to-purple-500 transition-all duration-500 ${
-                  index < visibleItems - 1 ? "opacity-100" : "opacity-0"
-                }`}
-                style={{
-                  transitionDelay: `${(index + 1) * 100}ms`,
-                }}
-              />
+              <div className="absolute left-8 top-8 w-0.5 h-8 bg-gradient-to-b from-blue-500 to-purple-500" />
             )}
           </div>
         ))}

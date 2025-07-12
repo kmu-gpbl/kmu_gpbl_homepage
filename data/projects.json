@@ -25,6 +25,22 @@
       "type": "web",
       "technologies": ["Next.js", "Node.js", "PostgreSQL", "Stripe", "AWS"],
       "memberIds": ["usr_alex_kim_001", "usr_mike_park_002"],
+      "media": [
+        {
+          "id": "media_004",
+          "type": "video",
+          "title": "E-commerce 플랫폼 시연 영상",
+          "url": "https://www.youtube.com/watch?v=example3",
+          "description": "사용자 구매 프로세스와 관리자 대시보드 기능을 보여주는 시연 영상입니다."
+        },
+        {
+          "id": "media_005",
+          "type": "url",
+          "title": "라이브 데모 사이트",
+          "url": "https://ecommerce-demo.example.com",
+          "description": "실제 작동하는 E-commerce 플랫폼의 데모 사이트입니다."
+        }
+      ],
       "createdAt": "2022-06-01T00:00:00Z",
       "updatedAt": "2023-02-28T23:59:59Z"
     },
@@ -79,6 +95,29 @@
         "PostgreSQL"
       ],
       "memberIds": ["usr_alex_kim_001", "usr_lisa_wang_005"],
+      "media": [
+        {
+          "id": "media_001",
+          "type": "video",
+          "title": "AI 추천 시스템 데모 영상",
+          "url": "https://www.youtube.com/watch?v=example1",
+          "description": "실제 추천 시스템이 작동하는 모습을 보여주는 데모 영상입니다."
+        },
+        {
+          "id": "media_002",
+          "type": "presentation",
+          "title": "프로젝트 발표 자료",
+          "url": "https://docs.google.com/presentation/d/example2",
+          "description": "AI 추천 시스템의 기술적 구현과 성과를 담은 발표 자료입니다."
+        },
+        {
+          "id": "media_003",
+          "type": "url",
+          "title": "GitHub 저장소",
+          "url": "https://github.com/example/ai-recommendation-system",
+          "description": "프로젝트 소스 코드와 문서가 있는 GitHub 저장소입니다."
+        }
+      ],
       "createdAt": "2024-02-01T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
     },
