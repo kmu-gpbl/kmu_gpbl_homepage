@@ -1,10 +1,14 @@
+"use client";
+
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { getUserById } from "@/lib/api/users";
 import { getProjectsByMemberId } from "@/lib/api/projects";
 import { ProjectTimeline } from "@/components/project-timeline";
 import { PageHeader } from "@/components/page-header";
+import { AddProjectForm } from "@/components/add-project-form";
 import { MapPin, Mail, Github, Linkedin, ExternalLink } from "lucide-react";
 
 interface MemberPageProps {
@@ -19,17 +23,63 @@ const specialtyColors = {
   devops: "bg-indigo-500",
 };
 
-export default async function MemberPage({ params }: MemberPageProps) {
-  const { id } = await params;
-  const userResponse = await getUserById(id);
-  const projectsResponse = await getProjectsByMemberId(id);
+export default function MemberPage({ params }: MemberPageProps) {
+  const [member, setMember] = useState<any>(null);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [memberId, setMemberId] = useState<string>("");
 
-  if (userResponse.status === 404 || !userResponse.data) {
-    notFound();
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { id } = await params;
+        setMemberId(id);
+
+        const [userResponse, projectsResponse] = await Promise.all([
+          getUserById(id),
+          getProjectsByMemberId(id),
+        ]);
+
+        if (userResponse.status === 404 || !userResponse.data) {
+          notFound();
+        }
+
+        setMember(userResponse.data);
+        setProjects(projectsResponse.data || []);
+      } catch (error) {
+        console.error("데이터 로딩 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [params]);
+
+  const handleProjectAdded = async () => {
+    // 프로젝트가 추가되면 프로젝트 목록을 새로고침
+    try {
+      const projectsResponse = await getProjectsByMemberId(memberId);
+      setProjects(projectsResponse.data || []);
+    } catch (error) {
+      console.error("프로젝트 목록 새로고침 실패:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+        </div>
+      </div>
+    );
   }
 
-  const member = userResponse.data;
-  const projects = projectsResponse.data;
+  if (!member) {
+    return notFound();
+  }
 
   const primarySpecialty = member
     .specialties[0] as keyof typeof specialtyColors;
@@ -66,7 +116,7 @@ export default async function MemberPage({ params }: MemberPageProps) {
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {member.specialties.map((specialty) => (
+                    {member.specialties.map((specialty: string) => (
                       <span
                         key={specialty}
                         className="px-4 py-2 text-sm font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase tracking-wide rounded-md"
@@ -149,21 +199,30 @@ export default async function MemberPage({ params }: MemberPageProps) {
               </div>
 
               {/* Project Timeline */}
-              {projects && projects.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                  <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                      프로젝트 타임라인
-                      <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                        ({projects.length}개 프로젝트)
-                      </span>
-                    </h2>
-                  </div>
-                  <div className="p-6">
-                    <ProjectTimeline projects={projects} />
-                  </div>
+              <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    프로젝트 타임라인
+                    <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                      ({projects.length}개 프로젝트)
+                    </span>
+                  </h2>
                 </div>
-              )}
+                <div className="p-6 space-y-6">
+                  {projects && projects.length > 0 && (
+                    <ProjectTimeline
+                      projects={projects}
+                      onProjectDeleted={handleProjectAdded}
+                    />
+                  )}
+
+                  {/* 프로젝트 추가 폼 */}
+                  <AddProjectForm
+                    memberId={memberId}
+                    onProjectAdded={handleProjectAdded}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Sidebar */}
@@ -177,7 +236,7 @@ export default async function MemberPage({ params }: MemberPageProps) {
                 </div>
                 <div className="p-6">
                   <div className="space-y-2">
-                    {member.skills.map((skill) => (
+                    {member.skills.map((skill: string) => (
                       <div
                         key={skill}
                         className="px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

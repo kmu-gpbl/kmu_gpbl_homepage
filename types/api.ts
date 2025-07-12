@@ -67,6 +67,7 @@ export interface Project {
   type: "web" | "mobile" | "ai" | "infrastructure" | "other";
   technologies: string[];
   memberIds: string[];
+  teamSize?: number;
   media?: ProjectMedia[];
   createdAt: string;
   updatedAt: string;

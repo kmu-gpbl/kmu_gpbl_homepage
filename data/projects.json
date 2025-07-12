@@ -9,8 +9,15 @@
       "period": "2022.01 - 2022.03",
       "status": "completed",
       "type": "web",
-      "technologies": ["React", "Three.js", "GSAP", "Styled Components"],
-      "memberIds": ["usr_alex_kim_001"],
+      "technologies": [
+        "React",
+        "Three.js",
+        "GSAP",
+        "Styled Components"
+      ],
+      "memberIds": [
+        "usr_alex_kim_001"
+      ],
       "createdAt": "2022-01-01T00:00:00Z",
       "updatedAt": "2022-03-31T23:59:59Z"
     },
@@ -23,8 +30,17 @@
       "period": "2022.06 - 2023.02",
       "status": "completed",
       "type": "web",
-      "technologies": ["Next.js", "Node.js", "PostgreSQL", "Stripe", "AWS"],
-      "memberIds": ["usr_alex_kim_001", "usr_mike_park_002"],
+      "technologies": [
+        "Next.js",
+        "Node.js",
+        "PostgreSQL",
+        "Stripe",
+        "AWS"
+      ],
+      "memberIds": [
+        "usr_alex_kim_001",
+        "usr_mike_park_002"
+      ],
       "media": [
         {
           "id": "media_004",
@@ -53,8 +69,17 @@
       "period": "2023.03 - 2023.08",
       "status": "completed",
       "type": "web",
-      "technologies": ["React", "Socket.io", "Express", "MongoDB", "Redis"],
-      "memberIds": ["usr_alex_kim_001", "usr_jenny_choi_003"],
+      "technologies": [
+        "React",
+        "Socket.io",
+        "Express",
+        "MongoDB",
+        "Redis"
+      ],
+      "memberIds": [
+        "usr_alex_kim_001",
+        "usr_jenny_choi_003"
+      ],
       "createdAt": "2023-03-01T00:00:00Z",
       "updatedAt": "2023-08-31T23:59:59Z"
     },
@@ -74,7 +99,10 @@
         "TypeScript",
         "Docker"
       ],
-      "memberIds": ["usr_alex_kim_001", "usr_tom_lee_006"],
+      "memberIds": [
+        "usr_alex_kim_001",
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2023-09-01T00:00:00Z",
       "updatedAt": "2024-01-31T23:59:59Z"
     },
@@ -94,7 +122,10 @@
         "React",
         "PostgreSQL"
       ],
-      "memberIds": ["usr_alex_kim_001", "usr_lisa_wang_005"],
+      "memberIds": [
+        "usr_alex_kim_001",
+        "usr_lisa_wang_005"
+      ],
       "media": [
         {
           "id": "media_001",
@@ -122,40 +153,6 @@
       "updatedAt": "2024-12-20T00:00:00Z"
     },
     {
-      "id": "prj_microservices_006",
-      "title": "레거시 시스템 마이그레이션",
-      "description": "모놀리식 아키텍처를 마이크로서비스로 전환하는 대규모 리팩토링 프로젝트. 시스템 안정성을 유지하면서 점진적으로 마이그레이션했습니다.",
-      "startDate": "2021-09-01",
-      "endDate": "2022-05-31",
-      "period": "2021.09 - 2022.05",
-      "status": "completed",
-      "type": "infrastructure",
-      "technologies": [
-        "Python",
-        "Django",
-        "Docker",
-        "Kubernetes",
-        "PostgreSQL"
-      ],
-      "memberIds": ["usr_mike_park_002", "usr_tom_lee_006"],
-      "createdAt": "2021-09-01T00:00:00Z",
-      "updatedAt": "2022-05-31T23:59:59Z"
-    },
-    {
-      "id": "prj_microservices_arch_007",
-      "title": "Microservices Architecture",
-      "description": "확장 가능한 마이크로서비스 아키텍처 설계 및 구현. API Gateway, 서비스 디스커버리, 분산 트레이싱을 포함한 완전한 MSA 환경을 구축했습니다.",
-      "startDate": "2022-06-01",
-      "endDate": "2023-01-31",
-      "period": "2022.06 - 2023.01",
-      "status": "completed",
-      "type": "infrastructure",
-      "technologies": ["FastAPI", "Docker", "Kubernetes", "Redis", "RabbitMQ"],
-      "memberIds": ["usr_mike_park_002"],
-      "createdAt": "2022-06-01T00:00:00Z",
-      "updatedAt": "2023-01-31T23:59:59Z"
-    },
-    {
       "id": "prj_cicd_pipeline_008",
       "title": "CI/CD Pipeline",
       "description": "자동화된 배포 파이프라인 구축 및 모니터링 시스템. GitOps 방식으로 배포 자동화와 롤백 전략을 구현했습니다.",
@@ -171,7 +168,10 @@
         "Prometheus",
         "Grafana"
       ],
-      "memberIds": ["usr_mike_park_002", "usr_tom_lee_006"],
+      "memberIds": [
+        "usr_mike_park_002",
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2023-02-01T00:00:00Z",
       "updatedAt": "2023-07-31T23:59:59Z"
     },
@@ -190,7 +190,10 @@
         "Python",
         "Elasticsearch"
       ],
-      "memberIds": ["usr_mike_park_002", "usr_lisa_wang_005"],
+      "memberIds": [
+        "usr_mike_park_002",
+        "usr_lisa_wang_005"
+      ],
       "createdAt": "2023-08-01T00:00:00Z",
       "updatedAt": "2024-03-31T23:59:59Z"
     },
@@ -210,7 +213,9 @@
         "Pub/Sub",
         "BigQuery"
       ],
-      "memberIds": ["usr_mike_park_002"],
+      "memberIds": [
+        "usr_mike_park_002"
+      ],
       "createdAt": "2024-04-01T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
     },
@@ -223,8 +228,15 @@
       "period": "2022.03 - 2022.05",
       "status": "completed",
       "type": "web",
-      "technologies": ["Vue.js", "GSAP", "Sass", "Webpack"],
-      "memberIds": ["usr_jenny_choi_003"],
+      "technologies": [
+        "Vue.js",
+        "GSAP",
+        "Sass",
+        "Webpack"
+      ],
+      "memberIds": [
+        "usr_jenny_choi_003"
+      ],
       "createdAt": "2022-03-01T00:00:00Z",
       "updatedAt": "2022-05-31T23:59:59Z"
     },
@@ -237,8 +249,15 @@
       "period": "2022.08 - 2022.12",
       "status": "completed",
       "type": "web",
-      "technologies": ["React", "Three.js", "WebGL", "Framer Motion"],
-      "memberIds": ["usr_jenny_choi_003"],
+      "technologies": [
+        "React",
+        "Three.js",
+        "WebGL",
+        "Framer Motion"
+      ],
+      "memberIds": [
+        "usr_jenny_choi_003"
+      ],
       "createdAt": "2022-08-01T00:00:00Z",
       "updatedAt": "2022-12-31T23:59:59Z"
     },
@@ -251,8 +270,16 @@
       "period": "2023.01 - 2023.06",
       "status": "completed",
       "type": "web",
-      "technologies": ["React", "D3.js", "Socket.io", "Chart.js", "TypeScript"],
-      "memberIds": ["usr_jenny_choi_003"],
+      "technologies": [
+        "React",
+        "D3.js",
+        "Socket.io",
+        "Chart.js",
+        "TypeScript"
+      ],
+      "memberIds": [
+        "usr_jenny_choi_003"
+      ],
       "createdAt": "2023-01-01T00:00:00Z",
       "updatedAt": "2023-06-30T23:59:59Z"
     },
@@ -265,8 +292,15 @@
       "period": "2023.07 - 2023.12",
       "status": "completed",
       "type": "web",
-      "technologies": ["Next.js", "PWA", "Service Worker", "IndexedDB"],
-      "memberIds": ["usr_jenny_choi_003"],
+      "technologies": [
+        "Next.js",
+        "PWA",
+        "Service Worker",
+        "IndexedDB"
+      ],
+      "memberIds": [
+        "usr_jenny_choi_003"
+      ],
       "createdAt": "2023-07-01T00:00:00Z",
       "updatedAt": "2023-12-31T23:59:59Z"
     },
@@ -279,8 +313,15 @@
       "period": "2024.01 - 현재",
       "status": "ongoing",
       "type": "web",
-      "technologies": ["TypeScript", "WebGL", "Canvas API", "Web Workers"],
-      "memberIds": ["usr_jenny_choi_003"],
+      "technologies": [
+        "TypeScript",
+        "WebGL",
+        "Canvas API",
+        "Web Workers"
+      ],
+      "memberIds": [
+        "usr_jenny_choi_003"
+      ],
       "createdAt": "2024-01-01T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
     },
@@ -293,8 +334,14 @@
       "period": "2021.11 - 2022.02",
       "status": "completed",
       "type": "mobile",
-      "technologies": ["React Native", "OpenWeather API", "AsyncStorage"],
-      "memberIds": ["usr_david_jung_004"],
+      "technologies": [
+        "React Native",
+        "OpenWeather API",
+        "AsyncStorage"
+      ],
+      "memberIds": [
+        "usr_david_jung_004"
+      ],
       "createdAt": "2021-11-01T00:00:00Z",
       "updatedAt": "2022-02-28T23:59:59Z"
     },
@@ -307,8 +354,15 @@
       "period": "2022.03 - 2022.09",
       "status": "completed",
       "type": "mobile",
-      "technologies": ["Flutter", "Firebase", "Google Maps", "Stripe"],
-      "memberIds": ["usr_david_jung_004"],
+      "technologies": [
+        "Flutter",
+        "Firebase",
+        "Google Maps",
+        "Stripe"
+      ],
+      "memberIds": [
+        "usr_david_jung_004"
+      ],
       "createdAt": "2022-03-01T00:00:00Z",
       "updatedAt": "2022-09-30T23:59:59Z"
     },
@@ -321,8 +375,15 @@
       "period": "2022.10 - 2023.04",
       "status": "completed",
       "type": "mobile",
-      "technologies": ["React Native", "HealthKit", "SQLite", "Chart.js"],
-      "memberIds": ["usr_david_jung_004"],
+      "technologies": [
+        "React Native",
+        "HealthKit",
+        "SQLite",
+        "Chart.js"
+      ],
+      "memberIds": [
+        "usr_david_jung_004"
+      ],
       "createdAt": "2022-10-01T00:00:00Z",
       "updatedAt": "2023-04-30T23:59:59Z"
     },
@@ -341,7 +402,9 @@
         "Cloud Storage",
         "Push Notifications"
       ],
-      "memberIds": ["usr_david_jung_004"],
+      "memberIds": [
+        "usr_david_jung_004"
+      ],
       "createdAt": "2023-05-01T00:00:00Z",
       "updatedAt": "2023-12-31T23:59:59Z"
     },
@@ -354,8 +417,15 @@
       "period": "2024.01 - 현재",
       "status": "ongoing",
       "type": "mobile",
-      "technologies": ["React Native", "ARCore", "ARKit", "3D Models"],
-      "memberIds": ["usr_david_jung_004"],
+      "technologies": [
+        "React Native",
+        "ARCore",
+        "ARKit",
+        "3D Models"
+      ],
+      "memberIds": [
+        "usr_david_jung_004"
+      ],
       "createdAt": "2024-01-01T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
     },
@@ -368,8 +438,15 @@
       "period": "2021.08 - 2021.12",
       "status": "completed",
       "type": "ai",
-      "technologies": ["Python", "TensorFlow", "BERT", "Transformers"],
-      "memberIds": ["usr_lisa_wang_005"],
+      "technologies": [
+        "Python",
+        "TensorFlow",
+        "BERT",
+        "Transformers"
+      ],
+      "memberIds": [
+        "usr_lisa_wang_005"
+      ],
       "createdAt": "2021-08-01T00:00:00Z",
       "updatedAt": "2021-12-31T23:59:59Z"
     },
@@ -382,8 +459,15 @@
       "period": "2022.01 - 2022.07",
       "status": "completed",
       "type": "ai",
-      "technologies": ["Python", "OpenAI API", "FastAPI", "PostgreSQL"],
-      "memberIds": ["usr_lisa_wang_005"],
+      "technologies": [
+        "Python",
+        "OpenAI API",
+        "FastAPI",
+        "PostgreSQL"
+      ],
+      "memberIds": [
+        "usr_lisa_wang_005"
+      ],
       "createdAt": "2022-01-01T00:00:00Z",
       "updatedAt": "2022-07-31T23:59:59Z"
     },
@@ -396,8 +480,16 @@
       "period": "2022.08 - 2023.02",
       "status": "completed",
       "type": "ai",
-      "technologies": ["PyTorch", "OpenCV", "YOLO", "Flask", "Docker"],
-      "memberIds": ["usr_lisa_wang_005"],
+      "technologies": [
+        "PyTorch",
+        "OpenCV",
+        "YOLO",
+        "Flask",
+        "Docker"
+      ],
+      "memberIds": [
+        "usr_lisa_wang_005"
+      ],
       "createdAt": "2022-08-01T00:00:00Z",
       "updatedAt": "2023-02-28T23:59:59Z"
     },
@@ -410,8 +502,15 @@
       "period": "2023.03 - 2023.09",
       "status": "completed",
       "type": "ai",
-      "technologies": ["Python", "Scikit-learn", "Apache Spark", "Redis"],
-      "memberIds": ["usr_lisa_wang_005"],
+      "technologies": [
+        "Python",
+        "Scikit-learn",
+        "Apache Spark",
+        "Redis"
+      ],
+      "memberIds": [
+        "usr_lisa_wang_005"
+      ],
       "createdAt": "2023-03-01T00:00:00Z",
       "updatedAt": "2023-09-30T23:59:59Z"
     },
@@ -431,7 +530,9 @@
         "Kubernetes",
         "Prometheus"
       ],
-      "memberIds": ["usr_lisa_wang_005"],
+      "memberIds": [
+        "usr_lisa_wang_005"
+      ],
       "createdAt": "2023-10-01T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
     },
@@ -444,8 +545,15 @@
       "period": "2021.06 - 2021.10",
       "status": "completed",
       "type": "infrastructure",
-      "technologies": ["AWS", "Terraform", "CloudFormation", "VPC"],
-      "memberIds": ["usr_tom_lee_006"],
+      "technologies": [
+        "AWS",
+        "Terraform",
+        "CloudFormation",
+        "VPC"
+      ],
+      "memberIds": [
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2021-06-01T00:00:00Z",
       "updatedAt": "2021-10-31T23:59:59Z"
     },
@@ -458,8 +566,15 @@
       "period": "2021.11 - 2022.04",
       "status": "completed",
       "type": "infrastructure",
-      "technologies": ["Terraform", "Ansible", "GitLab CI", "AWS"],
-      "memberIds": ["usr_tom_lee_006"],
+      "technologies": [
+        "Terraform",
+        "Ansible",
+        "GitLab CI",
+        "AWS"
+      ],
+      "memberIds": [
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2021-11-01T00:00:00Z",
       "updatedAt": "2022-04-30T23:59:59Z"
     },
@@ -472,8 +587,15 @@
       "period": "2022.05 - 2022.11",
       "status": "completed",
       "type": "infrastructure",
-      "technologies": ["Jenkins", "Docker", "Kubernetes", "Helm"],
-      "memberIds": ["usr_tom_lee_006"],
+      "technologies": [
+        "Jenkins",
+        "Docker",
+        "Kubernetes",
+        "Helm"
+      ],
+      "memberIds": [
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2022-05-01T00:00:00Z",
       "updatedAt": "2022-11-30T23:59:59Z"
     },
@@ -486,8 +608,15 @@
       "period": "2022.12 - 2023.06",
       "status": "completed",
       "type": "infrastructure",
-      "technologies": ["Prometheus", "Grafana", "AlertManager", "ELK Stack"],
-      "memberIds": ["usr_tom_lee_006"],
+      "technologies": [
+        "Prometheus",
+        "Grafana",
+        "AlertManager",
+        "ELK Stack"
+      ],
+      "memberIds": [
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2022-12-01T00:00:00Z",
       "updatedAt": "2023-06-30T23:59:59Z"
     },
@@ -500,10 +629,38 @@
       "period": "2023.07 - 현재",
       "status": "ongoing",
       "type": "infrastructure",
-      "technologies": ["AWS", "GCP", "Azure", "Terraform", "Kubernetes"],
-      "memberIds": ["usr_tom_lee_006"],
+      "technologies": [
+        "AWS",
+        "GCP",
+        "Azure",
+        "Terraform",
+        "Kubernetes"
+      ],
+      "memberIds": [
+        "usr_tom_lee_006"
+      ],
       "createdAt": "2023-07-01T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
+    },
+    {
+      "id": "prj_1752355945249_3fl5wjsbb",
+      "title": "패러다임",
+      "description": "voice ai agent",
+      "startDate": "2025-06-01",
+      "endDate": "2025-07-17",
+      "period": "2025-06-01 - 2025-07-17",
+      "status": "ongoing",
+      "type": "web",
+      "technologies": [
+        "리액트",
+        "오픈소스",
+        "LLM"
+      ],
+      "memberIds": [
+        "usr_mike_park_002"
+      ],
+      "createdAt": "2025-07-12T21:32:25.249Z",
+      "updatedAt": "2025-07-12T21:32:25.249Z"
     }
   ]
 }
