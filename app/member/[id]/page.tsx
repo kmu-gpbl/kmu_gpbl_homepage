@@ -9,6 +9,7 @@ import { getProjectsByMemberId } from "@/lib/api/projects";
 import { ProjectTimeline } from "@/components/project-timeline";
 import { PageHeader } from "@/components/page-header";
 import { AddProjectForm } from "@/components/add-project-form";
+import { EditBioForm } from "@/components/edit-bio-form";
 import { MapPin, Mail, Github, Linkedin, ExternalLink } from "lucide-react";
 
 interface MemberPageProps {
@@ -63,6 +64,18 @@ export default function MemberPage({ params }: MemberPageProps) {
       setProjects(projectsResponse.data || []);
     } catch (error) {
       console.error("프로젝트 목록 새로고침 실패:", error);
+    }
+  };
+
+  const handleBioUpdated = async () => {
+    // 소개가 업데이트되면 멤버 정보를 새로고침
+    try {
+      const userResponse = await getUserById(memberId);
+      if (userResponse.data) {
+        setMember(userResponse.data);
+      }
+    } catch (error) {
+      console.error("멤버 정보 새로고침 실패:", error);
     }
   };
 
@@ -182,21 +195,11 @@ export default function MemberPage({ params }: MemberPageProps) {
             {/* Main Content */}
             <div className="lg:col-span-3 space-y-8">
               {/* About */}
-              <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    소개
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
-                    {member.bio}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {member.experience}
-                  </p>
-                </div>
-              </div>
+              <EditBioForm
+                memberId={memberId}
+                initialBio={member.bio}
+                onBioUpdated={handleBioUpdated}
+              />
 
               {/* Project Timeline */}
               <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
