@@ -661,6 +661,26 @@
       ],
       "createdAt": "2025-07-12T21:32:25.249Z",
       "updatedAt": "2025-07-12T21:32:25.249Z"
+    },
+    {
+      "id": "project_1752619715819_70qhm0lmk",
+      "title": "ㅡㅡ",
+      "description": "ㅡㅡㅡ",
+      "startDate": "2025-07-07",
+      "endDate": "2025-07-15",
+      "period": "2025.07 - 2025.07",
+      "status": "ongoing",
+      "type": "mobile",
+      "technologies": [
+        "ㅣㅣ"
+      ],
+      "memberIds": [
+        "user_1752618862383_rzdtbcm1o"
+      ],
+      "teamSize": 1,
+      "media": [],
+      "createdAt": "2025-07-15T22:48:35.819Z",
+      "updatedAt": "2025-07-15T22:48:35.819Z"
     }
   ]
 }

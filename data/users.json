@@ -159,6 +159,28 @@
       "location": "Seoul, Korea",
       "createdAt": "2021-06-18T00:00:00Z",
       "updatedAt": "2024-12-20T00:00:00Z"
+    },
+    {
+      "id": "user_1752618862383_rzdtbcm1o",
+      "name": "abc",
+      "role": "프론트엔드 개발자",
+      "specialties": [
+        "frontend"
+      ],
+      "bio": "dd",
+      "avatar": "/placeholder.svg",
+      "github": null,
+      "linkedin": null,
+      "portfolio": null,
+      "email": "dd@sdf",
+      "skills": [
+        "ss",
+        "dd"
+      ],
+      "experience": "ss",
+      "location": "dd",
+      "createdAt": "2025-07-15T22:34:22.383Z",
+      "updatedAt": "2025-07-15T22:34:22.383Z"
     }
   ]
 }

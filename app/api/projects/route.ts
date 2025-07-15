@@ -1,36 +1,131 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
+import { promises as fs } from "fs";
 import path from "path";
+
+const dataFilePath = path.join(process.cwd(), "data", "projects.json");
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const memberId = searchParams.get("memberId");
+    const type = searchParams.get("type");
+    const status = searchParams.get("status");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "100");
+    const search = searchParams.get("search");
+
+    const data = await fs.readFile(dataFilePath, "utf-8");
+    const jsonData = JSON.parse(data);
+    let projects = Array.isArray(jsonData.projects) ? jsonData.projects : [];
+
+    // 필터링
+    if (memberId) {
+      projects = projects.filter(
+        (project: any) =>
+          project.memberIds && project.memberIds.includes(memberId)
+      );
+    }
+
+    if (type) {
+      projects = projects.filter((project: any) => project.type === type);
+    }
+
+    if (status) {
+      projects = projects.filter((project: any) => project.status === status);
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      projects = projects.filter(
+        (project: any) =>
+          project.title.toLowerCase().includes(searchLower) ||
+          project.description.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // 정렬 (최신순)
+    projects.sort(
+      (a: any, b: any) =>
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+
+    // 페이지네이션
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProjects = projects.slice(startIndex, endIndex);
+
+    return NextResponse.json({
+      projects: paginatedProjects,
+      pagination: {
+        page,
+        limit,
+        total: projects.length,
+        totalPages: Math.ceil(projects.length / limit),
+      },
+      message: "프로젝트 목록을 성공적으로 불러왔습니다.",
+    });
+  } catch (error) {
+    console.error("프로젝트 목록 로딩 실패:", error);
+    return NextResponse.json(
+      {
+        projects: [],
+        error: "프로젝트 목록을 불러오는 중 오류가 발생했습니다.",
+      },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
     // 필수 필드 검증
-    if (
-      !body.title ||
-      !body.description ||
-      !body.startDate ||
-      !body.type ||
-      !body.status
-    ) {
-      return NextResponse.json(
-        { error: "필수 필드가 누락되었습니다." },
-        { status: 400 }
-      );
+    const requiredFields = [
+      "title",
+      "description",
+      "startDate",
+      "status",
+      "type",
+      "technologies",
+      "teamSize",
+    ];
+    for (const field of requiredFields) {
+      if (!body[field]) {
+        return NextResponse.json(
+          { error: `${field} 필드는 필수입니다.` },
+          { status: 400 }
+        );
+      }
     }
 
-    // 프로젝트 데이터 파일 경로
-    const projectsFilePath = path.join(process.cwd(), "data", "projects.json");
-
-    // 기존 프로젝트 데이터 읽기
-    const projectsData = await fs.readFile(projectsFilePath, "utf-8");
-    const { projects } = JSON.parse(projectsData);
+    // 데이터 파일 읽기
+    const data = await fs.readFile(dataFilePath, "utf-8");
+    const jsonData = JSON.parse(data);
+    const projects = jsonData.projects || [];
 
     // 새 프로젝트 ID 생성
-    const newId = `prj_${Date.now()}_${Math.random()
+    const newId = `project_${Date.now()}_${Math.random()
       .toString(36)
       .substr(2, 9)}`;
+
+    // 기간 계산
+    let period = "";
+    if (body.startDate) {
+      const startDate = new Date(body.startDate);
+      if (body.endDate) {
+        const endDate = new Date(body.endDate);
+        period = `${startDate.getFullYear()}.${String(
+          startDate.getMonth() + 1
+        ).padStart(2, "0")} - ${endDate.getFullYear()}.${String(
+          endDate.getMonth() + 1
+        ).padStart(2, "0")}`;
+      } else {
+        period = `${startDate.getFullYear()}.${String(
+          startDate.getMonth() + 1
+        ).padStart(2, "0")} - 현재`;
+      }
+    }
 
     // 새 프로젝트 객체 생성
     const newProject = {
@@ -39,116 +134,31 @@ export async function POST(request: NextRequest) {
       description: body.description,
       startDate: body.startDate,
       endDate: body.endDate || null,
-      period: body.period || `${body.startDate} - ${body.endDate || "현재"}`,
+      period,
       status: body.status,
       type: body.type,
       technologies: body.technologies || [],
       memberIds: body.memberIds || [],
-      teamSize: body.teamSize || 1,
+      teamSize: body.teamSize,
       media: body.media || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    // 프로젝트 목록에 추가
+    // 프로젝트 추가
     projects.push(newProject);
 
-    // 파일에 저장
-    await fs.writeFile(
-      projectsFilePath,
-      JSON.stringify({ projects }, null, 2),
-      "utf-8"
-    );
+    // 파일에 저장 (원래 구조 유지)
+    await fs.writeFile(dataFilePath, JSON.stringify({ projects }, null, 2));
 
-    return NextResponse.json(
-      {
-        message: "프로젝트가 성공적으로 추가되었습니다.",
-        project: newProject,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      message: "프로젝트가 성공적으로 추가되었습니다.",
+      project: newProject,
+    });
   } catch (error) {
     console.error("프로젝트 추가 실패:", error);
     return NextResponse.json(
       { error: "프로젝트 추가 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get("type");
-    const status = searchParams.get("status");
-    const memberId = searchParams.get("memberId");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const search = searchParams.get("search");
-
-    // 프로젝트 데이터 파일 경로
-    const projectsFilePath = path.join(process.cwd(), "data", "projects.json");
-
-    // 프로젝트 데이터 읽기
-    const projectsData = await fs.readFile(projectsFilePath, "utf-8");
-    const { projects } = JSON.parse(projectsData);
-
-    // 필터링
-    let filteredProjects = projects;
-
-    if (type) {
-      filteredProjects = filteredProjects.filter(
-        (project: any) => project.type === type
-      );
-    }
-
-    if (status) {
-      filteredProjects = filteredProjects.filter(
-        (project: any) => project.status === status
-      );
-    }
-
-    if (memberId) {
-      filteredProjects = filteredProjects.filter((project: any) =>
-        project.memberIds.includes(memberId)
-      );
-    }
-
-    if (search) {
-      filteredProjects = filteredProjects.filter(
-        (project: any) =>
-          project.title.toLowerCase().includes(search.toLowerCase()) ||
-          project.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    // 정렬 (최신순)
-    filteredProjects.sort(
-      (a: any, b: any) =>
-        new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-    );
-
-    // 페이지네이션
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
-
-    return NextResponse.json({
-      data: paginatedProjects,
-      pagination: {
-        page,
-        limit,
-        total: filteredProjects.length,
-        totalPages: Math.ceil(filteredProjects.length / limit),
-      },
-      status: 200,
-      message: "프로젝트 목록을 성공적으로 가져왔습니다.",
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("프로젝트 목록 조회 실패:", error);
-    return NextResponse.json(
-      { error: "프로젝트 목록 조회 중 오류가 발생했습니다." },
       { status: 500 }
     );
   }

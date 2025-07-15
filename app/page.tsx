@@ -1,12 +1,53 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { MemberCard } from "@/components/member-card";
 import { FilterTabs } from "@/components/filter-tabs";
 import { AnimatedBackground } from "@/components/animated-background";
 import { CodeRain } from "@/components/code-rain";
-import { getUsers } from "@/lib/api/users";
+import { AddMemberForm } from "@/components/add-member-form";
 
-export default async function HomePage() {
-  const usersResponse = await getUsers({ limit: 100 });
-  const members = usersResponse.data;
+export default function HomePage() {
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        const response = await fetch("/api/users");
+        const data = await response.json();
+        setMembers(data.users || []);
+      } catch (error) {
+        console.error("멤버 로딩 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMembers();
+  }, []);
+
+  const handleMemberAdded = async () => {
+    // 멤버가 추가되면 멤버 목록을 새로고침
+    try {
+      const response = await fetch("/api/users");
+      const data = await response.json();
+      setMembers(data.users || []);
+    } catch (error) {
+      console.error("멤버 목록 새로고침 실패:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
@@ -30,7 +71,7 @@ export default async function HomePage() {
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
-          <FilterTabs members={members} />
+          <FilterTabs members={members} onMemberAdded={handleMemberAdded} />
         </div>
       </main>
     </div>

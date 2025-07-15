@@ -2,7 +2,6 @@
 
 import { notFound } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getProjectWithMembersById } from "@/lib/api/projects";
 import { PageHeader } from "@/components/page-header";
 import { ProjectMediaManager } from "@/components/project-media-manager";
 import { Tag, ExternalLink, Calendar, Activity, User } from "lucide-react";
@@ -51,13 +50,14 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         const { id } = await params;
         setProjectId(id);
 
-        const projectResponse = await getProjectWithMembersById(id);
+        const projectResponse = await fetch(`/api/projects/${id}`);
 
-        if (projectResponse.status === 404 || !projectResponse.data) {
+        if (!projectResponse.ok) {
           notFound();
         }
 
-        setProject(projectResponse.data);
+        const projectData = await projectResponse.json();
+        setProject(projectData.project);
       } catch (error) {
         console.error("프로젝트 로딩 실패:", error);
       } finally {
@@ -71,9 +71,10 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const handleMediaUpdated = async () => {
     // 미디어가 업데이트되면 프로젝트 정보를 새로고침
     try {
-      const projectResponse = await getProjectWithMembersById(projectId);
-      if (projectResponse.data) {
-        setProject(projectResponse.data);
+      const projectResponse = await fetch(`/api/projects/${projectId}`);
+      if (projectResponse.ok) {
+        const projectData = await projectResponse.json();
+        setProject(projectData.project);
       }
     } catch (error) {
       console.error("프로젝트 정보 새로고침 실패:", error);

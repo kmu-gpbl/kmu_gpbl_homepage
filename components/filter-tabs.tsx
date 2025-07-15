@@ -3,9 +3,11 @@
 import { useState } from "react";
 import type { UserSummary } from "@/types/api";
 import { MemberCard } from "./member-card";
+import { AddMemberForm } from "./add-member-form";
 
 interface FilterTabsProps {
   members: UserSummary[];
+  onMemberAdded?: () => void;
 }
 
 type FilterCategory =
@@ -55,7 +57,7 @@ const filterOptions = [
   },
 ];
 
-export function FilterTabs({ members }: FilterTabsProps) {
+export function FilterTabs({ members, onMemberAdded }: FilterTabsProps) {
   const [activeFilter, setActiveFilter] = useState<FilterCategory>("all");
 
   const filteredMembers = members.filter((member) => {
@@ -86,10 +88,15 @@ export function FilterTabs({ members }: FilterTabsProps) {
       {/* Members Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredMembers.map((member) => (
-          <div key={member.id}>
+          <div key={member.id} className="h-full">
             <MemberCard member={member} />
           </div>
         ))}
+
+        {/* Add Member Form */}
+        <div className="h-full">
+          <AddMemberForm onMemberAdded={onMemberAdded || (() => {})} />
+        </div>
       </div>
 
       {/* Empty State */}
