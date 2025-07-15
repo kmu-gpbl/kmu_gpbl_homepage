@@ -216,6 +216,7 @@ export default function MemberPage({ params }: MemberPageProps) {
                     <ProjectTimeline
                       projects={projects}
                       onProjectDeleted={handleProjectAdded}
+                      onProjectUpdated={handleProjectAdded}
                     />
                   )}
 

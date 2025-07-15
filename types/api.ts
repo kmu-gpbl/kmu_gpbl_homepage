@@ -49,10 +49,12 @@ export interface UserSummary {
 // Media Types
 export interface ProjectMedia {
   id: string;
-  type: "video" | "presentation" | "url";
+  type: "video" | "presentation" | "url" | "file";
   title: string;
   url: string;
   description?: string;
+  fileName?: string;
+  originalName?: string;
 }
 
 // Project Types

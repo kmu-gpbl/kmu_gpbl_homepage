@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       technologies: body.technologies || [],
       memberIds: body.memberIds || [],
       teamSize: body.teamSize || 1,
+      media: body.media || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
