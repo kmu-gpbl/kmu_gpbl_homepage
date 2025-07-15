@@ -1,19 +1,12 @@
+"use client";
+
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import { getProjectWithMembersById } from "@/lib/api/projects";
 import { PageHeader } from "@/components/page-header";
-import {
-  Calendar,
-  User,
-  Tag,
-  Activity,
-  ExternalLink,
-  Github,
-  Play,
-  FileText,
-  Link as LinkIcon,
-} from "lucide-react";
+import { ProjectMediaManager } from "@/components/project-media-manager";
+import { Tag, ExternalLink, Calendar, Activity, User } from "lucide-react";
+import type { ProjectWithMembers } from "@/types/api";
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -47,27 +40,61 @@ const statusLabels = {
   planned: "계획",
 };
 
-const mediaTypeIcons = {
-  video: Play,
-  presentation: FileText,
-  url: LinkIcon,
-};
+export default function ProjectPage({ params }: ProjectPageProps) {
+  const [project, setProject] = useState<ProjectWithMembers | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [projectId, setProjectId] = useState<string>("");
 
-const mediaTypeLabels = {
-  video: "프로젝트 영상",
-  presentation: "프레젠테이션",
-  url: "관련 링크",
-};
+  useEffect(() => {
+    const loadProject = async () => {
+      try {
+        const { id } = await params;
+        setProjectId(id);
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
-  const { id } = await params;
-  const projectResponse = await getProjectWithMembersById(id);
+        const projectResponse = await getProjectWithMembersById(id);
 
-  if (projectResponse.status === 404 || !projectResponse.data) {
-    notFound();
+        if (projectResponse.status === 404 || !projectResponse.data) {
+          notFound();
+        }
+
+        setProject(projectResponse.data);
+      } catch (error) {
+        console.error("프로젝트 로딩 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProject();
+  }, [params]);
+
+  const handleMediaUpdated = async () => {
+    // 미디어가 업데이트되면 프로젝트 정보를 새로고침
+    try {
+      const projectResponse = await getProjectWithMembersById(projectId);
+      if (projectResponse.data) {
+        setProject(projectResponse.data);
+      }
+    } catch (error) {
+      console.error("프로젝트 정보 새로고침 실패:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+        </div>
+      </div>
+    );
   }
 
-  const project = projectResponse.data;
+  if (!project) {
+    return notFound();
+  }
+
   const colorClass = typeColors[project.type];
 
   return (
@@ -130,61 +157,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </div>
           </div>
 
-          {/* Project Media - Only show if media exists */}
-          {project.media && project.media.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-              <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  프로젝트 미디어
-                </h2>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {project.media.map((media) => {
-                    const IconComponent = mediaTypeIcons[media.type];
-                    return (
-                      <div
-                        key={media.id}
-                        className="border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
-                      >
-                        <div className="p-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                              <IconComponent className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-gray-900 dark:text-white">
-                                {media.title}
-                              </h3>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {mediaTypeLabels[media.type]}
-                              </p>
-                            </div>
-                          </div>
-
-                          {media.description && (
-                            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                              {media.description}
-                            </p>
-                          )}
-
-                          <Link
-                            href={media.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            보기
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Project Media Manager */}
+          <ProjectMediaManager
+            projectId={projectId}
+            media={project.media || []}
+            onMediaUpdated={handleMediaUpdated}
+          />
 
           {/* Technologies Used */}
           <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
@@ -214,49 +192,71 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 프로젝트 정보
               </h2>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">
-                  프로젝트 기간
-                </span>
-                <span className="font-semibold text-gray-900 dark:text-white ml-auto">
-                  {project.period}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Activity className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">
-                  프로젝트 상태
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold text-white ml-auto ${
-                    statusColors[project.status]
-                  }`}
-                >
-                  {statusLabels[project.status]}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Tag className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">
-                  프로젝트 유형
-                </span>
-                <span className="font-semibold text-gray-900 dark:text-white ml-auto">
-                  {project.type.charAt(0).toUpperCase() + project.type.slice(1)}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">
-                  팀 구성원
-                </span>
-                <span className="font-semibold text-gray-900 dark:text-white ml-auto">
-                  {project.members.length}명
-                </span>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      기간
+                    </p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {project.period}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      상태
+                    </p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {statusLabels[project.status]}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Team Members */}
+          {project.members && project.members.length > 0 && (
+            <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  팀 멤버
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {project.members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {member.name}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {member.role}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
