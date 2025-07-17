@@ -31,11 +31,11 @@ export function MemberCard({ member }: MemberCardProps) {
 
   return (
     <Link href={`/member/${member.id}`}>
-      <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white transition-colors duration-200 overflow-hidden">
+      <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white transition-colors duration-200 overflow-hidden h-full">
         {/* Header with specialty color */}
         <div className={`${colorClass} h-2 w-full`} />
 
-        <div className="p-6">
+        <div className="p-6 flex flex-col h-full">
           {/* Profile section */}
           <div className="flex items-center gap-4 mb-4">
             <div className="relative">
@@ -80,8 +80,8 @@ export function MemberCard({ member }: MemberCardProps) {
             )}
           </div>
 
-          {/* View Profile Button */}
-          <div className="mt-4">
+          {/* View Profile Button - flex-grow to push to bottom */}
+          <div className="mt-auto">
             <div className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors duration-200 rounded-lg text-center text-sm font-medium">
               프로필 보기
             </div>
