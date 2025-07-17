@@ -17,7 +17,8 @@ type FilterCategory =
   | "backend"
   | "mobile"
   | "ai"
-  | "devops";
+  | "devops"
+  | "design";
 
 const filterOptions = [
   {
@@ -55,6 +56,12 @@ const filterOptions = [
     label: "DevOps",
     icon: "🚀",
     color: "bg-indigo-500",
+  },
+  {
+    key: "design" as FilterCategory,
+    label: "Design",
+    icon: "✨",
+    color: "bg-purple-500",
   },
 ];
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { MemberCard } from "@/components/member-card";
 import { FilterTabs } from "@/components/filter-tabs";
 import { AnimatedBackground } from "@/components/animated-background";
-import { CodeRain } from "@/components/code-rain";
+
 import { AddMemberForm } from "@/components/add-member-form";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
 import { Edit, Eye } from "lucide-react";
@@ -55,7 +55,6 @@ function HomePageContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
       <AnimatedBackground />
-      <CodeRain />
 
       {/* Header */}
       <header className="relative z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b-2 border-gray-200 dark:border-gray-700">

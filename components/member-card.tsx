@@ -13,6 +13,7 @@ const specialtyColors = {
   mobile: "bg-green-500",
   ai: "bg-orange-500",
   devops: "bg-indigo-500",
+  design: "bg-purple-500",
 };
 
 const specialtyIcons = {
@@ -21,6 +22,7 @@ const specialtyIcons = {
   mobile: "📱",
   ai: "🤖",
   devops: "🚀",
+  design: "✨",
 };
 
 export function MemberCard({ member }: MemberCardProps) {
