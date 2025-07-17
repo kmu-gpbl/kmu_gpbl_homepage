@@ -23,14 +23,14 @@ const mediaTypeIcons = {
   image: File,
   video: Play,
   presentation: FileText,
-  document: File,
+  url: LinkIcon,
 };
 
 const mediaTypeLabels = {
   image: "이미지",
   video: "프로젝트 영상",
   presentation: "프레젠테이션",
-  document: "문서",
+  url: "관련 링크",
 };
 
 export function ProjectMediaManager({

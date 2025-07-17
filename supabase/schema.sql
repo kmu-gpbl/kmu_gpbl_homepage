@@ -47,7 +47,7 @@ CREATE TABLE project_members (
 CREATE TABLE project_media (
   id TEXT PRIMARY KEY,
   project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('image', 'video', 'presentation', 'document')),
+  type TEXT NOT NULL CHECK (type IN ('image', 'video', 'presentation', 'url')),
   title TEXT NOT NULL,
   url TEXT,
   description TEXT,
