@@ -123,17 +123,6 @@ function HomePageContent() {
               </div>
             </div>
 
-            {/* Call to Action */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <button className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl">
-                <span className="relative z-10">Explore Our Team</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-              <button className="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300">
-                View Projects
-              </button>
-            </div>
-
             {/* Floating Icons */}
             <div className="absolute top-10 left-10 animate-bounce delay-100">
               <div className="text-2xl opacity-70">💻</div>
