@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { Edit, Save, X, AlertCircle, User, Upload } from "lucide-react";
-import Image from "next/image";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -126,7 +125,7 @@ export function EditProfileHeader({
     }
   };
 
-  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // 이미지 파일 체크
@@ -158,28 +157,36 @@ export function EditProfileHeader({
 
         {/* Profile Header */}
         <div className="p-6">
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <Image
-                src={formData.avatar || "/placeholder.svg"}
-                alt={formData.name}
-                width={80}
-                height={80}
-                className="rounded-full border-3 border-gray-200 dark:border-gray-700"
-              />
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              {initialData.avatar ? (
+                <img
+                  src={initialData.avatar}
+                  alt={initialData.name}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-8 h-8 text-gray-400" />
+              )}
             </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                {initialData.name}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {initialData.role}
+              </p>
+            </div>
+          </div>
 
-            <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">
-                {formData.name}
-              </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
-                {formData.role}
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                {formData.bio}
-              </p>
-            </div>
+          {/* Bio */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+              Bio
+            </h4>
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+              {initialData.bio}
+            </p>
           </div>
         </div>
       </div>
@@ -290,7 +297,7 @@ export function EditProfileHeader({
                 ref={avatarInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleAvatarFileChange}
+                onChange={handleAvatarChange}
                 className="hidden"
               />
               <button

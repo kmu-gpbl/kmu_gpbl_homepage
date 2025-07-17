@@ -210,28 +210,17 @@ export function AddProjectForm({
 
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                     bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 
-                     rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl
-                     border-4 border-dashed border-gray-300 dark:border-gray-700
-                     hover:border-green-400 dark:hover:border-green-500
-                     cursor-pointer group"
-        title="Add New Project"
-      >
-        <div className="text-center">
-          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Plus className="w-10 h-10 text-white" />
+      <div className="mb-6">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
+        >
+          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">
+            <Plus className="w-5 h-5" />
+            <span className="font-medium">Add New Project</span>
           </div>
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-            Add Project
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            Click to add a new project
-          </p>
-        </div>
-      </button>
+        </button>
+      </div>
     );
   }
 
