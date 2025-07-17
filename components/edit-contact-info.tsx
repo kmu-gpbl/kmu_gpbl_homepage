@@ -194,7 +194,7 @@ export function EditContactInfo({
             <button
               onClick={() => setIsEditing(true)}
               className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="연락처 수정"
+              title="Edit Contact"
             >
               <Edit className="w-5 h-5" />
             </button>

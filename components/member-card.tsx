@@ -13,6 +13,7 @@ const specialtyColors = {
   mobile: "bg-green-500",
   ai: "bg-orange-500",
   devops: "bg-indigo-500",
+  design: "bg-purple-500",
 };
 
 const specialtyIcons = {
@@ -21,6 +22,7 @@ const specialtyIcons = {
   mobile: "📱",
   ai: "🤖",
   devops: "🚀",
+  design: "✨",
 };
 
 export function MemberCard({ member }: MemberCardProps) {
@@ -67,7 +69,7 @@ export function MemberCard({ member }: MemberCardProps) {
 
           {/* Specialties */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {member.specialties.slice(0, 3).map((specialty) => (
+            {member.specialties.map((specialty) => (
               <span
                 key={specialty}
                 className="px-3 py-1 text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase tracking-wide rounded-md"
@@ -75,11 +77,6 @@ export function MemberCard({ member }: MemberCardProps) {
                 {specialty}
               </span>
             ))}
-            {member.specialties.length > 3 && (
-              <span className="px-3 py-1 text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md">
-                +{member.specialties.length - 3}
-              </span>
-            )}
           </div>
 
           {/* View Profile Button - flex-grow to push to bottom */}

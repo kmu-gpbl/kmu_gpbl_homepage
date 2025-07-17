@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UserSummary } from "@/types/api";
 import { MemberCard } from "./member-card";
 import { AddMemberForm } from "./add-member-form";
+import { useEditMode } from "@/contexts/edit-mode-context";
 
 interface FilterTabsProps {
   members: UserSummary[];
@@ -16,7 +17,8 @@ type FilterCategory =
   | "backend"
   | "mobile"
   | "ai"
-  | "devops";
+  | "devops"
+  | "design";
 
 const filterOptions = [
   {
@@ -55,10 +57,17 @@ const filterOptions = [
     icon: "🚀",
     color: "bg-indigo-500",
   },
+  {
+    key: "design" as FilterCategory,
+    label: "Design",
+    icon: "✨",
+    color: "bg-purple-500",
+  },
 ];
 
 export function FilterTabs({ members, onMemberAdded }: FilterTabsProps) {
   const [activeFilter, setActiveFilter] = useState<FilterCategory>("all");
+  const { isEditMode } = useEditMode();
 
   const filteredMembers = members.filter((member) => {
     if (activeFilter === "all") return true;
@@ -93,10 +102,12 @@ export function FilterTabs({ members, onMemberAdded }: FilterTabsProps) {
           </div>
         ))}
 
-        {/* Add Member Form */}
-        <div className="h-full">
-          <AddMemberForm onMemberAdded={onMemberAdded || (() => {})} />
-        </div>
+        {/* Add Member Form - Only show in edit mode */}
+        {isEditMode && (
+          <div className="h-full">
+            <AddMemberForm onMemberAdded={onMemberAdded || (() => {})} />
+          </div>
+        )}
       </div>
 
       {/* Empty State */}
