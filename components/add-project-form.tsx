@@ -11,8 +11,6 @@ import {
   FileText,
   Link as LinkIcon,
   ExternalLink,
-  Upload,
-  File,
 } from "lucide-react";
 
 interface AddProjectFormProps {
@@ -33,7 +31,7 @@ interface ProjectFormData {
 }
 
 interface ProjectMedia {
-  type: "image" | "video" | "presentation" | "document";
+  type: "image" | "video" | "presentation" | "url";
   title: string;
   url: string;
   description?: string;
@@ -56,10 +54,10 @@ const projectStatuses = [
 ];
 
 const mediaTypes = [
-  { value: "image", label: "이미지", icon: File },
-  { value: "video", label: "프로젝트 영상", icon: Play },
-  { value: "presentation", label: "프레젠테이션", icon: FileText },
-  { value: "document", label: "문서", icon: File },
+  { value: "image", label: "이미지", icon: "🖼️" },
+  { value: "video", label: "프로젝트 영상", icon: "🎥" },
+  { value: "presentation", label: "프레젠테이션", icon: "📄" },
+  { value: "url", label: "관련 링크", icon: "🔗" },
 ];
 
 export function AddProjectForm({
@@ -88,13 +86,11 @@ export function AddProjectForm({
   // 미디어 추가 상태
   const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [mediaFormData, setMediaFormData] = useState({
-    type: "image" as "image" | "video" | "presentation" | "document",
+    type: "image" as "image" | "video" | "presentation" | "url",
     title: "",
     url: "",
     description: "",
   });
-  const [uploadingFile, setUploadingFile] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,44 +181,6 @@ export function AddProjectForm({
     }
   };
 
-  const handleFileUpload = async (file: File) => {
-    setUploadingFile(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setMediaFormData((prev) => ({
-          ...prev,
-          url: result.url,
-          fileName: result.fileName,
-          originalName: result.originalName,
-        }));
-      } else {
-        alert(result.error || "파일 업로드에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("파일 업로드 실패:", error);
-      alert("파일 업로드 중 오류가 발생했습니다.");
-    } finally {
-      setUploadingFile(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
-    }
-  };
-
   const removeMedia = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -246,21 +204,6 @@ export function AddProjectForm({
     setMessage(null);
     setIsOpen(false);
     setIsAddingMedia(false);
-  };
-
-  const getAcceptTypes = (mediaType: string) => {
-    switch (mediaType) {
-      case "image":
-        return "image/*";
-      case "video":
-        return "video/*";
-      case "presentation":
-        return "application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation";
-      case "document":
-        return "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      default:
-        return "image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    }
   };
 
   if (!isOpen) {
@@ -553,7 +496,7 @@ export function AddProjectForm({
                     | "image"
                     | "video"
                     | "presentation"
-                    | "document",
+                    | "url",
                 }))
               }
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -589,30 +532,17 @@ export function AddProjectForm({
                 />
                 <div className="flex gap-2">
                   <input
-                    ref={fileInputRef}
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept={getAcceptTypes(mediaFormData.type)}
+                    type="url"
+                    value={mediaFormData.url}
+                    onChange={(e) =>
+                      setMediaFormData((prev) => ({
+                        ...prev,
+                        url: e.target.value,
+                      }))
+                    }
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="미디어 URL (이미지/동영상/프레젠테이션)"
                   />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingFile}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                  >
-                    {uploadingFile ? (
-                      <span className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                        업로드 중...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Upload className="w-4 h-4" />
-                        파일 선택
-                      </span>
-                    )}
-                  </button>
                 </div>
               </div>
               <textarea
@@ -661,7 +591,14 @@ export function AddProjectForm({
                 className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm"
               >
                 <span>{media.title}</span>
-                <span className="text-xs text-gray-500">(파일)</span>
+                <a
+                  href={media.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-500"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
                 <button
                   type="button"
                   onClick={() => removeMedia(index)}
