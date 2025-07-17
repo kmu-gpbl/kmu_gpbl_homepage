@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-
-const dataFilePath = path.join(process.cwd(), "data", "projects.json");
+import { projectsApi, projectMembersApi } from "@/lib/supabase-api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,53 +11,60 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "100");
     const search = searchParams.get("search");
 
-    const data = await fs.readFile(dataFilePath, "utf-8");
-    const jsonData = JSON.parse(data);
-    let projects = Array.isArray(jsonData.projects) ? jsonData.projects : [];
+    let projects;
+
+    // 특정 멤버의 프로젝트 조회
+    if (memberId) {
+      projects = await projectsApi.getByMemberId(memberId);
+    } else {
+      // 모든 프로젝트 조회
+      projects = await projectsApi.getAll();
+    }
+
+    // 필드명 매핑 (Supabase -> 클라이언트)
+    let mappedProjects = projects.map((project: any) => ({
+      ...project,
+      startDate: project.start_date,
+      endDate: project.end_date,
+      teamSize: project.team_size,
+      memberIds: [], // 멤버 정보는 별도로 처리
+      media: [], // 미디어는 별도로 처리
+    }));
 
     // 필터링
-    if (memberId) {
-      projects = projects.filter(
-        (project: any) =>
-          project.memberIds && project.memberIds.includes(memberId)
+    if (type) {
+      mappedProjects = mappedProjects.filter(
+        (project: any) => project.type === type
       );
     }
 
-    if (type) {
-      projects = projects.filter((project: any) => project.type === type);
-    }
-
     if (status) {
-      projects = projects.filter((project: any) => project.status === status);
+      mappedProjects = mappedProjects.filter(
+        (project: any) => project.status === status
+      );
     }
 
     if (search) {
       const searchLower = search.toLowerCase();
-      projects = projects.filter(
+      mappedProjects = mappedProjects.filter(
         (project: any) =>
           project.title.toLowerCase().includes(searchLower) ||
           project.description.toLowerCase().includes(searchLower)
       );
     }
 
-    // 정렬 (최신순)
-    projects.sort(
-      (a: any, b: any) =>
-        new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
-    );
-
     // 페이지네이션
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    const paginatedProjects = projects.slice(startIndex, endIndex);
+    const paginatedProjects = mappedProjects.slice(startIndex, endIndex);
 
     return NextResponse.json({
       projects: paginatedProjects,
       pagination: {
         page,
         limit,
-        total: projects.length,
-        totalPages: Math.ceil(projects.length / limit),
+        total: mappedProjects.length,
+        totalPages: Math.ceil(mappedProjects.length / limit),
       },
       message: "프로젝트 목록을 성공적으로 불러왔습니다.",
     });
@@ -99,16 +103,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 데이터 파일 읽기
-    const data = await fs.readFile(dataFilePath, "utf-8");
-    const jsonData = JSON.parse(data);
-    const projects = jsonData.projects || [];
-
-    // 새 프로젝트 ID 생성
-    const newId = `project_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
-
     // 기간 계산
     let period = "";
     if (body.startDate) {
@@ -127,33 +121,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 새 프로젝트 객체 생성
+    // 새 프로젝트 객체 생성 (클라이언트 -> Supabase 필드명 매핑)
     const newProject = {
-      id: newId,
       title: body.title,
       description: body.description,
-      startDate: body.startDate,
-      endDate: body.endDate || null,
+      start_date: body.startDate,
+      end_date: body.endDate || null,
       period,
       status: body.status,
       type: body.type,
       technologies: body.technologies || [],
-      memberIds: body.memberIds || [],
-      teamSize: body.teamSize,
-      media: body.media || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      team_size: body.teamSize,
     };
 
-    // 프로젝트 추가
-    projects.push(newProject);
+    // Supabase에 프로젝트 추가
+    const createdProject = await projectsApi.create(newProject);
 
-    // 파일에 저장 (원래 구조 유지)
-    await fs.writeFile(dataFilePath, JSON.stringify({ projects }, null, 2));
+    // 프로젝트 멤버 추가
+    if (body.memberIds && body.memberIds.length > 0) {
+      for (const memberId of body.memberIds) {
+        await projectMembersApi.addMember(createdProject.id, memberId);
+      }
+    }
+
+    // 응답 데이터 필드명 매핑 (Supabase -> 클라이언트)
+    const mappedProject = {
+      ...createdProject,
+      startDate: createdProject.start_date,
+      endDate: createdProject.end_date,
+      teamSize: createdProject.team_size,
+      memberIds: body.memberIds || [],
+      media: [],
+    };
 
     return NextResponse.json({
       message: "프로젝트가 성공적으로 추가되었습니다.",
-      project: newProject,
+      project: mappedProject,
     });
   } catch (error) {
     console.error("프로젝트 추가 실패:", error);
@@ -176,39 +179,12 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // 프로젝트 데이터 파일 경로
-    const projectsFilePath = path.join(process.cwd(), "data", "projects.json");
-
-    // 기존 프로젝트 데이터 읽기
-    const projectsData = await fs.readFile(projectsFilePath, "utf-8");
-    const { projects } = JSON.parse(projectsData);
-
-    // 프로젝트 찾기
-    const projectIndex = projects.findIndex(
-      (project: any) => project.id === projectId
-    );
-
-    if (projectIndex === -1) {
-      return NextResponse.json(
-        { error: "프로젝트를 찾을 수 없습니다." },
-        { status: 404 }
-      );
-    }
-
-    // 프로젝트 삭제
-    const deletedProject = projects.splice(projectIndex, 1)[0];
-
-    // 파일에 저장
-    await fs.writeFile(
-      projectsFilePath,
-      JSON.stringify({ projects }, null, 2),
-      "utf-8"
-    );
+    // Supabase에서 프로젝트 삭제
+    await projectsApi.delete(projectId);
 
     return NextResponse.json(
       {
         message: "프로젝트가 성공적으로 삭제되었습니다.",
-        deletedProject,
       },
       { status: 200 }
     );

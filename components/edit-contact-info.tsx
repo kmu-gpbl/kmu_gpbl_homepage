@@ -47,50 +47,140 @@ export function EditContactInfo({
     setMessage(null);
 
     try {
+      // Add https:// automatically when saving
+      const processedData = {
+        email: formData.email || null,
+        github: formData.github ? processGithubUrl(formData.github) : null,
+        linkedin: formData.linkedin
+          ? processLinkedinUrl(formData.linkedin)
+          : null,
+        portfolio: formData.portfolio
+          ? processPortfolioUrl(formData.portfolio)
+          : null,
+      };
+
+      // Only send changed fields
+      const changedFields: any = {};
+
+      if (processedData.email !== (initialData.email || null)) {
+        changedFields.email = processedData.email;
+      }
+      if (processedData.github !== (initialData.github || null)) {
+        changedFields.github = processedData.github;
+      }
+      if (processedData.linkedin !== (initialData.linkedin || null)) {
+        changedFields.linkedin = processedData.linkedin;
+      }
+      if (processedData.portfolio !== (initialData.portfolio || null)) {
+        changedFields.portfolio = processedData.portfolio;
+      }
+
+      // If no fields were changed, just close the edit mode
+      if (Object.keys(changedFields).length === 0) {
+        setIsEditing(false);
+        return;
+      }
+
       const response = await fetch(`/api/users/${memberId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          email: formData.email || null,
-          github: formData.github || null,
-          linkedin: formData.linkedin || null,
-          portfolio: formData.portfolio || null,
-        }),
+        body: JSON.stringify(changedFields),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        alert("연락처 정보가 성공적으로 업데이트되었습니다!");
+        alert("Contact information updated successfully!");
         setIsEditing(false);
         onContactUpdated();
         setMessage(null);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "연락처 정보 업데이트에 실패했습니다.",
+          text: result.error || "Failed to update contact information.",
         });
       }
     } catch (error) {
-      console.error("연락처 정보 업데이트 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Contact information update failed:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
+    setIsEditing(false);
     setFormData({
       email: initialData.email || "",
       github: initialData.github || "",
       linkedin: initialData.linkedin || "",
       portfolio: initialData.portfolio || "",
     });
-    setIsEditing(false);
     setMessage(null);
+  };
+
+  // URL 처리 함수들
+  const processGithubUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // github.com으로 시작하는 경우
+    if (input.startsWith("github.com/")) {
+      return "https://" + input;
+    }
+
+    // 사용자명만 입력한 경우
+    if (!input.includes("/") && !input.includes(".")) {
+      return "https://github.com/" + input;
+    }
+
+    // 기타 경우 (상대 경로 등)
+    return "https://" + input;
+  };
+
+  const processLinkedinUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // linkedin.com으로 시작하는 경우
+    if (input.startsWith("linkedin.com/")) {
+      return "https://" + input;
+    }
+
+    // 사용자명만 입력한 경우
+    if (!input.includes("/") && !input.includes(".")) {
+      return "https://linkedin.com/in/" + input;
+    }
+
+    // 기타 경우
+    return "https://" + input;
+  };
+
+  const processPortfolioUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // 도메인만 입력한 경우 (점이 포함되어 있음)
+    if (input.includes(".")) {
+      return "https://" + input;
+    }
+
+    // 기타 경우 (그대로 반환)
+    return input;
   };
 
   if (!isEditing) {
@@ -184,7 +274,7 @@ export function EditContactInfo({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            연락처 수정
+            Edit Contact Information
           </h2>
           <button
             onClick={handleCancel}
@@ -195,7 +285,7 @@ export function EditContactInfo({
         </div>
       </div>
 
-      {/* 에러 메시지 표시 */}
+      {/* Error Message Display */}
       {message && message.type === "error" && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500">
           <div className="flex items-center gap-2">
@@ -208,10 +298,10 @@ export function EditContactInfo({
       )}
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* 이메일 */}
+        {/* Email */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            이메일
+            Email
           </label>
           <input
             type="email"
@@ -230,13 +320,13 @@ export function EditContactInfo({
             GitHub
           </label>
           <input
-            type="url"
+            type="text"
             value={formData.github}
             onChange={(e) =>
               setFormData({ ...formData, github: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://github.com/username"
+            placeholder="github.com/username 또는 username"
           />
         </div>
 
@@ -246,47 +336,47 @@ export function EditContactInfo({
             LinkedIn
           </label>
           <input
-            type="url"
+            type="text"
             value={formData.linkedin}
             onChange={(e) =>
               setFormData({ ...formData, linkedin: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://linkedin.com/in/username"
+            placeholder="linkedin.com/in/username 또는 username"
           />
         </div>
 
-        {/* 포트폴리오 */}
+        {/* Portfolio */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            포트폴리오
+            Portfolio
           </label>
           <input
-            type="url"
+            type="text"
             value={formData.portfolio}
             onChange={(e) =>
               setFormData({ ...formData, portfolio: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://portfolio.com"
+            placeholder="portfolio.com 또는 사이트 주소"
           />
         </div>
 
-        {/* 제출 버튼 */}
+        {/* Submit Button */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "저장 중..." : "저장"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
             className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
           >
-            취소
+            Cancel
           </button>
         </div>
       </form>

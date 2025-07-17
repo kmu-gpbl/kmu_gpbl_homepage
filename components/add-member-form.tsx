@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Plus,
   X,
@@ -10,6 +10,7 @@ import {
   Github,
   Linkedin,
   ExternalLink,
+  Upload,
 } from "lucide-react";
 
 interface AddMemberFormProps {
@@ -30,19 +31,19 @@ const specialtyOptions = [
 ];
 
 const roleOptions = [
-  "프론트엔드 개발자",
-  "백엔드 개발자",
-  "풀스택 개발자",
-  "모바일 개발자",
-  "AI/ML 엔지니어",
-  "DevOps 엔지니어",
-  "UI/UX 디자이너",
-  "데이터 엔지니어",
-  "보안 엔지니어",
-  "게임 개발자",
-  "블록체인 개발자",
-  "프로젝트 매니저",
-  "기타",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full-stack Developer",
+  "Mobile Developer",
+  "AI/ML Engineer",
+  "DevOps Engineer",
+  "UI/UX Designer",
+  "Data Engineer",
+  "Security Engineer",
+  "Game Developer",
+  "Blockchain Developer",
+  "Project Manager",
+  "Other",
 ];
 
 export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
@@ -63,6 +64,8 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
   });
   const [newSkill, setNewSkill] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -74,19 +77,36 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     setMessage(null);
 
     try {
+      // Add https:// automatically when saving
+      const processedData = {
+        ...formData,
+        github: formData.github
+          ? processGithubUrl(formData.github)
+          : formData.github,
+        linkedin: formData.linkedin
+          ? processLinkedinUrl(formData.linkedin)
+          : formData.linkedin,
+        portfolio: formData.portfolio
+          ? processPortfolioUrl(formData.portfolio)
+          : formData.portfolio,
+      };
+
       const response = await fetch("/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(processedData),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        alert("멤버가 성공적으로 추가되었습니다!");
-        setIsOpen(false);
+        setMessage({
+          type: "success",
+          text: "Member added successfully!",
+        });
+        // Reset form
         setFormData({
           name: "",
           role: "",
@@ -101,16 +121,21 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
           experience: "",
           location: "",
         });
-        onMemberAdded();
+        setNewSkill("");
+        setTimeout(() => {
+          setIsOpen(false);
+          setMessage(null);
+          onMemberAdded();
+        }, 1500);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "멤버 추가에 실패했습니다.",
+          text: result.error || "Failed to add member.",
         });
       }
     } catch (error) {
-      console.error("멤버 추가 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Failed to add member:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -131,6 +156,133 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
       ...prev,
       skills: prev.skills.filter((s) => s !== skill),
     }));
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setUploadingAvatar(true);
+    try {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setMessage({
+          type: "error",
+          text: "Please select an image file.",
+        });
+        return;
+      }
+
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({
+          type: "error",
+          text: "Image size must be less than 5MB.",
+        });
+        return;
+      }
+
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+      formDataUpload.append("type", "avatar");
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormData({ ...formData, avatar: result.url });
+        setMessage({
+          type: "success",
+          text: "Profile image uploaded successfully!",
+        });
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to upload image.",
+        });
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      setMessage({ type: "error", text: "Failed to upload image." });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 이미지 파일 체크
+      if (!file.type.startsWith("image/")) {
+        alert("Only image files can be uploaded.");
+        return;
+      }
+      handleAvatarUpload(file);
+    }
+  };
+
+  // URL 처리 함수들
+  const processGithubUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // github.com으로 시작하는 경우
+    if (input.startsWith("github.com/")) {
+      return "https://" + input;
+    }
+
+    // 사용자명만 입력한 경우
+    if (!input.includes("/") && !input.includes(".")) {
+      return "https://github.com/" + input;
+    }
+
+    // 기타 경우 (상대 경로 등)
+    return "https://" + input;
+  };
+
+  const processLinkedinUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // linkedin.com으로 시작하는 경우
+    if (input.startsWith("linkedin.com/")) {
+      return "https://" + input;
+    }
+
+    // 사용자명만 입력한 경우
+    if (!input.includes("/") && !input.includes(".")) {
+      return "https://linkedin.com/in/" + input;
+    }
+
+    // 기타 경우
+    return "https://" + input;
+  };
+
+  const processPortfolioUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // 도메인만 입력한 경우 (점이 포함되어 있음)
+    if (input.includes(".")) {
+      return "https://" + input;
+    }
+
+    // 기타 경우 (그대로 반환)
+    return input;
   };
 
   const toggleSpecialty = (specialty: string) => {
@@ -159,10 +311,10 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
 
             <div className="flex-1">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                새 멤버 추가
+                Add New Member
               </h3>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                팀에 새로운 멤버를 추가하세요
+                Add a new member to your team
               </p>
             </div>
 
@@ -172,7 +324,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
           {/* Placeholder specialties */}
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="px-3 py-1 text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md">
-              새로운 멤버
+              New Member
             </span>
           </div>
 
@@ -182,7 +334,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
               onClick={() => setIsOpen(true)}
               className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors duration-200 rounded-lg text-center text-sm font-medium"
             >
-              멤버 추가하기
+              Add Member
             </button>
           </div>
         </div>
@@ -201,7 +353,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-2rem)]">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                새 멤버 추가
+                Add New Member
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
@@ -236,7 +388,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    이름 *
+                    Name *
                   </label>
                   <input
                     type="text"
@@ -246,13 +398,13 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       setFormData((prev) => ({ ...prev, name: e.target.value }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="멤버 이름을 입력하세요"
+                    placeholder="Enter member name"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    역할 *
+                    Role *
                   </label>
                   <select
                     required
@@ -262,7 +414,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="">역할을 선택하세요</option>
+                    <option value="">Select a role</option>
                     {roleOptions.map((role) => (
                       <option key={role} value={role}>
                         {role}
@@ -275,7 +427,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
               {/* Specialties */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  전문 분야 *
+                  Specialties *
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                   {specialtyOptions.map((specialty) => (
@@ -302,7 +454,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
               {/* Bio */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  자기소개 *
+                  Bio *
                 </label>
                 <textarea
                   required
@@ -312,7 +464,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                   }
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="자기소개를 입력하세요"
+                  placeholder="Enter bio"
                 />
               </div>
 
@@ -320,7 +472,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    이메일
+                    Email
                   </label>
                   <input
                     type="email"
@@ -332,13 +484,13 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="이메일 주소"
+                    placeholder="Email address"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    위치
+                    Location
                   </label>
                   <input
                     type="text"
@@ -350,7 +502,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="위치 (예: 서울, 부산)"
+                    placeholder="Location (e.g., Seoul, Busan)"
                   />
                 </div>
               </div>
@@ -362,7 +514,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     GitHub
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.github}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -371,7 +523,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="GitHub 프로필 URL"
+                    placeholder="github.com/username or username"
                   />
                 </div>
 
@@ -380,7 +532,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     LinkedIn
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.linkedin}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -389,16 +541,16 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="LinkedIn 프로필 URL"
+                    placeholder="linkedin.com/in/username or username"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    포트폴리오
+                    Portfolio
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.portfolio}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -407,7 +559,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="포트폴리오 URL"
+                    placeholder="portfolio.com or website address"
                   />
                 </div>
               </div>
@@ -415,7 +567,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
               {/* Experience */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  경력
+                  Experience
                 </label>
                 <textarea
                   value={formData.experience}
@@ -427,14 +579,14 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                   }
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="주요 경력이나 프로젝트 경험을 입력하세요"
+                  placeholder="Enter main experience or project experience"
                 />
               </div>
 
               {/* Skills */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  기술 스택
+                  Skills
                 </label>
                 <div className="flex gap-2 mb-2">
                   <input
@@ -445,14 +597,14 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       e.key === "Enter" && (e.preventDefault(), addSkill())
                     }
                     className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="기술 스택 추가"
+                    placeholder="Add skill"
                   />
                   <button
                     type="button"
                     onClick={addSkill}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                   >
-                    추가
+                    Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -474,20 +626,68 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 </div>
               </div>
 
-              {/* Avatar URL */}
+              {/* Avatar Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  프로필 이미지 URL
+                  Profile Image
                 </label>
-                <input
-                  type="url"
-                  value={formData.avatar}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, avatar: e.target.value }))
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="프로필 이미지 URL (선택사항)"
-                />
+                <div className="flex items-center gap-4">
+                  {/* Preview */}
+                  <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    {formData.avatar ? (
+                      <img
+                        src={formData.avatar}
+                        alt="Profile Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-gray-400" />
+                    )}
+                  </div>
+
+                  {/* File upload button */}
+                  <div className="flex-1">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      onChange={handleAvatarFileChange}
+                      className="hidden"
+                      accept="image/*"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                    >
+                      {uploadingAvatar ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                          Uploading...
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <Upload className="w-4 h-4" />
+                          {formData.avatar ? "Change Image" : "Select Image"}
+                        </span>
+                      )}
+                    </button>
+                    {formData.avatar && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, avatar: "" }))
+                        }
+                        className="mt-2 text-sm text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Remove Image
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Upload JPG, PNG, GIF, etc. images. (Optional)
+                </p>
               </div>
 
               {/* Submit Buttons */}
@@ -497,7 +697,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                   disabled={isSubmitting}
                   className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
                 >
-                  {isSubmitting ? "추가 중..." : "멤버 추가"}
+                  {isSubmitting ? "Adding..." : "Add Member"}
                 </button>
                 <button
                   type="button"
@@ -505,7 +705,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
                 >
-                  취소
+                  Cancel
                 </button>
               </div>
             </form>

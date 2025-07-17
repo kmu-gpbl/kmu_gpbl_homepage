@@ -109,7 +109,7 @@ export function FilterTabs({ members, onMemberAdded }: FilterTabsProps) {
             </div>
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-xl font-medium">
-            해당 분야의 개발자가 없습니다
+            No developers found in this field
           </p>
         </div>
       )}

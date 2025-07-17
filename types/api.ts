@@ -49,7 +49,7 @@ export interface UserSummary {
 // Media Types
 export interface ProjectMedia {
   id: string;
-  type: "video" | "presentation" | "url" | "file";
+  type: "image" | "video" | "presentation" | "url";
   title: string;
   url: string;
   description?: string;
