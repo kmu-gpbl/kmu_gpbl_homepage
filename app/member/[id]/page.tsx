@@ -36,7 +36,7 @@ export default function MemberPage({ params }: MemberPageProps) {
         const { id } = await params;
         setMemberId(id);
 
-        // 멤버 정보와 프로젝트 정보를 병렬로 로드
+        // Load member info and project info in parallel
         const [userResponse, projectsResponse] = await Promise.all([
           fetch(`/api/users/${id}`),
           fetch(`/api/projects?memberId=${id}`),
@@ -52,7 +52,7 @@ export default function MemberPage({ params }: MemberPageProps) {
         setMember(userData.user);
         setProjects(projectsData.projects || []);
       } catch (error) {
-        console.error("데이터 로딩 실패:", error);
+        console.error("Data loading failed:", error);
       } finally {
         setLoading(false);
       }
@@ -62,18 +62,18 @@ export default function MemberPage({ params }: MemberPageProps) {
   }, [params]);
 
   const handleProjectAdded = async () => {
-    // 프로젝트가 추가되면 프로젝트 목록을 새로고침
+    // Refresh project list when a project is added
     try {
       const response = await fetch(`/api/projects?memberId=${memberId}`);
       const data = await response.json();
       setProjects(data.projects || []);
     } catch (error) {
-      console.error("프로젝트 목록 새로고침 실패:", error);
+      console.error("Failed to refresh project list:", error);
     }
   };
 
   const handleMemberUpdated = async () => {
-    // 멤버 정보가 업데이트되면 멤버 정보를 새로고침
+    // Refresh member info when member info is updated
     try {
       const response = await fetch(`/api/users/${memberId}`);
       if (response.ok) {
@@ -81,7 +81,7 @@ export default function MemberPage({ params }: MemberPageProps) {
         setMember(data.user);
       }
     } catch (error) {
-      console.error("멤버 정보 새로고침 실패:", error);
+      console.error("Failed to refresh member info:", error);
     }
   };
 
@@ -90,7 +90,7 @@ export default function MemberPage({ params }: MemberPageProps) {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );

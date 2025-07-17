@@ -34,9 +34,9 @@ const statusColors = {
 };
 
 const statusLabels = {
-  completed: "완료",
-  ongoing: "진행중",
-  planned: "계획",
+  completed: "Completed",
+  ongoing: "Ongoing",
+  planned: "Planned",
 };
 
 export default function ProjectPage({ params }: ProjectPageProps) {
@@ -59,7 +59,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         const projectData = await projectResponse.json();
         setProject(projectData.project);
       } catch (error) {
-        console.error("프로젝트 로딩 실패:", error);
+        console.error("Project loading failed:", error);
       } finally {
         setLoading(false);
       }
@@ -69,7 +69,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   }, [params]);
 
   const handleMediaUpdated = async () => {
-    // 미디어가 업데이트되면 프로젝트 정보를 새로고침
+    // Refresh project info when media is updated
     try {
       const projectResponse = await fetch(`/api/projects/${projectId}`);
       if (projectResponse.ok) {
@@ -77,7 +77,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         setProject(projectData.project);
       }
     } catch (error) {
-      console.error("프로젝트 정보 새로고침 실패:", error);
+      console.error("Failed to refresh project info:", error);
     }
   };
 
@@ -86,7 +86,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -137,7 +137,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                     <Tag className="w-4 h-4" />
                     {project.type.charAt(0).toUpperCase() +
                       project.type.slice(1)}{" "}
-                    프로젝트
+                    Project
                   </div>
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                프로젝트 설명
+                Project Description
               </h2>
             </div>
             <div className="p-6">
@@ -169,7 +169,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                사용된 기술
+                Technologies Used
               </h2>
             </div>
             <div className="p-6">
@@ -190,7 +190,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
           <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
             <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                프로젝트 정보
+                Project Information
               </h2>
             </div>
             <div className="p-6">
@@ -201,7 +201,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      기간
+                      Duration
                     </p>
                     <p className="font-medium text-gray-900 dark:text-white">
                       {project.period}
@@ -215,7 +215,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      상태
+                      Status
                     </p>
                     <p className="font-medium text-gray-900 dark:text-white">
                       {statusLabels[project.status]}
@@ -231,7 +231,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
             <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
               <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  팀 멤버
+                  Team Members
                 </h2>
               </div>
               <div className="p-6">

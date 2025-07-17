@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Edit, Save, X, AlertCircle, User, Upload } from "lucide-react";
+import Image from "next/image";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -15,19 +16,19 @@ interface EditProfileHeaderProps {
 }
 
 const roleOptions = [
-  "프론트엔드 개발자",
-  "백엔드 개발자",
-  "풀스택 개발자",
-  "모바일 개발자",
-  "AI/ML 엔지니어",
-  "DevOps 엔지니어",
-  "UI/UX 디자이너",
-  "데이터 엔지니어",
-  "보안 엔지니어",
-  "게임 개발자",
-  "블록체인 개발자",
-  "프로젝트 매니저",
-  "기타",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full-stack Developer",
+  "Mobile Developer",
+  "AI/ML Engineer",
+  "DevOps Engineer",
+  "UI/UX Designer",
+  "Data Engineer",
+  "Security Engineer",
+  "Game Developer",
+  "Blockchain Developer",
+  "Project Manager",
+  "Other",
 ];
 
 export function EditProfileHeader({
@@ -67,19 +68,19 @@ export function EditProfileHeader({
       const result = await response.json();
 
       if (response.ok) {
-        alert("프로필이 성공적으로 업데이트되었습니다!");
+        alert("Profile updated successfully!");
         setIsEditing(false);
         onProfileUpdated();
         setMessage(null);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "프로필 업데이트에 실패했습니다.",
+          text: result.error || "Failed to update profile.",
         });
       }
     } catch (error) {
-      console.error("프로필 업데이트 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Profile update failed:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -115,11 +116,11 @@ export function EditProfileHeader({
           avatar: result.url,
         }));
       } else {
-        alert(result.error || "프로필 이미지 업로드에 실패했습니다.");
+        alert(result.error || "Failed to upload profile image.");
       }
     } catch (error) {
-      console.error("프로필 이미지 업로드 실패:", error);
-      alert("프로필 이미지 업로드 중 오류가 발생했습니다.");
+      console.error("Profile image upload failed:", error);
+      alert("An error occurred during profile image upload.");
     } finally {
       setUploadingAvatar(false);
     }
@@ -130,7 +131,7 @@ export function EditProfileHeader({
     if (file) {
       // 이미지 파일 체크
       if (!file.type.startsWith("image/")) {
-        alert("이미지 파일만 업로드할 수 있습니다.");
+        alert("Only image files can be uploaded.");
         return;
       }
       handleAvatarUpload(file);
@@ -143,48 +144,42 @@ export function EditProfileHeader({
         <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              프로필 정보
+              Profile Information
             </h2>
             <button
               onClick={() => setIsEditing(true)}
               className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="프로필 수정"
+              title="Edit Profile"
             >
               <Edit className="w-5 h-5" />
             </button>
           </div>
         </div>
+
+        {/* Profile Header */}
         <div className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              {formData.avatar ? (
-                <img
-                  src={formData.avatar}
-                  alt={formData.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-8 h-8 text-gray-400" />
-              )}
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <Image
+                src={formData.avatar || "/placeholder.svg"}
+                alt={formData.name}
+                width={80}
+                height={80}
+                className="rounded-full border-3 border-gray-200 dark:border-gray-700"
+              />
             </div>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-2">
                 {formData.name}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
                 {formData.role}
               </p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                {formData.bio}
+              </p>
             </div>
-          </div>
-
-          {/* 소개 */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              소개
-            </h4>
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-              {formData.bio}
-            </p>
           </div>
         </div>
       </div>
@@ -196,7 +191,7 @@ export function EditProfileHeader({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            프로필 수정
+            Edit Profile
           </h2>
           <button
             onClick={handleCancel}
@@ -207,7 +202,7 @@ export function EditProfileHeader({
         </div>
       </div>
 
-      {/* 에러 메시지 표시 */}
+      {/* Error Message Display */}
       {message && message.type === "error" && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500">
           <div className="flex items-center gap-2">
@@ -220,10 +215,10 @@ export function EditProfileHeader({
       )}
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* 이름 */}
+        {/* Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            이름 *
+            Name *
           </label>
           <input
             type="text"
@@ -231,14 +226,14 @@ export function EditProfileHeader({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="이름을 입력하세요"
+            placeholder="Enter name"
           />
         </div>
 
-        {/* 역할 */}
+        {/* Role */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            역할 *
+            Role *
           </label>
           <select
             required
@@ -246,7 +241,7 @@ export function EditProfileHeader({
             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">역할을 선택하세요</option>
+            <option value="">Select a role</option>
             {roleOptions.map((role) => (
               <option key={role} value={role}>
                 {role}
@@ -255,74 +250,10 @@ export function EditProfileHeader({
           </select>
         </div>
 
-        {/* 아바타 업로드 */}
+        {/* Bio */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            프로필 이미지
-          </label>
-          <div className="flex items-center gap-4">
-            {/* 미리보기 */}
-            <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-              {formData.avatar ? (
-                <img
-                  src={formData.avatar}
-                  alt="프로필 미리보기"
-                  className="w-20 h-20 rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-10 h-10 text-gray-400" />
-              )}
-            </div>
-
-            {/* 파일 업로드 버튼 */}
-            <div className="flex-1">
-              <input
-                ref={avatarInputRef}
-                type="file"
-                onChange={handleAvatarFileChange}
-                className="hidden"
-                accept="image/*"
-              />
-              <button
-                type="button"
-                onClick={() => avatarInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-              >
-                {uploadingAvatar ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                    업로드 중...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    {formData.avatar ? "이미지 변경" : "이미지 선택"}
-                  </span>
-                )}
-              </button>
-              {formData.avatar && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, avatar: "" }))
-                  }
-                  className="mt-2 text-sm text-red-500 hover:text-red-700 transition-colors"
-                >
-                  이미지 제거
-                </button>
-              )}
-            </div>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            JPG, PNG, GIF 등의 이미지 파일을 업로드하세요. (선택사항)
-          </p>
-        </div>
-
-        {/* 소개 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            소개 *
+            Bio *
           </label>
           <textarea
             required
@@ -330,25 +261,87 @@ export function EditProfileHeader({
             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
             rows={4}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="자신에 대한 소개를 입력하세요"
+            placeholder="Enter bio"
           />
         </div>
 
-        {/* 제출 버튼 */}
+        {/* Profile Image */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Profile Image
+          </label>
+          <div className="flex items-center gap-4">
+            {/* Preview */}
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+              {formData.avatar ? (
+                <img
+                  src={formData.avatar}
+                  alt="Profile Preview"
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-8 h-8 text-gray-400" />
+              )}
+            </div>
+
+            {/* File upload button */}
+            <div className="flex-1">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarFileChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              >
+                {uploadingAvatar ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    Uploading...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    {formData.avatar ? "Change Image" : "Select Image"}
+                  </span>
+                )}
+              </button>
+              {formData.avatar && (
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, avatar: "" })}
+                  className="mt-2 text-sm text-red-500 hover:text-red-700 transition-colors"
+                >
+                  Remove Image
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Upload JPG, PNG, GIF, etc. images. (Optional)
+          </p>
+        </div>
+
+        {/* Submit Button */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "저장 중..." : "저장"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
             className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
           >
-            취소
+            Cancel
           </button>
         </div>
       </form>

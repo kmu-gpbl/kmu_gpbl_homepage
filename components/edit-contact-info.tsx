@@ -78,19 +78,19 @@ export function EditContactInfo({
       const result = await response.json();
 
       if (response.ok) {
-        alert("연락처 정보가 성공적으로 업데이트되었습니다!");
+        alert("Contact information updated successfully!");
         setIsEditing(false);
         onContactUpdated();
         setMessage(null);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "연락처 정보 업데이트에 실패했습니다.",
+          text: result.error || "Failed to update contact information.",
         });
       }
     } catch (error) {
-      console.error("연락처 정보 업데이트 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Contact information update failed:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -260,7 +260,7 @@ export function EditContactInfo({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            연락처 수정
+            Edit Contact Information
           </h2>
           <button
             onClick={handleCancel}
@@ -271,7 +271,7 @@ export function EditContactInfo({
         </div>
       </div>
 
-      {/* 에러 메시지 표시 */}
+      {/* Error Message Display */}
       {message && message.type === "error" && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500">
           <div className="flex items-center gap-2">
@@ -284,10 +284,10 @@ export function EditContactInfo({
       )}
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* 이메일 */}
+        {/* Email */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            이메일
+            Email
           </label>
           <input
             type="email"
@@ -332,10 +332,10 @@ export function EditContactInfo({
           />
         </div>
 
-        {/* 포트폴리오 */}
+        {/* Portfolio */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            포트폴리오
+            Portfolio
           </label>
           <input
             type="text"
@@ -348,21 +348,21 @@ export function EditContactInfo({
           />
         </div>
 
-        {/* 제출 버튼 */}
+        {/* Submit Button */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "저장 중..." : "저장"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
             className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
           >
-            취소
+            Cancel
           </button>
         </div>
       </form>
