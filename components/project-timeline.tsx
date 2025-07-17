@@ -20,6 +20,7 @@ import {
   Upload,
   File,
 } from "lucide-react";
+import { useEditMode } from "@/contexts/edit-mode-context";
 
 interface ProjectTimelineProps {
   projects: Project[];
@@ -32,6 +33,7 @@ const typeColors = {
   mobile: "bg-green-500",
   ai: "bg-orange-500",
   infrastructure: "bg-purple-500",
+  desktop: "bg-indigo-500",
   other: "bg-gray-500",
 };
 
@@ -40,6 +42,7 @@ const typeIcons = {
   mobile: "📱",
   ai: "🤖",
   infrastructure: "🏗️",
+  desktop: "🖥️",
   other: "⚙️",
 };
 
@@ -67,6 +70,7 @@ export function ProjectTimeline({
   onProjectDeleted,
   onProjectUpdated,
 }: ProjectTimelineProps) {
+  const { isEditMode } = useEditMode();
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
     null
   );
@@ -81,7 +85,7 @@ export function ProjectTimeline({
     startDate: string;
     endDate: string;
     status: "completed" | "ongoing" | "planned";
-    type: "web" | "mobile" | "ai" | "infrastructure" | "other";
+    type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
     technologies: string[];
     teamSize: number;
     media: ProjectMedia[];
@@ -141,12 +145,12 @@ export function ProjectTimeline({
         }
       } else {
         const error = await response.json();
-        console.error("프로젝트 삭제 실패:", error);
-        alert("프로젝트 삭제에 실패했습니다.");
+        console.error("Failed to delete project:", error);
+        alert("Failed to delete project.");
       }
     } catch (error) {
-      console.error("프로젝트 삭제 중 오류:", error);
-      alert("프로젝트 삭제 중 오류가 발생했습니다.");
+      console.error("Error occurred while deleting project:", error);
+      alert("An error occurred while deleting project.");
     } finally {
       setDeletingProjectId(null);
       setShowDeleteModal(false);
@@ -191,7 +195,7 @@ export function ProjectTimeline({
       const result = await response.json();
 
       if (response.ok) {
-        alert("프로젝트가 성공적으로 수정되었습니다!");
+        alert("Project updated successfully!");
         setEditingProjectId(null);
         if (onProjectUpdated) {
           onProjectUpdated();
@@ -199,12 +203,12 @@ export function ProjectTimeline({
       } else {
         setMessage({
           type: "error",
-          text: result.error || "프로젝트 수정에 실패했습니다.",
+          text: result.error || "Failed to update project.",
         });
       }
     } catch (error) {
-      console.error("프로젝트 수정 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Failed to update project:", error);
+      setMessage({ type: "error", text: "A network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -283,11 +287,11 @@ export function ProjectTimeline({
           originalName: result.originalName,
         }));
       } else {
-        alert(result.error || "파일 업로드에 실패했습니다.");
+        alert(result.error || "Failed to upload file.");
       }
     } catch (error) {
-      console.error("파일 업로드 실패:", error);
-      alert("파일 업로드 중 오류가 발생했습니다.");
+      console.error("Failed to upload file:", error);
+      alert("An error occurred while uploading file.");
     } finally {
       setUploadingFile(false);
     }
@@ -358,7 +362,7 @@ export function ProjectTimeline({
                       <div className="flex items-center gap-1 mt-1">
                         <Users className="w-3 h-3 text-gray-400" />
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {project.teamSize}명
+                          {project.teamSize} members
                         </span>
                       </div>
                     )}
@@ -375,24 +379,29 @@ export function ProjectTimeline({
                     {statusLabels[project.status]}
                   </div>
 
-                  {/* Edit Button */}
-                  <button
-                    onClick={() => handleEditClick(project)}
-                    className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-                    title="프로젝트 수정"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
+                  {/* Edit/Delete Buttons - Only show in edit mode */}
+                  {isEditMode && (
+                    <>
+                      {/* Edit Button */}
+                      <button
+                        onClick={() => handleEditClick(project)}
+                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                        title="Edit Project"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeleteClick(project)}
-                    disabled={deletingProjectId === project.id}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="프로젝트 삭제"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                      {/* Delete Button */}
+                      <button
+                        onClick={() => handleDeleteClick(project)}
+                        disabled={deletingProjectId === project.id}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete Project"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -419,7 +428,7 @@ export function ProjectTimeline({
                   href={`/project/${project.id}`}
                   className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm transition-colors"
                 >
-                  프로젝트 상세 보기
+                  View Project Details
                   <ExternalLink className="w-4 h-4" />
                 </Link>
               </div>
@@ -442,7 +451,7 @@ export function ProjectTimeline({
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                프로젝트 수정
+                Edit Project
               </h3>
               <button
                 onClick={() => setEditingProjectId(null)}
@@ -477,7 +486,7 @@ export function ProjectTimeline({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    프로젝트 제목 *
+                    Project Title *
                   </label>
                   <input
                     type="text"
@@ -490,13 +499,13 @@ export function ProjectTimeline({
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="프로젝트 제목을 입력하세요"
+                    placeholder="Enter project title"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    프로젝트 타입 *
+                    Project Type *
                   </label>
                   <select
                     required
@@ -509,16 +518,20 @@ export function ProjectTimeline({
                           | "mobile"
                           | "ai"
                           | "infrastructure"
+                          | "desktop"
                           | "other",
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="web">웹 개발</option>
-                    <option value="mobile">모바일 앱</option>
+                    <option value="web">Web Development</option>
+                    <option value="mobile">Mobile App</option>
                     <option value="ai">AI/ML</option>
-                    <option value="infrastructure">인프라/DevOps</option>
-                    <option value="other">기타</option>
+                    <option value="infrastructure">
+                      Infrastructure/DevOps
+                    </option>
+                    <option value="desktop">Desktop Application</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
               </div>
@@ -526,7 +539,7 @@ export function ProjectTimeline({
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  프로젝트 설명 *
+                  Project Description *
                 </label>
                 <textarea
                   required
@@ -539,7 +552,7 @@ export function ProjectTimeline({
                   }
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="프로젝트에 대한 상세한 설명을 입력하세요"
+                  placeholder="Enter detailed description of the project"
                 />
               </div>
 
@@ -547,7 +560,7 @@ export function ProjectTimeline({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    시작일 *
+                    Start Date *
                   </label>
                   <input
                     type="date"
@@ -565,7 +578,7 @@ export function ProjectTimeline({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    종료일
+                    End Date
                   </label>
                   <input
                     type="date"
@@ -585,7 +598,7 @@ export function ProjectTimeline({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    프로젝트 상태 *
+                    Project Status *
                   </label>
                   <select
                     required
@@ -601,15 +614,15 @@ export function ProjectTimeline({
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
-                    <option value="planned">계획</option>
-                    <option value="ongoing">진행중</option>
-                    <option value="completed">완료</option>
+                    <option value="planned">Planned</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    팀 크기 *
+                    Team Size *
                   </label>
                   <input
                     type="number"
@@ -623,7 +636,7 @@ export function ProjectTimeline({
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="팀원 수"
+                    placeholder="Number of team members"
                   />
                 </div>
               </div>
@@ -631,7 +644,7 @@ export function ProjectTimeline({
               {/* Technologies */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  사용 기술
+                  Technologies Used
                 </label>
                 <div className="flex gap-2 mb-2">
                   <input
@@ -642,7 +655,7 @@ export function ProjectTimeline({
                       e.key === "Enter" && (e.preventDefault(), addTech())
                     }
                     className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="기술 스택 추가"
+                    placeholder="Add technology stack"
                   />
                   <button
                     type="button"
@@ -853,7 +866,7 @@ export function ProjectTimeline({
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
                 >
-                  취소
+                  Cancel
                 </button>
               </div>
             </form>
@@ -870,14 +883,15 @@ export function ProjectTimeline({
                 <AlertTriangle className="w-6 h-6 text-red-500" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                프로젝트 삭제
+                Delete Project
               </h3>
             </div>
 
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              <strong>"{projectToDelete.title}"</strong> 프로젝트를
-              삭제하시겠습니까?
-              <br />이 작업은 되돌릴 수 없습니다.
+              Are you sure you want to delete the project{" "}
+              <strong>"{projectToDelete.title}"</strong>?
+              <br />
+              This action cannot be undone.
             </p>
 
             <div className="flex gap-3">
@@ -887,15 +901,15 @@ export function ProjectTimeline({
                 className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
               >
                 {deletingProjectId === projectToDelete.id
-                  ? "삭제 중..."
-                  : "삭제"}
+                  ? "Deleting..."
+                  : "Delete"}
               </button>
               <button
                 onClick={handleDeleteCancel}
                 disabled={deletingProjectId === projectToDelete.id}
                 className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
               >
-                취소
+                Cancel
               </button>
             </div>
           </div>

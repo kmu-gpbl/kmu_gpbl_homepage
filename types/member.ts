@@ -6,7 +6,7 @@ export interface ProjectTimeline {
   date: string;
   technologies: string[];
   status: "completed" | "ongoing" | "planned";
-  type: "web" | "mobile" | "ai" | "infrastructure" | "other";
+  type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
 }
 
 export interface Member {

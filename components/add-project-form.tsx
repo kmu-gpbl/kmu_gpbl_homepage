@@ -24,7 +24,7 @@ interface ProjectFormData {
   startDate: string;
   endDate: string;
   status: "completed" | "ongoing" | "planned";
-  type: "web" | "mobile" | "ai" | "infrastructure" | "other";
+  type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
   technologies: string[];
   teamSize: number;
   media: ProjectMedia[];
@@ -44,6 +44,7 @@ const projectTypes = [
   { value: "mobile", label: "Mobile App", icon: "📱" },
   { value: "ai", label: "AI/ML", icon: "🤖" },
   { value: "infrastructure", label: "Infrastructure", icon: "🏗️" },
+  { value: "desktop", label: "Desktop Application", icon: "🖥️" },
   { value: "other", label: "Other", icon: "⚙️" },
 ];
 
@@ -106,7 +107,7 @@ export function AddProjectForm({
         body: JSON.stringify({
           ...formData,
           memberIds: [memberId],
-          period: `${formData.startDate} - ${formData.endDate || "현재"}`,
+          period: `${formData.startDate} - ${formData.endDate || "Present"}`,
         }),
       });
 
@@ -442,7 +443,7 @@ export function AddProjectForm({
           </div>
         </div>
 
-        {/* 사용 기술 */}
+        {/* Technologies Used */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Technologies Used

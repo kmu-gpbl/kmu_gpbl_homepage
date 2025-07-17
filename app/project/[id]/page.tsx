@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/page-header";
 import { ProjectMediaManager } from "@/components/project-media-manager";
+import { EditModeProvider } from "@/contexts/edit-mode-context";
 import { Tag, ExternalLink, Calendar, Activity, User } from "lucide-react";
 import type { ProjectWithMembers } from "@/types/api";
 
@@ -16,6 +17,7 @@ const typeColors = {
   mobile: "bg-green-500",
   ai: "bg-orange-500",
   infrastructure: "bg-purple-500",
+  desktop: "bg-indigo-500",
   other: "bg-gray-500",
 };
 
@@ -24,6 +26,7 @@ const typeIcons = {
   mobile: "📱",
   ai: "🤖",
   infrastructure: "🏗️",
+  desktop: "🖥️",
   other: "⚙️",
 };
 
@@ -39,7 +42,7 @@ const statusLabels = {
   planned: "Planned",
 };
 
-export default function ProjectPage({ params }: ProjectPageProps) {
+function ProjectPageContent({ params }: ProjectPageProps) {
   const [project, setProject] = useState<ProjectWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
   const [projectId, setProjectId] = useState<string>("");
@@ -261,5 +264,13 @@ export default function ProjectPage({ params }: ProjectPageProps) {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ProjectPage({ params }: ProjectPageProps) {
+  return (
+    <EditModeProvider>
+      <ProjectPageContent params={params} />
+    </EditModeProvider>
   );
 }

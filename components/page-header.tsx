@@ -35,7 +35,7 @@ export function PageHeader({
                 className="inline-flex items-center gap-3 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-all duration-200 hover:scale-105"
               >
                 <ArrowLeft className="w-4 h-4" />
-                뒤로가기
+                Back
               </button>
             )}
 
@@ -45,7 +45,7 @@ export function PageHeader({
                 className="inline-flex items-center gap-3 px-4 py-2 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 font-medium rounded-lg transition-all duration-200 hover:scale-105"
               >
                 <Home className="w-4 h-4" />
-                홈으로
+                Home
               </Link>
             )}
           </div>

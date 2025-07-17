@@ -12,6 +12,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import type { ProjectMedia } from "@/types/api";
+import { useEditMode } from "@/contexts/edit-mode-context";
 
 interface ProjectMediaManagerProps {
   projectId: string;
@@ -27,10 +28,10 @@ const mediaTypeIcons = {
 };
 
 const mediaTypeLabels = {
-  image: "이미지",
-  video: "프로젝트 영상",
-  presentation: "프레젠테이션",
-  url: "관련 링크",
+  image: "Image",
+  video: "Project Video",
+  presentation: "Presentation",
+  url: "Related Link",
 };
 
 export function ProjectMediaManager({
@@ -38,10 +39,11 @@ export function ProjectMediaManager({
   media,
   onMediaUpdated,
 }: ProjectMediaManagerProps) {
+  const { isEditMode } = useEditMode();
   const [deletingMediaId, setDeletingMediaId] = useState<string | null>(null);
 
   const handleDelete = async (mediaId: string) => {
-    if (!confirm("이 미디어를 삭제하시겠습니까?")) return;
+    if (!confirm("Are you sure you want to delete this media?")) return;
 
     setDeletingMediaId(mediaId);
 
@@ -54,15 +56,15 @@ export function ProjectMediaManager({
       );
 
       if (response.ok) {
-        alert("미디어가 성공적으로 삭제되었습니다!");
+        alert("Media deleted successfully!");
         onMediaUpdated();
       } else {
         const error = await response.json();
-        alert(error.error || "미디어 삭제에 실패했습니다.");
+        alert(error.error || "Failed to delete media.");
       }
     } catch (error) {
-      console.error("미디어 삭제 실패:", error);
-      alert("미디어 삭제 중 오류가 발생했습니다.");
+      console.error("Failed to delete media:", error);
+      alert("An error occurred while deleting media.");
     } finally {
       setDeletingMediaId(null);
     }
@@ -72,21 +74,18 @@ export function ProjectMediaManager({
     <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            프로젝트 미디어
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Project Media
           </h2>
         </div>
       </div>
 
-      {/* 미디어 목록 */}
+      {/* Media list */}
       <div className="p-6">
         {media.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <p>등록된 미디어가 없습니다.</p>
-            <p className="text-sm mt-1">
-              프로젝트 생성 시 미디어를 추가할 수 있습니다.
-            </p>
-          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+            No media registered.
+          </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {media.map((mediaItem) => {
@@ -112,17 +111,19 @@ export function ProjectMediaManager({
                         </div>
                       </div>
 
-                      {/* 편집/삭제 버튼 */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleDelete(mediaItem.id)}
-                          disabled={deletingMediaId === mediaItem.id}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-                          title="미디어 삭제"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {/* Edit/Delete buttons - Only show in edit mode */}
+                      {isEditMode && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDelete(mediaItem.id)}
+                            disabled={deletingMediaId === mediaItem.id}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                            title="Delete Media"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {mediaItem.description && (
