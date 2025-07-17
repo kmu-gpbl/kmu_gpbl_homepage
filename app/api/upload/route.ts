@@ -58,6 +58,19 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Supabase Storage 업로드 실패:", error);
+
+      // 버킷이 없는 경우 더 자세한 안내
+      if (error.message?.includes("Bucket not found")) {
+        return NextResponse.json(
+          {
+            error: "Storage 버킷이 설정되지 않았습니다. 관리자에게 문의하세요.",
+            details:
+              "Supabase Storage에서 'project-media' 버킷을 생성해야 합니다.",
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
         { error: "파일 업로드 중 오류가 발생했습니다." },
         { status: 500 }

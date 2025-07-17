@@ -7,10 +7,10 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id;
+    const { id: projectId } = await params;
 
     // 프로젝트 정보 조회
     const project = await projectsApi.getById(projectId);

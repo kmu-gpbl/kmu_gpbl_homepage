@@ -47,7 +47,7 @@ CREATE TABLE project_members (
 CREATE TABLE project_media (
   id TEXT PRIMARY KEY,
   project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('image', 'video', 'presentation', 'document')),
   title TEXT NOT NULL,
   url TEXT,
   description TEXT,
@@ -144,4 +144,27 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create Storage bucket for project media
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'project-media',
+  'project-media',
+  true,
+  52428800, -- 50MB limit
+  ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']
+) ON CONFLICT (id) DO NOTHING;
+
+-- Create Storage policies for public access (allowing anonymous users)
+CREATE POLICY "Public Access" ON storage.objects 
+FOR SELECT USING (bucket_id = 'project-media');
+
+CREATE POLICY "Public Upload" ON storage.objects 
+FOR INSERT WITH CHECK (bucket_id = 'project-media');
+
+CREATE POLICY "Public Update" ON storage.objects 
+FOR UPDATE USING (bucket_id = 'project-media');
+
+CREATE POLICY "Public Delete" ON storage.objects 
+FOR DELETE USING (bucket_id = 'project-media'); 

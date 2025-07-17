@@ -31,6 +31,22 @@ const projectsData = JSON.parse(
   fs.readFileSync(path.join(process.cwd(), "data", "projects.json"), "utf-8")
 );
 
+// 미디어 타입 매핑 함수
+function mapMediaType(oldType: string): string {
+  switch (oldType) {
+    case "url":
+      return "document"; // URL은 문서로 매핑
+    case "file":
+      return "document"; // 파일은 문서로 매핑
+    case "video":
+      return "video";
+    case "presentation":
+      return "presentation";
+    default:
+      return "document"; // 기본값은 문서
+  }
+}
+
 async function migrateUsers() {
   console.log("사용자 데이터 마이그레이션 시작...");
 
@@ -125,7 +141,7 @@ async function migrateProjects() {
             .insert({
               id: media.id,
               project_id: project.id,
-              type: media.type,
+              type: mapMediaType(media.type), // 타입 매핑 적용
               title: media.title,
               url: media.url,
               description: media.description,

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Edit, Save, X, AlertCircle, User } from "lucide-react";
+import { useState, useRef } from "react";
+import { Edit, Save, X, AlertCircle, User, Upload } from "lucide-react";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -43,6 +43,8 @@ export function EditProfileHeader({
     bio: initialData.bio,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -84,14 +86,55 @@ export function EditProfileHeader({
   };
 
   const handleCancel = () => {
+    setIsEditing(false);
     setFormData({
       name: initialData.name,
       role: initialData.role,
       avatar: initialData.avatar,
       bio: initialData.bio,
     });
-    setIsEditing(false);
     setMessage(null);
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormData((prev) => ({
+          ...prev,
+          avatar: result.url,
+        }));
+      } else {
+        alert(result.error || "프로필 이미지 업로드에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("프로필 이미지 업로드 실패:", error);
+      alert("프로필 이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 이미지 파일 체크
+      if (!file.type.startsWith("image/")) {
+        alert("이미지 파일만 업로드할 수 있습니다.");
+        return;
+      }
+      handleAvatarUpload(file);
+    }
   };
 
   if (!isEditing) {
@@ -212,22 +255,67 @@ export function EditProfileHeader({
           </select>
         </div>
 
-        {/* 아바타 URL */}
+        {/* 아바타 업로드 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            프로필 이미지 URL
+            프로필 이미지
           </label>
-          <input
-            type="url"
-            value={formData.avatar}
-            onChange={(e) =>
-              setFormData({ ...formData, avatar: e.target.value })
-            }
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://example.com/avatar.jpg"
-          />
+          <div className="flex items-center gap-4">
+            {/* 미리보기 */}
+            <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+              {formData.avatar ? (
+                <img
+                  src={formData.avatar}
+                  alt="프로필 미리보기"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-10 h-10 text-gray-400" />
+              )}
+            </div>
+
+            {/* 파일 업로드 버튼 */}
+            <div className="flex-1">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                onChange={handleAvatarFileChange}
+                className="hidden"
+                accept="image/*"
+              />
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              >
+                {uploadingAvatar ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    업로드 중...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    {formData.avatar ? "이미지 변경" : "이미지 선택"}
+                  </span>
+                )}
+              </button>
+              {formData.avatar && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, avatar: "" }))
+                  }
+                  className="mt-2 text-sm text-red-500 hover:text-red-700 transition-colors"
+                >
+                  이미지 제거
+                </button>
+              )}
+            </div>
+          </div>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            프로필 이미지 URL을 입력하세요. 비워두면 기본 아이콘이 표시됩니다.
+            JPG, PNG, GIF 등의 이미지 파일을 업로드하세요. (선택사항)
           </p>
         </div>
 

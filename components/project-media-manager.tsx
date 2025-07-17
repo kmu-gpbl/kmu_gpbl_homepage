@@ -20,17 +20,17 @@ interface ProjectMediaManagerProps {
 }
 
 const mediaTypeIcons = {
+  image: File,
   video: Play,
   presentation: FileText,
-  url: LinkIcon,
-  file: File,
+  document: File,
 };
 
 const mediaTypeLabels = {
+  image: "이미지",
   video: "프로젝트 영상",
   presentation: "프레젠테이션",
-  url: "관련 링크",
-  file: "업로드된 파일",
+  document: "문서",
 };
 
 export function ProjectMediaManager({

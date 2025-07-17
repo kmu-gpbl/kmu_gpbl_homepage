@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Plus,
   X,
@@ -10,6 +10,7 @@ import {
   Github,
   Linkedin,
   ExternalLink,
+  Upload,
 } from "lucide-react";
 
 interface AddMemberFormProps {
@@ -63,6 +64,8 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
   });
   const [newSkill, setNewSkill] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -77,24 +80,15 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
       // 저장 시 URL에 https:// 자동 추가
       const processedData = {
         ...formData,
-        github:
-          formData.github &&
-          !formData.github.startsWith("http://") &&
-          !formData.github.startsWith("https://")
-            ? "https://" + formData.github
-            : formData.github,
-        linkedin:
-          formData.linkedin &&
-          !formData.linkedin.startsWith("http://") &&
-          !formData.linkedin.startsWith("https://")
-            ? "https://" + formData.linkedin
-            : formData.linkedin,
-        portfolio:
-          formData.portfolio &&
-          !formData.portfolio.startsWith("http://") &&
-          !formData.portfolio.startsWith("https://")
-            ? "https://" + formData.portfolio
-            : formData.portfolio,
+        github: formData.github
+          ? processGithubUrl(formData.github)
+          : formData.github,
+        linkedin: formData.linkedin
+          ? processLinkedinUrl(formData.linkedin)
+          : formData.linkedin,
+        portfolio: formData.portfolio
+          ? processPortfolioUrl(formData.portfolio)
+          : formData.portfolio,
       };
 
       const response = await fetch("/api/users", {
@@ -154,6 +148,109 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
       ...prev,
       skills: prev.skills.filter((s) => s !== skill),
     }));
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormData((prev) => ({
+          ...prev,
+          avatar: result.url,
+        }));
+      } else {
+        alert(result.error || "프로필 이미지 업로드에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("프로필 이미지 업로드 실패:", error);
+      alert("프로필 이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 이미지 파일 체크
+      if (!file.type.startsWith("image/")) {
+        alert("이미지 파일만 업로드할 수 있습니다.");
+        return;
+      }
+      handleAvatarUpload(file);
+    }
+  };
+
+  // URL 처리 함수들
+  const processGithubUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // github.com으로 시작하는 경우
+    if (input.startsWith("github.com/")) {
+      return "https://" + input;
+    }
+
+    // 사용자명만 입력한 경우
+    if (!input.includes("/") && !input.includes(".")) {
+      return "https://github.com/" + input;
+    }
+
+    // 기타 경우 (상대 경로 등)
+    return "https://" + input;
+  };
+
+  const processLinkedinUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // linkedin.com으로 시작하는 경우
+    if (input.startsWith("linkedin.com/")) {
+      return "https://" + input;
+    }
+
+    // 사용자명만 입력한 경우
+    if (!input.includes("/") && !input.includes(".")) {
+      return "https://linkedin.com/in/" + input;
+    }
+
+    // 기타 경우
+    return "https://" + input;
+  };
+
+  const processPortfolioUrl = (input: string) => {
+    if (!input) return input;
+
+    // 이미 완전한 URL인 경우
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      return input;
+    }
+
+    // 도메인만 입력한 경우 (점이 포함되어 있음)
+    if (input.includes(".")) {
+      return "https://" + input;
+    }
+
+    // 기타 경우 (그대로 반환)
+    return input;
   };
 
   const toggleSpecialty = (specialty: string) => {
@@ -385,7 +482,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     GitHub
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.github}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -394,7 +491,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="github.com/username"
+                    placeholder="github.com/username 또는 username"
                   />
                 </div>
 
@@ -403,7 +500,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     LinkedIn
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.linkedin}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -412,7 +509,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="linkedin.com/in/username"
+                    placeholder="linkedin.com/in/username 또는 username"
                   />
                 </div>
 
@@ -421,7 +518,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     포트폴리오
                   </label>
                   <input
-                    type="url"
+                    type="text"
                     value={formData.portfolio}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -430,7 +527,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="portfolio.com"
+                    placeholder="portfolio.com 또는 사이트 주소"
                   />
                 </div>
               </div>
@@ -497,20 +594,68 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 </div>
               </div>
 
-              {/* Avatar URL */}
+              {/* Avatar Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  프로필 이미지 URL
+                  프로필 이미지
                 </label>
-                <input
-                  type="url"
-                  value={formData.avatar}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, avatar: e.target.value }))
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="프로필 이미지 URL (선택사항)"
-                />
+                <div className="flex items-center gap-4">
+                  {/* 미리보기 */}
+                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                    {formData.avatar ? (
+                      <img
+                        src={formData.avatar}
+                        alt="프로필 미리보기"
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-8 h-8 text-gray-400" />
+                    )}
+                  </div>
+
+                  {/* 파일 업로드 버튼 */}
+                  <div className="flex-1">
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      onChange={handleAvatarFileChange}
+                      className="hidden"
+                      accept="image/*"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                    >
+                      {uploadingAvatar ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                          업로드 중...
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <Upload className="w-4 h-4" />
+                          {formData.avatar ? "이미지 변경" : "이미지 선택"}
+                        </span>
+                      )}
+                    </button>
+                    {formData.avatar && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, avatar: "" }))
+                        }
+                        className="mt-2 text-sm text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        이미지 제거
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  JPG, PNG, GIF 등의 이미지 파일을 업로드하세요. (선택사항)
+                </p>
               </div>
 
               {/* Submit Buttons */}
