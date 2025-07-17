@@ -189,6 +189,34 @@ export const projectMembersApi = {
     if (error) throw error;
     return data.map((item) => item.users);
   },
+
+  // 프로젝트 멤버 전체 업데이트 (기존 멤버 삭제 후 새로 추가)
+  async updateProjectMembers(projectId: string, userIds: string[]) {
+    // 기존 멤버 삭제
+    await this.deleteProjectMembers(projectId);
+
+    // 새 멤버 추가
+    if (userIds.length > 0) {
+      const { error } = await supabase.from("project_members").insert(
+        userIds.map((userId) => ({
+          project_id: projectId,
+          user_id: userId,
+        }))
+      );
+
+      if (error) throw error;
+    }
+  },
+
+  // 프로젝트의 모든 멤버 삭제
+  async deleteProjectMembers(projectId: string) {
+    const { error } = await supabase
+      .from("project_members")
+      .delete()
+      .eq("project_id", projectId);
+
+    if (error) throw error;
+  },
 };
 
 // Project Media API
@@ -242,6 +270,38 @@ export const projectMediaApi = {
       .from("project_media")
       .delete()
       .eq("id", id);
+
+    if (error) throw error;
+  },
+
+  // 프로젝트 미디어 전체 업데이트 (기존 미디어 삭제 후 새로 추가)
+  async updateProjectMedia(projectId: string, mediaItems: any[]) {
+    // 기존 미디어 삭제
+    await this.deleteByProjectId(projectId);
+
+    // 새 미디어 추가
+    if (mediaItems.length > 0) {
+      const { error } = await supabase.from("project_media").insert(
+        mediaItems.map((media) => ({
+          id: `media_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          project_id: projectId,
+          type: media.type,
+          title: media.title,
+          url: media.url,
+          description: media.description,
+        }))
+      );
+
+      if (error) throw error;
+    }
+  },
+
+  // 프로젝트의 모든 미디어 삭제
+  async deleteByProjectId(projectId: string) {
+    const { error } = await supabase
+      .from("project_media")
+      .delete()
+      .eq("project_id", projectId);
 
     if (error) throw error;
   },
