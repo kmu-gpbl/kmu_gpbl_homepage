@@ -25,23 +25,16 @@ export function EditModeProvider({ children }: EditModeProviderProps) {
   const [isEditMode, setIsEditMode] = useState(false);
 
   useEffect(() => {
-    // Check for edit parameter in URL on mount
+    // Only check URL parameter on initial load
     const urlParams = new URLSearchParams(window.location.search);
     const editParam = urlParams.get("edit");
-    setIsEditMode(editParam === "true");
+    if (editParam === "true") {
+      setIsEditMode(true);
+    }
   }, []);
 
   const setEditMode = (mode: boolean) => {
     setIsEditMode(mode);
-
-    // Update URL parameter
-    const url = new URL(window.location.href);
-    if (mode) {
-      url.searchParams.set("edit", "true");
-    } else {
-      url.searchParams.delete("edit");
-    }
-    window.history.replaceState({}, "", url);
   };
 
   return (
