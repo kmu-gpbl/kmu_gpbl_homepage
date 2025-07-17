@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-
-const projectsFilePath = path.join(process.cwd(), "data", "projects.json");
-const usersFilePath = path.join(process.cwd(), "data", "users.json");
+import {
+  projectsApi,
+  projectMembersApi,
+  projectMediaApi,
+} from "@/lib/supabase-api";
 
 export async function GET(
   request: NextRequest,
@@ -12,42 +12,35 @@ export async function GET(
   try {
     const projectId = params.id;
 
-    // 프로젝트 데이터 읽기
-    const projectsData = await fs.readFile(projectsFilePath, "utf-8");
-    const projectsJson = JSON.parse(projectsData);
-    const projects = Array.isArray(projectsJson.projects)
-      ? projectsJson.projects
-      : [];
+    // 프로젝트 정보 조회
+    const project = await projectsApi.getById(projectId);
 
-    // 프로젝트 찾기
-    const project = projects.find((p: any) => p.id === projectId);
+    // 프로젝트 멤버 정보 조회
+    const members = await projectMembersApi.getProjectMembers(projectId);
 
-    if (!project) {
-      return NextResponse.json(
-        { error: "프로젝트를 찾을 수 없습니다." },
-        { status: 404 }
-      );
-    }
+    // 프로젝트 미디어 정보 조회
+    const media = await projectMediaApi.getByProjectId(projectId);
 
-    // 사용자 데이터 읽기
-    const usersData = await fs.readFile(usersFilePath, "utf-8");
-    const usersJson = JSON.parse(usersData);
-    const users = Array.isArray(usersJson.users) ? usersJson.users : [];
-
-    // 프로젝트 멤버 정보 추가
-    const projectWithMembers = {
+    // 필드명 매핑 (Supabase -> 클라이언트)
+    const mappedProject = {
       ...project,
-      members: project.memberIds
-        ? users
-            .filter((user: any) => project.memberIds.includes(user.id))
-            .map((user: any) => ({
-              id: user.id,
-              name: user.name,
-              role: user.role,
-              avatar: user.avatar,
-              specialties: user.specialties,
-            }))
-        : [],
+      startDate: project.start_date,
+      endDate: project.end_date,
+      teamSize: project.team_size,
+      memberIds: members.map((member: any) => member.id),
+      media: media,
+    };
+
+    // 프로젝트와 멤버 정보 결합
+    const projectWithMembers = {
+      ...mappedProject,
+      members: members.map((member: any) => ({
+        id: member.id,
+        name: member.name,
+        role: member.role,
+        avatar: member.avatar,
+        specialties: member.specialties,
+      })),
     };
 
     return NextResponse.json({

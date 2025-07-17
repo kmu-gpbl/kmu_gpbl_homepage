@@ -47,17 +47,40 @@ export function EditContactInfo({
     setMessage(null);
 
     try {
+      // 저장 시 URL에 https:// 자동 추가
+      const processedData = {
+        ...formData,
+        github:
+          formData.github &&
+          !formData.github.startsWith("http://") &&
+          !formData.github.startsWith("https://")
+            ? "https://" + formData.github
+            : formData.github,
+        linkedin:
+          formData.linkedin &&
+          !formData.linkedin.startsWith("http://") &&
+          !formData.linkedin.startsWith("https://")
+            ? "https://" + formData.linkedin
+            : formData.linkedin,
+        portfolio:
+          formData.portfolio &&
+          !formData.portfolio.startsWith("http://") &&
+          !formData.portfolio.startsWith("https://")
+            ? "https://" + formData.portfolio
+            : formData.portfolio,
+      };
+
       const response = await fetch(`/api/users/${memberId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
-          email: formData.email || null,
-          github: formData.github || null,
-          linkedin: formData.linkedin || null,
-          portfolio: formData.portfolio || null,
+          ...processedData,
+          email: processedData.email || null,
+          github: processedData.github || null,
+          linkedin: processedData.linkedin || null,
+          portfolio: processedData.portfolio || null,
         }),
       });
 
@@ -236,7 +259,7 @@ export function EditContactInfo({
               setFormData({ ...formData, github: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://github.com/username"
+            placeholder="github.com/username"
           />
         </div>
 
@@ -252,7 +275,7 @@ export function EditContactInfo({
               setFormData({ ...formData, linkedin: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://linkedin.com/in/username"
+            placeholder="linkedin.com/in/username"
           />
         </div>
 
@@ -268,7 +291,7 @@ export function EditContactInfo({
               setFormData({ ...formData, portfolio: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://portfolio.com"
+            placeholder="portfolio.com"
           />
         </div>
 

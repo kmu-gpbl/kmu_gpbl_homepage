@@ -74,12 +74,35 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     setMessage(null);
 
     try {
+      // 저장 시 URL에 https:// 자동 추가
+      const processedData = {
+        ...formData,
+        github:
+          formData.github &&
+          !formData.github.startsWith("http://") &&
+          !formData.github.startsWith("https://")
+            ? "https://" + formData.github
+            : formData.github,
+        linkedin:
+          formData.linkedin &&
+          !formData.linkedin.startsWith("http://") &&
+          !formData.linkedin.startsWith("https://")
+            ? "https://" + formData.linkedin
+            : formData.linkedin,
+        portfolio:
+          formData.portfolio &&
+          !formData.portfolio.startsWith("http://") &&
+          !formData.portfolio.startsWith("https://")
+            ? "https://" + formData.portfolio
+            : formData.portfolio,
+      };
+
       const response = await fetch("/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(processedData),
       });
 
       const result = await response.json();
@@ -371,7 +394,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="GitHub 프로필 URL"
+                    placeholder="github.com/username"
                   />
                 </div>
 
@@ -389,7 +412,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="LinkedIn 프로필 URL"
+                    placeholder="linkedin.com/in/username"
                   />
                 </div>
 
@@ -407,7 +430,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="포트폴리오 URL"
+                    placeholder="portfolio.com"
                   />
                 </div>
               </div>

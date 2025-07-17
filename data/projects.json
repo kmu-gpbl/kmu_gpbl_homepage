@@ -681,6 +681,31 @@
       "media": [],
       "createdAt": "2025-07-15T22:48:35.819Z",
       "updatedAt": "2025-07-15T22:48:35.819Z"
+    },
+    {
+      "id": "project_1752727448536_vxt177ncq",
+      "title": "제목",
+      "description": "ㄴㄴㄴ",
+      "startDate": "2025-07-16",
+      "endDate": "2025-07-16",
+      "period": "2025.07 - 2025.07",
+      "status": "ongoing",
+      "type": "web",
+      "technologies": [],
+      "memberIds": [
+        "user_1752707270002_mduop389o"
+      ],
+      "teamSize": 1,
+      "media": [
+        {
+          "type": "video",
+          "title": "ㄴㄴ",
+          "url": "https://www.youtube.com/watch?v=CgCVZdcKcqY&list=RDCgCVZdcKcqY&start_radio=1",
+          "description": ""
+        }
+      ],
+      "createdAt": "2025-07-17T04:44:08.536Z",
+      "updatedAt": "2025-07-17T04:44:08.536Z"
     }
   ]
 }

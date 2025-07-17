@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,25 +45,33 @@ export async function POST(request: NextRequest) {
     // 파일명 생성 (중복 방지)
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 15);
-    const fileExtension = path.extname(file.name);
-    const fileName = `${timestamp}_${randomString}${fileExtension}`;
+    const fileExtension = file.name.split(".").pop();
+    const fileName = `${timestamp}_${randomString}.${fileExtension}`;
 
-    // 업로드 디렉토리 생성
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
+    // Supabase Storage에 파일 업로드
+    const { data, error } = await supabase.storage
+      .from("project-media")
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
 
-    // 파일 저장
-    const filePath = path.join(uploadDir, fileName);
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+    if (error) {
+      console.error("Supabase Storage 업로드 실패:", error);
+      return NextResponse.json(
+        { error: "파일 업로드 중 오류가 발생했습니다." },
+        { status: 500 }
+      );
+    }
 
-    // 파일 URL 반환
-    const fileUrl = `/uploads/${fileName}`;
+    // 파일 URL 가져오기
+    const { data: urlData } = supabase.storage
+      .from("project-media")
+      .getPublicUrl(fileName);
 
     return NextResponse.json({
       message: "파일이 성공적으로 업로드되었습니다.",
-      url: fileUrl,
+      url: urlData.publicUrl,
       fileName: fileName,
       originalName: file.name,
       size: file.size,
