@@ -150,7 +150,7 @@ export function EditProfileHeader({
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 이미지 파일 체크
+      // Check if it's an image file
       if (!file.type.startsWith("image/")) {
         alert("Only image files can be uploaded.");
         return;

@@ -121,65 +121,65 @@ export function EditContactInfo({
     setMessage(null);
   };
 
-  // URL 처리 함수들
+  // URL processing functions
   const processGithubUrl = (input: string) => {
     if (!input) return input;
 
-    // 이미 완전한 URL인 경우
+    // If already a complete URL
     if (input.startsWith("http://") || input.startsWith("https://")) {
       return input;
     }
 
-    // github.com으로 시작하는 경우
+    // If starts with github.com
     if (input.startsWith("github.com/")) {
       return "https://" + input;
     }
 
-    // 사용자명만 입력한 경우
+    // If only username is entered
     if (!input.includes("/") && !input.includes(".")) {
       return "https://github.com/" + input;
     }
 
-    // 기타 경우 (상대 경로 등)
+    // Other cases (relative paths, etc.)
     return "https://" + input;
   };
 
   const processLinkedinUrl = (input: string) => {
     if (!input) return input;
 
-    // 이미 완전한 URL인 경우
+    // If already a complete URL
     if (input.startsWith("http://") || input.startsWith("https://")) {
       return input;
     }
 
-    // linkedin.com으로 시작하는 경우
+    // If starts with linkedin.com
     if (input.startsWith("linkedin.com/")) {
       return "https://" + input;
     }
 
-    // 사용자명만 입력한 경우
+    // If only username is entered
     if (!input.includes("/") && !input.includes(".")) {
       return "https://linkedin.com/in/" + input;
     }
 
-    // 기타 경우
+    // Other cases
     return "https://" + input;
   };
 
   const processPortfolioUrl = (input: string) => {
     if (!input) return input;
 
-    // 이미 완전한 URL인 경우
+    // If already a complete URL
     if (input.startsWith("http://") || input.startsWith("https://")) {
       return input;
     }
 
-    // 도메인만 입력한 경우 (점이 포함되어 있음)
+    // If only domain is entered (contains dot)
     if (input.includes(".")) {
       return "https://" + input;
     }
 
-    // 기타 경우 (그대로 반환)
+    // Other cases (return as is)
     return input;
   };
 
@@ -189,7 +189,7 @@ export function EditContactInfo({
         <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              연락처 정보
+              Contact Information
             </h2>
             <button
               onClick={() => setIsEditing(true)}
@@ -250,7 +250,7 @@ export function EditContactInfo({
                   rel="noopener noreferrer"
                   className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                 >
-                  포트폴리오
+                  Portfolio
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -260,7 +260,7 @@ export function EditContactInfo({
               !formData.linkedin &&
               !formData.portfolio && (
                 <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                  등록된 연락처 정보가 없습니다.
+                  No contact information registered.
                 </p>
               )}
           </div>
@@ -326,7 +326,7 @@ export function EditContactInfo({
               setFormData({ ...formData, github: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="github.com/username 또는 username"
+            placeholder="github.com/username or username"
           />
         </div>
 
@@ -342,7 +342,7 @@ export function EditContactInfo({
               setFormData({ ...formData, linkedin: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="linkedin.com/in/username 또는 username"
+            placeholder="linkedin.com/in/username or username"
           />
         </div>
 
@@ -358,7 +358,7 @@ export function EditContactInfo({
               setFormData({ ...formData, portfolio: e.target.value })
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="portfolio.com 또는 사이트 주소"
+            placeholder="portfolio.com or website address"
           />
         </div>
 

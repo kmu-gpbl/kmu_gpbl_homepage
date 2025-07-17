@@ -12,26 +12,27 @@ export async function GET(
   try {
     const { id: projectId } = await params;
 
-    // 프로젝트 정보 조회
+    // Get project information
     const project = await projectsApi.getById(projectId);
 
-    // 프로젝트 멤버 정보 조회
+    // Get project member information
     const members = await projectMembersApi.getProjectMembers(projectId);
 
-    // 프로젝트 미디어 정보 조회
+    // Get project media information
     const media = await projectMediaApi.getByProjectId(projectId);
 
-    // 필드명 매핑 (Supabase -> 클라이언트)
+    // Field name mapping (Supabase -> Client)
     const mappedProject = {
       ...project,
       startDate: project.start_date,
       endDate: project.end_date,
       teamSize: project.team_size,
+      status: project.end_date ? project.status : "ongoing", // Auto-set to ongoing if no end date
       memberIds: members.map((member: any) => member.id),
       media: media,
     };
 
-    // 프로젝트와 멤버 정보 결합
+    // Combine project and member information
     const projectWithMembers = {
       ...mappedProject,
       members: members.map((member: any) => ({
@@ -45,12 +46,12 @@ export async function GET(
 
     return NextResponse.json({
       project: projectWithMembers,
-      message: "프로젝트 정보를 성공적으로 불러왔습니다.",
+      message: "Project information loaded successfully.",
     });
   } catch (error) {
-    console.error("프로젝트 정보 로딩 실패:", error);
+    console.error("Failed to load project information:", error);
     return NextResponse.json(
-      { error: "프로젝트 정보를 불러오는 중 오류가 발생했습니다." },
+      { error: "An error occurred while loading project information." },
       { status: 500 }
     );
   }
@@ -64,7 +65,7 @@ export async function PUT(
     const { id: projectId } = await params;
     const body = await request.json();
 
-    // 필드명 매핑 (클라이언트 -> Supabase)
+    // Field name mapping (Client -> Supabase)
     const {
       title,
       description,
@@ -77,30 +78,49 @@ export async function PUT(
       ...otherFields
     } = body;
 
+    // Period calculation
+    let period = "";
+    if (startDate) {
+      const startDateObj = new Date(startDate);
+      if (endDate) {
+        const endDateObj = new Date(endDate);
+        period = `${startDateObj.getFullYear()}.${String(
+          startDateObj.getMonth() + 1
+        ).padStart(2, "0")} - ${endDateObj.getFullYear()}.${String(
+          endDateObj.getMonth() + 1
+        ).padStart(2, "0")}`;
+      } else {
+        period = `${startDateObj.getFullYear()}.${String(
+          startDateObj.getMonth() + 1
+        ).padStart(2, "0")} - Present`;
+      }
+    }
+
     const projectData = {
       ...otherFields,
       title,
       description,
-      status,
+      status: endDate ? status : "ongoing", // Auto-set to ongoing if no end date
       start_date: startDate,
       end_date: endDate,
+      period,
       team_size: teamSize,
     };
 
-    // 프로젝트 정보 업데이트
+    // Update project information
     const updatedProject = await projectsApi.update(projectId, projectData);
 
-    // 프로젝트 멤버 업데이트
+    // Update project members
     if (memberIds) {
       await projectMembersApi.updateProjectMembers(projectId, memberIds);
     }
 
-    // 프로젝트 미디어 업데이트
+    // Update project media
     if (media) {
       await projectMediaApi.updateProjectMedia(projectId, media);
     }
 
-    // 업데이트된 전체 프로젝트 정보 반환
+    // Return updated complete project information
     const project = await projectsApi.getById(projectId);
     const members = await projectMembersApi.getProjectMembers(projectId);
     const updatedMedia = await projectMediaApi.getByProjectId(projectId);
@@ -123,12 +143,12 @@ export async function PUT(
 
     return NextResponse.json({
       project: mappedProject,
-      message: "프로젝트가 성공적으로 수정되었습니다.",
+      message: "Project updated successfully.",
     });
   } catch (error) {
-    console.error("프로젝트 수정 실패:", error);
+    console.error("Failed to update project:", error);
     return NextResponse.json(
-      { error: "프로젝트 수정 중 오류가 발생했습니다." },
+      { error: "An error occurred while updating the project." },
       { status: 500 }
     );
   }
@@ -141,18 +161,18 @@ export async function DELETE(
   try {
     const { id: projectId } = await params;
 
-    // 프로젝트 관련 데이터 삭제 (관련된 멤버, 미디어도 함께)
+    // Delete project-related data (including related members and media)
     await projectMembersApi.deleteProjectMembers(projectId);
     await projectMediaApi.deleteByProjectId(projectId);
     await projectsApi.delete(projectId);
 
     return NextResponse.json({
-      message: "프로젝트가 성공적으로 삭제되었습니다.",
+      message: "Project deleted successfully.",
     });
   } catch (error) {
-    console.error("프로젝트 삭제 실패:", error);
+    console.error("Failed to delete project:", error);
     return NextResponse.json(
-      { error: "프로젝트 삭제 중 오류가 발생했습니다." },
+      { error: "An error occurred while deleting the project." },
       { status: 500 }
     );
   }

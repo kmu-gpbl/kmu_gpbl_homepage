@@ -107,51 +107,52 @@ function MemberPageContent({ params }: MemberPageProps) {
       <PageHeader title={member.name} />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Member Info */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Profile Header - Show edit version only in edit mode */}
-              {isEditMode ? (
-                <EditProfileHeader
-                  memberId={memberId}
-                  initialData={{
-                    name: member.name,
-                    role: member.role,
-                    avatar: member.avatar,
-                    bio: member.bio,
-                  }}
-                  onProfileUpdated={handleMemberUpdated}
-                />
-              ) : (
-                <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-20 h-20 rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0">
-                        <img
-                          src={member.avatar || "/placeholder.svg"}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                          {member.name}
-                        </h2>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
-                          {member.role}
-                        </p>
-                      </div>
-                    </div>
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Profile Header - Full Width at Top */}
+          {isEditMode ? (
+            <EditProfileHeader
+              memberId={memberId}
+              initialData={{
+                name: member.name,
+                role: member.role,
+                avatar: member.avatar,
+                bio: member.bio,
+              }}
+              onProfileUpdated={handleMemberUpdated}
+            />
+          ) : (
+            <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0">
+                    <img
+                      src={member.avatar || "/placeholder.svg"}
+                      alt={member.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                      {member.name}
+                    </h2>
+                    <p className="text-xl text-gray-600 dark:text-gray-400 font-medium mb-4">
+                      {member.role}
+                    </p>
                     {member.bio && (
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
                         {member.bio}
                       </p>
                     )}
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Contact & Skills Only */}
+            <div className="lg:col-span-1 space-y-6">
               {/* Contact Info - Show edit version only in edit mode */}
               {isEditMode ? (
                 <EditContactInfo
