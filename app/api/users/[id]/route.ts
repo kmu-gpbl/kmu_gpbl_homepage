@@ -12,12 +12,12 @@ export async function GET(
 
     return NextResponse.json({
       user,
-      message: "사용자 정보를 성공적으로 불러왔습니다.",
+      message: "User information loaded successfully.",
     });
   } catch (error) {
-    console.error("사용자 정보 로딩 실패:", error);
+    console.error("User information loading failed:", error);
     return NextResponse.json(
-      { error: "사용자 정보를 불러오는 중 오류가 발생했습니다." },
+      { error: "An error occurred while loading user information." },
       { status: 500 }
     );
   }
@@ -31,18 +31,18 @@ export async function PUT(
     const { id: userId } = await params;
     const body = await request.json();
 
-    // 필수 필드 검증
+    // Required field validation
     const requiredFields = ["name", "role", "specialties", "bio"];
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
-          { error: `${field} 필드는 필수입니다.` },
+          { error: `${field} field is required.` },
           { status: 400 }
         );
       }
     }
 
-    // 업데이트할 사용자 데이터
+    // User data to update
     const updateData = {
       name: body.name,
       role: body.role,
@@ -58,17 +58,17 @@ export async function PUT(
       location: body.location || "",
     };
 
-    // Supabase에서 사용자 업데이트
+    // Update user in Supabase
     const updatedUser = await usersApi.update(userId, updateData);
 
     return NextResponse.json({
-      message: "사용자 정보가 성공적으로 수정되었습니다.",
+      message: "User information updated successfully.",
       user: updatedUser,
     });
   } catch (error) {
-    console.error("사용자 정보 수정 실패:", error);
+    console.error("User information update failed:", error);
     return NextResponse.json(
-      { error: "사용자 정보 수정 중 오류가 발생했습니다." },
+      { error: "An error occurred while updating user information." },
       { status: 500 }
     );
   }
@@ -82,17 +82,17 @@ export async function PATCH(
     const { id: userId } = await params;
     const body = await request.json();
 
-    // Supabase에서 사용자 부분 업데이트
+    // Partial update user in Supabase
     const updatedUser = await usersApi.update(userId, body);
 
     return NextResponse.json({
-      message: "사용자 정보가 성공적으로 수정되었습니다.",
+      message: "User information updated successfully.",
       user: updatedUser,
     });
   } catch (error) {
-    console.error("사용자 정보 수정 실패:", error);
+    console.error("User information update failed:", error);
     return NextResponse.json(
-      { error: "사용자 정보 수정 중 오류가 발생했습니다." },
+      { error: "An error occurred while updating user information." },
       { status: 500 }
     );
   }

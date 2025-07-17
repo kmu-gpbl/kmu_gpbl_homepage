@@ -28,6 +28,13 @@ export function EditBioForm({
     setMessage(null);
 
     try {
+      // Only send changed fields
+      if (bio === initialBio) {
+        // If no change, just close the edit mode
+        setIsEditing(false);
+        return;
+      }
+
       const response = await fetch(`/api/users/${memberId}`, {
         method: "PATCH",
         headers: {

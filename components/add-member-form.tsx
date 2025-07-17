@@ -633,12 +633,12 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 </label>
                 <div className="flex items-center gap-4">
                   {/* Preview */}
-                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                     {formData.avatar ? (
                       <img
                         src={formData.avatar}
                         alt="Profile Preview"
-                        className="w-16 h-16 rounded-full object-cover"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
                       <User className="w-8 h-8 text-gray-400" />

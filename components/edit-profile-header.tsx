@@ -56,12 +56,34 @@ export function EditProfileHeader({
     setMessage(null);
 
     try {
+      // Only send changed fields
+      const changedFields: any = {};
+
+      if (formData.name !== initialData.name) {
+        changedFields.name = formData.name;
+      }
+      if (formData.role !== initialData.role) {
+        changedFields.role = formData.role;
+      }
+      if (formData.avatar !== initialData.avatar) {
+        changedFields.avatar = formData.avatar;
+      }
+      if (formData.bio !== initialData.bio) {
+        changedFields.bio = formData.bio;
+      }
+
+      // If no fields were changed, just close the edit mode
+      if (Object.keys(changedFields).length === 0) {
+        setIsEditing(false);
+        return;
+      }
+
       const response = await fetch(`/api/users/${memberId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(changedFields),
       });
 
       const result = await response.json();
@@ -158,12 +180,12 @@ export function EditProfileHeader({
         {/* Profile Header */}
         <div className="p-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
               {initialData.avatar ? (
                 <img
                   src={initialData.avatar}
                   alt={initialData.name}
-                  className="w-16 h-16 rounded-full object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <User className="w-8 h-8 text-gray-400" />
@@ -279,12 +301,12 @@ export function EditProfileHeader({
           </label>
           <div className="flex items-center gap-4">
             {/* Preview */}
-            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
               {formData.avatar ? (
                 <img
                   src={formData.avatar}
                   alt="Profile Preview"
-                  className="w-16 h-16 rounded-full object-cover"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <User className="w-8 h-8 text-gray-400" />
