@@ -13,7 +13,7 @@ export const usersApi = {
     const { data, error } = await supabase
       .from("users")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
     if (error) throw error;
     return data;
