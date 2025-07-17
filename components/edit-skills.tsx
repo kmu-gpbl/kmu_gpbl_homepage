@@ -61,12 +61,37 @@ export function EditSkills({
     setMessage(null);
 
     try {
+      // Only send changed fields
+      const changedFields: any = {};
+
+      // Compare arrays for skills
+      const skillsChanged =
+        JSON.stringify(formData.skills.sort()) !==
+        JSON.stringify(initialData.skills.sort());
+      if (skillsChanged) {
+        changedFields.skills = formData.skills;
+      }
+
+      // Compare arrays for specialties
+      const specialtiesChanged =
+        JSON.stringify(formData.specialties.sort()) !==
+        JSON.stringify(initialData.specialties.sort());
+      if (specialtiesChanged) {
+        changedFields.specialties = formData.specialties;
+      }
+
+      // If no fields were changed, just close the edit mode
+      if (Object.keys(changedFields).length === 0) {
+        setIsEditing(false);
+        return;
+      }
+
       const response = await fetch(`/api/users/${memberId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(changedFields),
       });
 
       const result = await response.json();

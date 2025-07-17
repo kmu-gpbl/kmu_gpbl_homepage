@@ -47,32 +47,46 @@ export function EditContactInfo({
     setMessage(null);
 
     try {
-      // 저장 시 URL에 https:// 자동 추가
+      // Add https:// automatically when saving
       const processedData = {
-        ...formData,
-        github: formData.github
-          ? processGithubUrl(formData.github)
-          : formData.github,
+        email: formData.email || null,
+        github: formData.github ? processGithubUrl(formData.github) : null,
         linkedin: formData.linkedin
           ? processLinkedinUrl(formData.linkedin)
-          : formData.linkedin,
+          : null,
         portfolio: formData.portfolio
           ? processPortfolioUrl(formData.portfolio)
-          : formData.portfolio,
+          : null,
       };
 
+      // Only send changed fields
+      const changedFields: any = {};
+
+      if (processedData.email !== (initialData.email || null)) {
+        changedFields.email = processedData.email;
+      }
+      if (processedData.github !== (initialData.github || null)) {
+        changedFields.github = processedData.github;
+      }
+      if (processedData.linkedin !== (initialData.linkedin || null)) {
+        changedFields.linkedin = processedData.linkedin;
+      }
+      if (processedData.portfolio !== (initialData.portfolio || null)) {
+        changedFields.portfolio = processedData.portfolio;
+      }
+
+      // If no fields were changed, just close the edit mode
+      if (Object.keys(changedFields).length === 0) {
+        setIsEditing(false);
+        return;
+      }
+
       const response = await fetch(`/api/users/${memberId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...processedData,
-          email: processedData.email || null,
-          github: processedData.github || null,
-          linkedin: processedData.linkedin || null,
-          portfolio: processedData.portfolio || null,
-        }),
+        body: JSON.stringify(changedFields),
       });
 
       const result = await response.json();

@@ -56,12 +56,34 @@ export function EditProfileHeader({
     setMessage(null);
 
     try {
+      // Only send changed fields
+      const changedFields: any = {};
+
+      if (formData.name !== initialData.name) {
+        changedFields.name = formData.name;
+      }
+      if (formData.role !== initialData.role) {
+        changedFields.role = formData.role;
+      }
+      if (formData.avatar !== initialData.avatar) {
+        changedFields.avatar = formData.avatar;
+      }
+      if (formData.bio !== initialData.bio) {
+        changedFields.bio = formData.bio;
+      }
+
+      // If no fields were changed, just close the edit mode
+      if (Object.keys(changedFields).length === 0) {
+        setIsEditing(false);
+        return;
+      }
+
       const response = await fetch(`/api/users/${memberId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(changedFields),
       });
 
       const result = await response.json();
