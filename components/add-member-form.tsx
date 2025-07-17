@@ -296,26 +296,47 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
 
   if (!isOpen) {
     return (
-      <div
-        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                   bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 
-                   rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl
-                   border-4 border-dashed border-gray-300 dark:border-gray-700
-                   hover:border-blue-400 dark:hover:border-blue-500
-                   cursor-pointer group"
-        onClick={() => setIsOpen(true)}
-        title="Add New Member"
-      >
-        <div className="text-center">
-          <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Plus className="w-10 h-10 text-white" />
+      <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 overflow-hidden h-full">
+        {/* Header with dashed border */}
+        <div className="h-2 w-full bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-500" />
+
+        <div className="p-6 flex flex-col h-full">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative">
+              <div className="w-[60px] h-[60px] bg-gray-100 dark:bg-gray-800 rounded-full border-3 border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                <Plus className="w-6 h-6 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gray-400 rounded-full border-2 border-white dark:border-gray-900" />
+            </div>
+
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                Add New Member
+              </h3>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Add a new member to your team
+              </p>
+            </div>
+
+            <div className="text-2xl">➕</div>
           </div>
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-            Add Member
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400">
-            Click to add a new team member
-          </p>
+
+          {/* Placeholder specialties */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="px-3 py-1 text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md">
+              New Member
+            </span>
+          </div>
+
+          {/* Add Member Button - flex-grow to push to bottom */}
+          <div className="mt-auto">
+            <button
+              onClick={() => setIsOpen(true)}
+              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors duration-200 rounded-lg text-center text-sm font-medium"
+            >
+              Add Member
+            </button>
+          </div>
         </div>
       </div>
     );
