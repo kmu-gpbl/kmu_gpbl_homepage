@@ -23,7 +23,7 @@ interface ProjectFormData {
   description: string;
   startDate: string;
   endDate: string;
-  status: "completed" | "ongoing" | "planned";
+  status: "completed" | "ongoing" | "planned" | "live";
   type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
   technologies: string[];
   teamSize: number;
@@ -52,6 +52,7 @@ const projectStatuses = [
   { value: "completed", label: "Completed", color: "bg-green-500" },
   { value: "ongoing", label: "Ongoing", color: "bg-yellow-500" },
   { value: "planned", label: "Planned", color: "bg-gray-400" },
+  { value: "live", label: "⚪ Live", color: "bg-red-500 animate-pulse" },
 ];
 
 const mediaTypes = [
@@ -99,16 +100,23 @@ export function AddProjectForm({
     setMessage(null);
 
     try {
+      // Clean up endDate before sending
+      const submitData = {
+        ...formData,
+        endDate:
+          formData.endDate && formData.endDate.trim() !== ""
+            ? formData.endDate
+            : null,
+        memberIds: [memberId],
+        period: `${formData.startDate} - ${formData.endDate || "Present"}`,
+      };
+
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          memberIds: [memberId],
-          period: `${formData.startDate} - ${formData.endDate || "Present"}`,
-        }),
+        body: JSON.stringify(submitData),
       });
 
       const result = await response.json();

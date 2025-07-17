@@ -23,18 +23,12 @@ export async function GET(request: NextRequest) {
 
     // Field name mapping (Supabase -> Client)
     let mappedProjects = projects.map((project: any) => {
-      // Auto-determine status based on end date
-      let autoStatus = project.status;
-      if (!project.end_date) {
-        autoStatus = "ongoing";
-      }
-
       return {
         ...project,
         startDate: project.start_date,
         endDate: project.end_date,
         teamSize: project.team_size,
-        status: autoStatus, // Use auto-determined status
+        status: project.status, // Use actual status from database
         memberIds: [], // Member info handled separately
         media: [], // Media handled separately
       };
@@ -112,12 +106,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Clean up endDate - convert empty string to null
+    const cleanEndDate =
+      body.endDate && body.endDate.trim() !== "" ? body.endDate : null;
+
     // Period calculation
     let period = "";
     if (body.startDate) {
       const startDate = new Date(body.startDate);
-      if (body.endDate) {
-        const endDate = new Date(body.endDate);
+      if (cleanEndDate) {
+        const endDate = new Date(cleanEndDate);
         period = `${startDate.getFullYear()}.${String(
           startDate.getMonth() + 1
         ).padStart(2, "0")} - ${endDate.getFullYear()}.${String(
@@ -135,9 +133,9 @@ export async function POST(request: NextRequest) {
       title: body.title,
       description: body.description,
       start_date: body.startDate,
-      end_date: body.endDate || null,
+      end_date: cleanEndDate,
       period,
-      status: body.endDate ? body.status : "ongoing", // Auto-set to ongoing if no end date
+      status: body.status, // Use the status as provided by the client
       type: body.type,
       technologies: body.technologies || [],
       team_size: body.teamSize,

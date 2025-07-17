@@ -51,12 +51,21 @@ const statusColors = {
   completed: "bg-green-500",
   ongoing: "bg-yellow-500",
   planned: "bg-gray-400",
+  live: "bg-red-500 animate-pulse",
+};
+
+const statusColorsForDots = {
+  completed: "bg-green-500",
+  ongoing: "bg-yellow-500",
+  planned: "bg-gray-400",
+  live: "bg-red-500",
 };
 
 const statusLabels = {
   completed: "Completed",
   ongoing: "Ongoing",
   planned: "Planned",
+  live: "⚪ Live",
 };
 
 const mediaTypes = [
@@ -86,7 +95,7 @@ export function ProjectTimeline({
     description: string;
     startDate: string;
     endDate: string;
-    status: "completed" | "ongoing" | "planned";
+    status: "completed" | "ongoing" | "planned" | "live";
     type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
     technologies: string[];
     teamSize: number;
@@ -186,12 +195,21 @@ export function ProjectTimeline({
     setMessage(null);
 
     try {
+      // Clean up endDate before sending
+      const submitData = {
+        ...editFormData,
+        endDate:
+          editFormData.endDate && editFormData.endDate.trim() !== ""
+            ? editFormData.endDate
+            : null,
+      };
+
       const response = await fetch(`/api/projects/${editingProjectId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(submitData),
       });
 
       const result = await response.json();
@@ -336,13 +354,9 @@ export function ProjectTimeline({
             <div className="relative z-10 flex-shrink-0">
               <div
                 className={`w-4 h-4 rounded-full border-4 border-white dark:border-gray-900 ${
-                  typeColors[project.type]
+                  statusColorsForDots[project.status]
                 } transition-all duration-200 hover:scale-110`}
               />
-              {/* Simple indicator for Ongoing Projects */}
-              {project.status === "ongoing" && (
-                <div className="absolute inset-0 w-4 h-4 rounded-full bg-yellow-400 opacity-50" />
-              )}
             </div>
 
             {/* Project Card */}
@@ -613,7 +627,8 @@ export function ProjectTimeline({
                         status: e.target.value as
                           | "completed"
                           | "ongoing"
-                          | "planned",
+                          | "planned"
+                          | "live",
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -621,6 +636,7 @@ export function ProjectTimeline({
                     <option value="planned">Planned</option>
                     <option value="ongoing">Ongoing</option>
                     <option value="completed">Completed</option>
+                    <option value="live">⚪ Live</option>
                   </select>
                 </div>
 

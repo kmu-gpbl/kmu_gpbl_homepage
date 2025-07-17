@@ -27,7 +27,7 @@ export async function GET(
       startDate: project.start_date,
       endDate: project.end_date,
       teamSize: project.team_size,
-      status: project.end_date ? project.status : "ongoing", // Auto-set to ongoing if no end date
+      status: project.status, // Use actual status from database
       memberIds: members.map((member: any) => member.id),
       media: media,
     };
@@ -78,12 +78,15 @@ export async function PUT(
       ...otherFields
     } = body;
 
+    // Clean up endDate - convert empty string to null
+    const cleanEndDate = endDate && endDate.trim() !== "" ? endDate : null;
+
     // Period calculation
     let period = "";
     if (startDate) {
       const startDateObj = new Date(startDate);
-      if (endDate) {
-        const endDateObj = new Date(endDate);
+      if (cleanEndDate) {
+        const endDateObj = new Date(cleanEndDate);
         period = `${startDateObj.getFullYear()}.${String(
           startDateObj.getMonth() + 1
         ).padStart(2, "0")} - ${endDateObj.getFullYear()}.${String(
@@ -100,9 +103,9 @@ export async function PUT(
       ...otherFields,
       title,
       description,
-      status: endDate ? status : "ongoing", // Auto-set to ongoing if no end date
+      status: status, // Use the status as provided by the client
       start_date: startDate,
-      end_date: endDate,
+      end_date: cleanEndDate,
       period,
       team_size: teamSize,
     };
