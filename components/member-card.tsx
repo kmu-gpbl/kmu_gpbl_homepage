@@ -39,13 +39,15 @@ export function MemberCard({ member }: MemberCardProps) {
           {/* Profile section */}
           <div className="flex items-center gap-4 mb-4">
             <div className="relative">
-              <Image
-                src={member.avatar || "/placeholder.svg"}
-                alt={member.name}
-                width={60}
-                height={60}
-                className="rounded-full border-3 border-gray-200 dark:border-gray-700"
-              />
+              <div className="w-[60px] h-[60px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0">
+                <Image
+                  src={member.avatar || "/placeholder.svg"}
+                  alt={member.name}
+                  width={60}
+                  height={60}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div
                 className={`absolute -bottom-1 -right-1 w-4 h-4 ${colorClass} rounded-full border-2 border-white dark:border-gray-900`}
               />
