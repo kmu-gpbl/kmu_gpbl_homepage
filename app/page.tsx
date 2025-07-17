@@ -18,7 +18,7 @@ export default function HomePage() {
         const data = await response.json();
         setMembers(data.users || []);
       } catch (error) {
-        console.error("멤버 로딩 실패:", error);
+        console.error("Failed to load members:", error);
       } finally {
         setLoading(false);
       }
@@ -28,13 +28,13 @@ export default function HomePage() {
   }, []);
 
   const handleMemberAdded = async () => {
-    // 멤버가 추가되면 멤버 목록을 새로고침
+    // Refresh member list when a member is added
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
       setMembers(data.users || []);
     } catch (error) {
-      console.error("멤버 목록 새로고침 실패:", error);
+      console.error("Failed to refresh member list:", error);
     }
   };
 
@@ -43,7 +43,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );

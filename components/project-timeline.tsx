@@ -50,16 +50,16 @@ const statusColors = {
 };
 
 const statusLabels = {
-  completed: "완료",
-  ongoing: "진행중",
-  planned: "계획",
+  completed: "Completed",
+  ongoing: "Ongoing",
+  planned: "Planned",
 };
 
 const mediaTypes = [
-  { value: "video", label: "프로젝트 영상", icon: Play },
-  { value: "presentation", label: "프레젠테이션", icon: FileText },
-  { value: "url", label: "관련 링크", icon: LinkIcon },
-  { value: "file", label: "파일 업로드", icon: File },
+  { value: "video", label: "Project Video", icon: Play },
+  { value: "presentation", label: "Presentation", icon: FileText },
+  { value: "url", label: "Related Link", icon: LinkIcon },
+  { value: "image", label: "Image", icon: File },
 ];
 
 export function ProjectTimeline({
@@ -106,7 +106,7 @@ export function ProjectTimeline({
   // 미디어 추가 상태
   const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [mediaFormData, setMediaFormData] = useState({
-    type: "video" as "video" | "presentation" | "url" | "file",
+    type: "video" as "video" | "presentation" | "url" | "image",
     title: "",
     url: "",
     description: "",
@@ -230,7 +230,7 @@ export function ProjectTimeline({
   const addMedia = () => {
     if (
       mediaFormData.title &&
-      (mediaFormData.url || mediaFormData.type === "file")
+      (mediaFormData.url || mediaFormData.type === "image")
     ) {
       const newMedia: ProjectMedia = {
         id: `temp-${Date.now()}`, // 임시 ID
@@ -239,9 +239,9 @@ export function ProjectTimeline({
         url: mediaFormData.url,
         description: mediaFormData.description,
         fileName:
-          mediaFormData.type === "file" ? mediaFormData.fileName : undefined,
+          mediaFormData.type === "image" ? mediaFormData.fileName : undefined,
         originalName:
-          mediaFormData.type === "file"
+          mediaFormData.type === "image"
             ? mediaFormData.originalName
             : undefined,
       };
@@ -686,7 +686,7 @@ export function ProjectTimeline({
                           | "video"
                           | "presentation"
                           | "url"
-                          | "file",
+                          | "image",
                       }))
                     }
                     className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -720,7 +720,7 @@ export function ProjectTimeline({
                         className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="미디어 제목"
                       />
-                      {mediaFormData.type === "file" ? (
+                      {mediaFormData.type === "image" ? (
                         <div className="flex gap-2">
                           <input
                             ref={fileInputRef}
@@ -781,7 +781,7 @@ export function ProjectTimeline({
                         onClick={addMedia}
                         disabled={
                           !mediaFormData.title ||
-                          (!mediaFormData.url && mediaFormData.type !== "file")
+                          (!mediaFormData.url && mediaFormData.type !== "image")
                         }
                         className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
                       >
@@ -814,7 +814,7 @@ export function ProjectTimeline({
                       className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm"
                     >
                       <span>{media.title}</span>
-                      {media.type === "file" ? (
+                      {media.type === "image" ? (
                         <span className="text-xs text-gray-500">(파일)</span>
                       ) : (
                         <a

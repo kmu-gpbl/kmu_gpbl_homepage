@@ -26,16 +26,16 @@ const specialtyOptions = [
 ];
 
 const specialtyLabels = {
-  frontend: "프론트엔드",
-  backend: "백엔드",
-  mobile: "모바일",
+  frontend: "Frontend",
+  backend: "Backend",
+  mobile: "Mobile",
   ai: "AI/ML",
   devops: "DevOps",
-  design: "디자인",
-  data: "데이터",
-  security: "보안",
-  game: "게임",
-  blockchain: "블록체인",
+  design: "Design",
+  data: "Data",
+  security: "Security",
+  game: "Game",
+  blockchain: "Blockchain",
 };
 
 export function EditSkills({
@@ -72,19 +72,19 @@ export function EditSkills({
       const result = await response.json();
 
       if (response.ok) {
-        alert("기술 스택이 성공적으로 업데이트되었습니다!");
+        alert("Tech stack updated successfully!");
         setIsEditing(false);
         onSkillsUpdated();
         setMessage(null);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "기술 스택 업데이트에 실패했습니다.",
+          text: result.error || "Failed to update tech stack.",
         });
       }
     } catch (error) {
-      console.error("기술 스택 업데이트 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Tech stack update failed:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -132,12 +132,12 @@ export function EditSkills({
         <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              기술 스택
+              Tech Stack
             </h2>
             <button
               onClick={() => setIsEditing(true)}
               className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="기술 스택 수정"
+              title="Edit Tech Stack"
             >
               <Edit className="w-5 h-5" />
             </button>
@@ -147,7 +147,7 @@ export function EditSkills({
           {/* 전문 분야 */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              전문 분야
+              Specialty
             </h3>
             <div className="flex flex-wrap gap-2">
               {formData.specialties.length > 0 ? (
@@ -163,7 +163,7 @@ export function EditSkills({
                 ))
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  등록된 전문 분야가 없습니다.
+                  No specialties registered.
                 </p>
               )}
             </div>
@@ -172,7 +172,7 @@ export function EditSkills({
           {/* 기술 스택 */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              기술 스택
+              Tech Stack
             </h3>
             <div className="flex flex-wrap gap-2">
               {formData.skills.length > 0 ? (
@@ -186,7 +186,7 @@ export function EditSkills({
                 ))
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  등록된 기술 스택이 없습니다.
+                  No tech stack registered.
                 </p>
               )}
             </div>
@@ -201,7 +201,7 @@ export function EditSkills({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            기술 스택 수정
+            Edit Tech Stack
           </h2>
           <button
             onClick={handleCancel}
@@ -212,7 +212,7 @@ export function EditSkills({
         </div>
       </div>
 
-      {/* 에러 메시지 표시 */}
+      {/* Error Message Display */}
       {message && message.type === "error" && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500">
           <div className="flex items-center gap-2">
@@ -225,10 +225,10 @@ export function EditSkills({
       )}
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* 전문 분야 */}
+        {/* Specialties */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            전문 분야
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Specialties
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {specialtyOptions.map((specialty) => (
@@ -250,30 +250,31 @@ export function EditSkills({
           </div>
         </div>
 
-        {/* 기술 스택 */}
+        {/* Add Skills */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            기술 스택
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Skills
           </label>
-
-          {/* 기술 추가 */}
           <div className="flex gap-2 mb-3">
             <input
               type="text"
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addSkill())
-              }
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="기술을 입력하세요"
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addSkill();
+                }
+              }}
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter skill and press Enter"
             />
             <button
               type="button"
               onClick={addSkill}
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              Add
             </button>
           </div>
 
@@ -298,21 +299,21 @@ export function EditSkills({
           </div>
         </div>
 
-        {/* 제출 버튼 */}
+        {/* Submit Button */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "저장 중..." : "저장"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
             className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
           >
-            취소
+            Cancel
           </button>
         </div>
       </form>

@@ -40,24 +40,24 @@ interface ProjectMedia {
 }
 
 const projectTypes = [
-  { value: "web", label: "웹 개발", icon: "🌐" },
-  { value: "mobile", label: "모바일 앱", icon: "📱" },
+  { value: "web", label: "Web Development", icon: "🌐" },
+  { value: "mobile", label: "Mobile App", icon: "📱" },
   { value: "ai", label: "AI/ML", icon: "🤖" },
-  { value: "infrastructure", label: "인프라", icon: "🏗️" },
-  { value: "other", label: "기타", icon: "⚙️" },
+  { value: "infrastructure", label: "Infrastructure", icon: "🏗️" },
+  { value: "other", label: "Other", icon: "⚙️" },
 ];
 
 const projectStatuses = [
-  { value: "completed", label: "완료", color: "bg-green-500" },
-  { value: "ongoing", label: "진행중", color: "bg-yellow-500" },
-  { value: "planned", label: "계획", color: "bg-gray-400" },
+  { value: "completed", label: "Completed", color: "bg-green-500" },
+  { value: "ongoing", label: "Ongoing", color: "bg-yellow-500" },
+  { value: "planned", label: "Planned", color: "bg-gray-400" },
 ];
 
 const mediaTypes = [
-  { value: "image", label: "이미지", icon: "🖼️" },
-  { value: "video", label: "프로젝트 영상", icon: "🎥" },
-  { value: "presentation", label: "프레젠테이션", icon: "📄" },
-  { value: "url", label: "관련 링크", icon: "🔗" },
+  { value: "image", label: "Image", icon: "🖼️" },
+  { value: "video", label: "Project Video", icon: "🎥" },
+  { value: "presentation", label: "Presentation", icon: "📄" },
+  { value: "url", label: "Related Link", icon: "🔗" },
 ];
 
 export function AddProjectForm({
@@ -113,9 +113,12 @@ export function AddProjectForm({
       const result = await response.json();
 
       if (response.ok) {
-        alert("프로젝트가 성공적으로 추가되었습니다!");
+        setMessage({
+          type: "success",
+          text: "Project added successfully!",
+        });
 
-        // 폼 초기화
+        // Reset form
         setFormData({
           title: "",
           description: "",
@@ -127,22 +130,21 @@ export function AddProjectForm({
           teamSize: 1,
           media: [],
         });
-
-        // 2초 후 폼 닫기 및 콜백 호출
+        setNewTech("");
         setTimeout(() => {
           setIsOpen(false);
-          onProjectAdded();
           setMessage(null);
-        }, 2000);
+          onProjectAdded();
+        }, 1500);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "프로젝트 추가에 실패했습니다.",
+          text: result.error || "Failed to add project.",
         });
       }
     } catch (error) {
-      console.error("프로젝트 추가 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Failed to add project:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -210,11 +212,24 @@ export function AddProjectForm({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-colors group"
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+                     bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 
+                     rounded-2xl p-8 transition-all duration-300 hover:shadow-2xl
+                     border-4 border-dashed border-gray-300 dark:border-gray-700
+                     hover:border-green-400 dark:hover:border-green-500
+                     cursor-pointer group"
+        title="Add New Project"
       >
-        <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300">
-          <Plus className="w-5 h-5" />
-          <span className="font-medium">새 프로젝트 추가</span>
+        <div className="text-center">
+          <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Plus className="w-10 h-10 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+            Add Project
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Click to add a new project
+          </p>
         </div>
       </button>
     );
@@ -225,7 +240,7 @@ export function AddProjectForm({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            새 프로젝트 추가
+            Add New Project
           </h3>
           <button
             onClick={resetForm}
@@ -294,10 +309,10 @@ export function AddProjectForm({
       )}
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* 프로젝트 제목 */}
+        {/* Project Title */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            프로젝트 제목 *
+            Project Title *
           </label>
           <input
             type="text"
@@ -307,14 +322,14 @@ export function AddProjectForm({
               setFormData((prev) => ({ ...prev, title: e.target.value }))
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="프로젝트 제목을 입력하세요"
+            placeholder="Enter project title"
           />
         </div>
 
-        {/* 프로젝트 설명 */}
+        {/* Project Description */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            프로젝트 설명 *
+            Project Description *
           </label>
           <textarea
             required
@@ -324,15 +339,15 @@ export function AddProjectForm({
             }
             rows={3}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="프로젝트에 대한 설명을 입력하세요"
+            placeholder="Enter project description"
           />
         </div>
 
-        {/* 프로젝트 기간 */}
+        {/* Project Duration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              시작일 *
+              Start Date *
             </label>
             <input
               type="date"
@@ -346,7 +361,7 @@ export function AddProjectForm({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              종료일
+              End Date
             </label>
             <input
               type="date"
@@ -359,10 +374,10 @@ export function AddProjectForm({
           </div>
         </div>
 
-        {/* 팀 규모 */}
+        {/* Team Size */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            팀 규모 *
+            Team Size *
           </label>
           <input
             type="number"
@@ -376,14 +391,14 @@ export function AddProjectForm({
             }
             min="1"
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="팀원 수를 입력하세요"
+            placeholder="Enter team size"
           />
         </div>
 
-        {/* 프로젝트 유형 */}
+        {/* Project Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            프로젝트 유형 *
+            Project Type *
           </label>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {projectTypes.map((type) => (
@@ -410,10 +425,10 @@ export function AddProjectForm({
           </div>
         </div>
 
-        {/* 프로젝트 상태 */}
+        {/* Project Status */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            프로젝트 상태 *
+            Project Status *
           </label>
           <div className="flex gap-2">
             {projectStatuses.map((status) => (
@@ -441,7 +456,7 @@ export function AddProjectForm({
         {/* 사용 기술 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            사용 기술
+            Technologies Used
           </label>
           <div className="flex gap-2 mb-3">
             <input
@@ -452,14 +467,14 @@ export function AddProjectForm({
                 e.key === "Enter" && (e.preventDefault(), addTechnology())
               }
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="기술명을 입력하고 Enter"
+              placeholder="Enter technology name and press Enter"
             />
             <button
               type="button"
               onClick={addTechnology}
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
             >
-              추가
+              Add
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -481,10 +496,10 @@ export function AddProjectForm({
           </div>
         </div>
 
-        {/* 미디어 추가 */}
+        {/* Add Media */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            미디어 추가
+            Add Media
           </label>
           <div className="flex gap-2 mb-3">
             <select
@@ -512,7 +527,7 @@ export function AddProjectForm({
               onClick={() => setIsAddingMedia(true)}
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
             >
-              추가
+              Add
             </button>
           </div>
           {isAddingMedia && (
@@ -528,7 +543,7 @@ export function AddProjectForm({
                     }))
                   }
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="미디어 제목"
+                  placeholder="Media title"
                 />
                 <div className="flex gap-2">
                   <input
@@ -541,7 +556,7 @@ export function AddProjectForm({
                       }))
                     }
                     className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="미디어 URL (이미지/동영상/프레젠테이션)"
+                    placeholder="Media URL (image/video/presentation)"
                   />
                 </div>
               </div>
@@ -555,7 +570,7 @@ export function AddProjectForm({
                 }
                 rows={2}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="미디어 설명 (선택 사항)"
+                placeholder="Media description (optional)"
               />
               <div className="flex gap-2">
                 <button
@@ -564,7 +579,7 @@ export function AddProjectForm({
                   disabled={!mediaFormData.title || !mediaFormData.url}
                   className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
                 >
-                  미디어 추가
+                  Add Media
                 </button>
                 <button
                   type="button"
@@ -579,7 +594,7 @@ export function AddProjectForm({
                   }}
                   className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
                 >
-                  취소
+                  Cancel
                 </button>
               </div>
             </div>
@@ -611,21 +626,21 @@ export function AddProjectForm({
           </div>
         </div>
 
-        {/* 제출 버튼 */}
+        {/* Submit Button */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "추가 중..." : "프로젝트 추가"}
+            {isSubmitting ? "Adding..." : "Add Project"}
           </button>
           <button
             type="button"
             onClick={resetForm}
             className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
           >
-            취소
+            Cancel
           </button>
         </div>
       </form>

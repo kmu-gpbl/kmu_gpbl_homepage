@@ -83,7 +83,7 @@ export function MemberCard({ member }: MemberCardProps) {
           {/* View Profile Button - flex-grow to push to bottom */}
           <div className="mt-auto">
             <div className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 transition-colors duration-200 rounded-lg text-center text-sm font-medium">
-              프로필 보기
+              View Profile
             </div>
           </div>
         </div>

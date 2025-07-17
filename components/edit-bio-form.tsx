@@ -41,19 +41,19 @@ export function EditBioForm({
       const result = await response.json();
 
       if (response.ok) {
-        alert("소개가 성공적으로 업데이트되었습니다!");
+        alert("Bio updated successfully!");
         setIsEditing(false);
         onBioUpdated();
         setMessage(null);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "소개 업데이트에 실패했습니다.",
+          text: result.error || "Failed to update bio.",
         });
       }
     } catch (error) {
-      console.error("소개 업데이트 실패:", error);
-      setMessage({ type: "error", text: "네트워크 오류가 발생했습니다." });
+      console.error("Bio update failed:", error);
+      setMessage({ type: "error", text: "Network error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -71,12 +71,12 @@ export function EditBioForm({
         <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              소개
+              Bio
             </h2>
             <button
               onClick={() => setIsEditing(true)}
               className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="소개 수정"
+              title="Edit Bio"
             >
               <Edit className="w-5 h-5" />
             </button>
@@ -96,7 +96,7 @@ export function EditBioForm({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            소개 수정
+            Edit Bio
           </h2>
           <button
             onClick={handleCancel}
@@ -123,7 +123,7 @@ export function EditBioForm({
         {/* 소개 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            소개 *
+            Bio *
           </label>
           <textarea
             required
@@ -131,25 +131,25 @@ export function EditBioForm({
             onChange={(e) => setBio(e.target.value)}
             rows={4}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="자신에 대한 소개를 입력하세요"
+            placeholder="Enter your bio"
           />
         </div>
 
-        {/* 제출 버튼 */}
+        {/* Submit button */}
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "저장 중..." : "저장"}
+            {isSubmitting ? "Saving..." : "Save"}
           </button>
           <button
             type="button"
             onClick={handleCancel}
             className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
           >
-            취소
+            Cancel
           </button>
         </div>
       </form>
