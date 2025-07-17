@@ -139,7 +139,7 @@ export function ProjectMediaManager({
                       className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      보기
+                      View
                     </Link>
                   </div>
                 </div>

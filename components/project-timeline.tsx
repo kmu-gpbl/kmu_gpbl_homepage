@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import type { Project, ProjectMedia } from "@/types/api";
 import {
@@ -50,12 +51,21 @@ const statusColors = {
   completed: "bg-green-500",
   ongoing: "bg-yellow-500",
   planned: "bg-gray-400",
+  live: "bg-red-500 animate-pulse",
+};
+
+const statusColorsForDots = {
+  completed: "bg-green-500",
+  ongoing: "bg-yellow-500",
+  planned: "bg-gray-400",
+  live: "bg-red-500",
 };
 
 const statusLabels = {
   completed: "Completed",
   ongoing: "Ongoing",
   planned: "Planned",
+  live: "⚪ Live",
 };
 
 const mediaTypes = [
@@ -71,20 +81,21 @@ export function ProjectTimeline({
   onProjectUpdated,
 }: ProjectTimelineProps) {
   const { isEditMode } = useEditMode();
+  const router = useRouter();
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
     null
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
-  // 프로젝트 수정 상태
+  // Project editing state
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<{
     title: string;
     description: string;
     startDate: string;
     endDate: string;
-    status: "completed" | "ongoing" | "planned";
+    status: "completed" | "ongoing" | "planned" | "live";
     type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
     technologies: string[];
     teamSize: number;
@@ -107,7 +118,7 @@ export function ProjectTimeline({
     text: string;
   } | null>(null);
 
-  // 미디어 추가 상태
+  // Media addition state
   const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [mediaFormData, setMediaFormData] = useState({
     type: "video" as "video" | "presentation" | "url" | "image",
@@ -184,12 +195,21 @@ export function ProjectTimeline({
     setMessage(null);
 
     try {
+      // Clean up endDate before sending
+      const submitData = {
+        ...editFormData,
+        endDate:
+          editFormData.endDate && editFormData.endDate.trim() !== ""
+            ? editFormData.endDate
+            : null,
+      };
+
       const response = await fetch(`/api/projects/${editingProjectId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(submitData),
       });
 
       const result = await response.json();
@@ -237,7 +257,7 @@ export function ProjectTimeline({
       (mediaFormData.url || mediaFormData.type === "image")
     ) {
       const newMedia: ProjectMedia = {
-        id: `temp-${Date.now()}`, // 임시 ID
+        id: `temp-${Date.now()}`, // Temporary ID
         type: mediaFormData.type,
         title: mediaFormData.title,
         url: mediaFormData.url,
@@ -334,17 +354,16 @@ export function ProjectTimeline({
             <div className="relative z-10 flex-shrink-0">
               <div
                 className={`w-4 h-4 rounded-full border-4 border-white dark:border-gray-900 ${
-                  typeColors[project.type]
+                  statusColorsForDots[project.status]
                 } transition-all duration-200 hover:scale-110`}
               />
-              {/* Simple indicator for Ongoing Projects */}
-              {project.status === "ongoing" && (
-                <div className="absolute inset-0 w-4 h-4 rounded-full bg-yellow-400 opacity-50" />
-              )}
             </div>
 
             {/* Project Card */}
-            <div className="ml-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group w-full">
+            <div
+              className="ml-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group w-full cursor-pointer"
+              onClick={() => router.push(`/project/${project.id}`)}
+            >
               {/* Project Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -384,7 +403,10 @@ export function ProjectTimeline({
                     <>
                       {/* Edit Button */}
                       <button
-                        onClick={() => handleEditClick(project)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(project);
+                        }}
                         className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
                         title="Edit Project"
                       >
@@ -393,7 +415,10 @@ export function ProjectTimeline({
 
                       {/* Delete Button */}
                       <button
-                        onClick={() => handleDeleteClick(project)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(project);
+                        }}
                         disabled={deletingProjectId === project.id}
                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete Project"
@@ -420,17 +445,6 @@ export function ProjectTimeline({
                     {tech}
                   </span>
                 ))}
-              </div>
-
-              {/* Project Link */}
-              <div className="mt-4">
-                <Link
-                  href={`/project/${project.id}`}
-                  className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm transition-colors"
-                >
-                  View Project Details
-                  <ExternalLink className="w-4 h-4" />
-                </Link>
               </div>
 
               {/* Simple hover effect */}
@@ -578,7 +592,7 @@ export function ProjectTimeline({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    End Date
+                    End Date (Optional)
                   </label>
                   <input
                     type="date"
@@ -590,7 +604,11 @@ export function ProjectTimeline({
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Leave empty for ongoing projects"
                   />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Leave empty for ongoing projects
+                  </p>
                 </div>
               </div>
 
@@ -609,7 +627,8 @@ export function ProjectTimeline({
                         status: e.target.value as
                           | "completed"
                           | "ongoing"
-                          | "planned",
+                          | "planned"
+                          | "live",
                       }))
                     }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -617,6 +636,7 @@ export function ProjectTimeline({
                     <option value="planned">Planned</option>
                     <option value="ongoing">Ongoing</option>
                     <option value="completed">Completed</option>
+                    <option value="live">⚪ Live</option>
                   </select>
                 </div>
 
@@ -662,7 +682,7 @@ export function ProjectTimeline({
                     onClick={addTech}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                   >
-                    추가
+                    Add
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -687,7 +707,7 @@ export function ProjectTimeline({
               {/* Media */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  미디어 추가
+                  Add Media
                 </label>
                 <div className="flex gap-2 mb-3">
                   <select
@@ -715,7 +735,7 @@ export function ProjectTimeline({
                     onClick={() => setIsAddingMedia(true)}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                   >
-                    추가
+                    Add
                   </button>
                 </div>
                 {isAddingMedia && (
@@ -731,7 +751,7 @@ export function ProjectTimeline({
                           }))
                         }
                         className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="미디어 제목"
+                        placeholder="Media title"
                       />
                       {mediaFormData.type === "image" ? (
                         <div className="flex gap-2">
@@ -751,12 +771,12 @@ export function ProjectTimeline({
                             {uploadingFile ? (
                               <span className="flex items-center gap-2">
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                                업로드 중...
+                                Uploading...
                               </span>
                             ) : (
                               <span className="flex items-center gap-2">
                                 <Upload className="w-4 h-4" />
-                                파일 선택
+                                Choose File
                               </span>
                             )}
                           </button>
@@ -772,7 +792,7 @@ export function ProjectTimeline({
                             }))
                           }
                           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="미디어 URL"
+                          placeholder="Media URL"
                         />
                       )}
                     </div>
@@ -786,7 +806,7 @@ export function ProjectTimeline({
                       }
                       rows={2}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="미디어 설명 (선택 사항)"
+                      placeholder="Media description (optional)"
                     />
                     <div className="flex gap-2">
                       <button
@@ -798,7 +818,7 @@ export function ProjectTimeline({
                         }
                         className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
                       >
-                        미디어 추가
+                        Add Media
                       </button>
                       <button
                         type="button"
@@ -815,7 +835,7 @@ export function ProjectTimeline({
                         }}
                         className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
                       >
-                        취소
+                        Cancel
                       </button>
                     </div>
                   </div>
@@ -828,7 +848,7 @@ export function ProjectTimeline({
                     >
                       <span>{media.title}</span>
                       {media.type === "image" ? (
-                        <span className="text-xs text-gray-500">(파일)</span>
+                        <span className="text-xs text-gray-500">(File)</span>
                       ) : (
                         <a
                           href={media.url}
@@ -858,7 +878,7 @@ export function ProjectTimeline({
                   disabled={isSubmitting}
                   className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
                 >
-                  {isSubmitting ? "수정 중..." : "프로젝트 수정"}
+                  {isSubmitting ? "Updating..." : "Update Project"}
                 </button>
                 <button
                   type="button"

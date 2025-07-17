@@ -8,7 +8,7 @@ type ProjectMedia = Database["public"]["Tables"]["project_media"]["Row"];
 
 // Users API
 export const usersApi = {
-  // 모든 사용자 조회
+  // Get all users
   async getAll() {
     const { data, error } = await supabase
       .from("users")
@@ -19,7 +19,7 @@ export const usersApi = {
     return data;
   },
 
-  // 특정 사용자 조회
+  // Get user by ID
   async getById(id: string) {
     const { data, error } = await supabase
       .from("users")
@@ -31,7 +31,7 @@ export const usersApi = {
     return data;
   },
 
-  // 사용자 생성
+  // Create user
   async create(userData: Omit<User, "id" | "created_at" | "updated_at">) {
     const { data, error } = await supabase
       .from("users")
@@ -46,7 +46,7 @@ export const usersApi = {
     return data;
   },
 
-  // 사용자 수정
+  // Update user
   async update(
     id: string,
     userData: Partial<Omit<User, "id" | "created_at" | "updated_at">>
@@ -62,7 +62,7 @@ export const usersApi = {
     return data;
   },
 
-  // 사용자 삭제
+  // Delete user
   async delete(id: string) {
     const { error } = await supabase.from("users").delete().eq("id", id);
 
@@ -72,7 +72,7 @@ export const usersApi = {
 
 // Projects API
 export const projectsApi = {
-  // 모든 프로젝트 조회
+  // Get all projects
   async getAll() {
     const { data, error } = await supabase
       .from("projects")
@@ -83,7 +83,7 @@ export const projectsApi = {
     return data;
   },
 
-  // 특정 프로젝트 조회
+  // Get project by ID
   async getById(id: string) {
     const { data, error } = await supabase
       .from("projects")
@@ -95,7 +95,7 @@ export const projectsApi = {
     return data;
   },
 
-  // 특정 멤버의 프로젝트 조회
+  // Get projects by member ID
   async getByMemberId(memberId: string) {
     const { data, error } = await supabase
       .from("projects")
@@ -112,7 +112,7 @@ export const projectsApi = {
     return data;
   },
 
-  // 프로젝트 생성
+  // Create project
   async create(projectData: Omit<Project, "id" | "created_at" | "updated_at">) {
     const { data, error } = await supabase
       .from("projects")
@@ -127,7 +127,7 @@ export const projectsApi = {
     return data;
   },
 
-  // 프로젝트 수정
+  // Update project
   async update(
     id: string,
     projectData: Partial<Omit<Project, "id" | "created_at" | "updated_at">>
@@ -143,7 +143,7 @@ export const projectsApi = {
     return data;
   },
 
-  // 프로젝트 삭제
+  // Delete project
   async delete(id: string) {
     const { error } = await supabase.from("projects").delete().eq("id", id);
 
@@ -153,7 +153,7 @@ export const projectsApi = {
 
 // Project Members API
 export const projectMembersApi = {
-  // 프로젝트 멤버 추가
+  // Add project member
   async addMember(projectId: string, userId: string) {
     const { error } = await supabase.from("project_members").insert({
       project_id: projectId,
@@ -163,7 +163,7 @@ export const projectMembersApi = {
     if (error) throw error;
   },
 
-  // 프로젝트 멤버 제거
+  // Remove project member
   async removeMember(projectId: string, userId: string) {
     const { error } = await supabase
       .from("project_members")
@@ -174,7 +174,7 @@ export const projectMembersApi = {
     if (error) throw error;
   },
 
-  // 프로젝트의 모든 멤버 조회
+  // Get all project members
   async getProjectMembers(projectId: string) {
     const { data, error } = await supabase
       .from("project_members")
@@ -190,12 +190,12 @@ export const projectMembersApi = {
     return data.map((item) => item.users);
   },
 
-  // 프로젝트 멤버 전체 업데이트 (기존 멤버 삭제 후 새로 추가)
+  // Update all project members (delete existing and add new)
   async updateProjectMembers(projectId: string, userIds: string[]) {
-    // 기존 멤버 삭제
+    // Delete existing members
     await this.deleteProjectMembers(projectId);
 
-    // 새 멤버 추가
+    // Add new members
     if (userIds.length > 0) {
       const { error } = await supabase.from("project_members").insert(
         userIds.map((userId) => ({
@@ -208,7 +208,7 @@ export const projectMembersApi = {
     }
   },
 
-  // 프로젝트의 모든 멤버 삭제
+  // Delete all project members
   async deleteProjectMembers(projectId: string) {
     const { error } = await supabase
       .from("project_members")
@@ -221,7 +221,7 @@ export const projectMembersApi = {
 
 // Project Media API
 export const projectMediaApi = {
-  // 프로젝트의 모든 미디어 조회
+  // Get all media for a project
   async getByProjectId(projectId: string) {
     const { data, error } = await supabase
       .from("project_media")
@@ -233,7 +233,7 @@ export const projectMediaApi = {
     return data;
   },
 
-  // 미디어 추가
+  // Add media
   async create(mediaData: Omit<ProjectMedia, "id" | "created_at">) {
     const { data, error } = await supabase
       .from("project_media")
@@ -248,7 +248,7 @@ export const projectMediaApi = {
     return data;
   },
 
-  // 미디어 수정
+  // Update media
   async update(
     id: string,
     mediaData: Partial<Omit<ProjectMedia, "id" | "created_at">>
@@ -264,7 +264,7 @@ export const projectMediaApi = {
     return data;
   },
 
-  // 미디어 삭제
+  // Delete media
   async delete(id: string) {
     const { error } = await supabase
       .from("project_media")
@@ -274,12 +274,12 @@ export const projectMediaApi = {
     if (error) throw error;
   },
 
-  // 프로젝트 미디어 전체 업데이트 (기존 미디어 삭제 후 새로 추가)
+  // Update all project media (delete existing and add new)
   async updateProjectMedia(projectId: string, mediaItems: any[]) {
-    // 기존 미디어 삭제
+    // Delete existing media
     await this.deleteByProjectId(projectId);
 
-    // 새 미디어 추가
+    // Add new media
     if (mediaItems.length > 0) {
       const { error } = await supabase.from("project_media").insert(
         mediaItems.map((media) => ({
@@ -296,7 +296,7 @@ export const projectMediaApi = {
     }
   },
 
-  // 프로젝트의 모든 미디어 삭제
+  // Delete all media for a project
   async deleteByProjectId(projectId: string) {
     const { error } = await supabase
       .from("project_media")
@@ -307,7 +307,7 @@ export const projectMediaApi = {
   },
 };
 
-// 통합 API (기존 API와 호환)
+// Unified API (compatible with existing API)
 export const api = {
   users: usersApi,
   projects: projectsApi,

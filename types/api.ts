@@ -65,7 +65,7 @@ export interface Project {
   startDate: string;
   endDate?: string | null;
   period: string;
-  status: "completed" | "ongoing" | "planned";
+  status: "completed" | "ongoing" | "planned" | "live";
   type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
   technologies: string[];
   memberIds: string[];
@@ -84,7 +84,7 @@ export interface ProjectSummary {
   title: string;
   description: string;
   period: string;
-  status: "completed" | "ongoing" | "planned";
+  status: "completed" | "ongoing" | "planned" | "live";
   type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
   technologies: string[];
   memberCount: number;

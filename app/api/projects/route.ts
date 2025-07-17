@@ -13,25 +13,28 @@ export async function GET(request: NextRequest) {
 
     let projects;
 
-    // 특정 멤버의 프로젝트 조회
+    // Get projects for specific member
     if (memberId) {
       projects = await projectsApi.getByMemberId(memberId);
     } else {
-      // 모든 프로젝트 조회
+      // Get all projects
       projects = await projectsApi.getAll();
     }
 
-    // 필드명 매핑 (Supabase -> 클라이언트)
-    let mappedProjects = projects.map((project: any) => ({
-      ...project,
-      startDate: project.start_date,
-      endDate: project.end_date,
-      teamSize: project.team_size,
-      memberIds: [], // 멤버 정보는 별도로 처리
-      media: [], // 미디어는 별도로 처리
-    }));
+    // Field name mapping (Supabase -> Client)
+    let mappedProjects = projects.map((project: any) => {
+      return {
+        ...project,
+        startDate: project.start_date,
+        endDate: project.end_date,
+        teamSize: project.team_size,
+        status: project.status, // Use actual status from database
+        memberIds: [], // Member info handled separately
+        media: [], // Media handled separately
+      };
+    });
 
-    // 필터링
+    // Filtering
     if (type) {
       mappedProjects = mappedProjects.filter(
         (project: any) => project.type === type
@@ -53,7 +56,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 페이지네이션
+    // Pagination
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const paginatedProjects = mappedProjects.slice(startIndex, endIndex);
@@ -66,14 +69,14 @@ export async function GET(request: NextRequest) {
         total: mappedProjects.length,
         totalPages: Math.ceil(mappedProjects.length / limit),
       },
-      message: "프로젝트 목록을 성공적으로 불러왔습니다.",
+      message: "Project list loaded successfully.",
     });
   } catch (error) {
-    console.error("프로젝트 목록 로딩 실패:", error);
+    console.error("Failed to load project list:", error);
     return NextResponse.json(
       {
         projects: [],
-        error: "프로젝트 목록을 불러오는 중 오류가 발생했습니다.",
+        error: "An error occurred while loading the project list.",
       },
       { status: 500 }
     );
@@ -84,7 +87,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 필수 필드 검증
+    // Required field validation
     const requiredFields = [
       "title",
       "description",
@@ -97,18 +100,22 @@ export async function POST(request: NextRequest) {
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
-          { error: `${field} 필드는 필수입니다.` },
+          { error: `${field} field is required.` },
           { status: 400 }
         );
       }
     }
 
-    // 기간 계산
+    // Clean up endDate - convert empty string to null
+    const cleanEndDate =
+      body.endDate && body.endDate.trim() !== "" ? body.endDate : null;
+
+    // Period calculation
     let period = "";
     if (body.startDate) {
       const startDate = new Date(body.startDate);
-      if (body.endDate) {
-        const endDate = new Date(body.endDate);
+      if (cleanEndDate) {
+        const endDate = new Date(cleanEndDate);
         period = `${startDate.getFullYear()}.${String(
           startDate.getMonth() + 1
         ).padStart(2, "0")} - ${endDate.getFullYear()}.${String(
@@ -117,34 +124,34 @@ export async function POST(request: NextRequest) {
       } else {
         period = `${startDate.getFullYear()}.${String(
           startDate.getMonth() + 1
-        ).padStart(2, "0")} - 현재`;
+        ).padStart(2, "0")} - Present`;
       }
     }
 
-    // 새 프로젝트 객체 생성 (클라이언트 -> Supabase 필드명 매핑)
+    // Create new project object (Client -> Supabase field mapping)
     const newProject = {
       title: body.title,
       description: body.description,
       start_date: body.startDate,
-      end_date: body.endDate || null,
+      end_date: cleanEndDate,
       period,
-      status: body.status,
+      status: body.status, // Use the status as provided by the client
       type: body.type,
       technologies: body.technologies || [],
       team_size: body.teamSize,
     };
 
-    // Supabase에 프로젝트 추가
+    // Add project to Supabase
     const createdProject = await projectsApi.create(newProject);
 
-    // 프로젝트 멤버 추가
+    // Add project members
     if (body.memberIds && body.memberIds.length > 0) {
       for (const memberId of body.memberIds) {
         await projectMembersApi.addMember(createdProject.id, memberId);
       }
     }
 
-    // 응답 데이터 필드명 매핑 (Supabase -> 클라이언트)
+    // Response data field mapping (Supabase -> Client)
     const mappedProject = {
       ...createdProject,
       startDate: createdProject.start_date,
@@ -155,13 +162,13 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json({
-      message: "프로젝트가 성공적으로 추가되었습니다.",
+      message: "Project added successfully.",
       project: mappedProject,
     });
   } catch (error) {
-    console.error("프로젝트 추가 실패:", error);
+    console.error("Failed to add project:", error);
     return NextResponse.json(
-      { error: "프로젝트 추가 중 오류가 발생했습니다." },
+      { error: "An error occurred while adding the project." },
       { status: 500 }
     );
   }
@@ -174,24 +181,24 @@ export async function DELETE(request: NextRequest) {
 
     if (!projectId) {
       return NextResponse.json(
-        { error: "프로젝트 ID가 필요합니다." },
+        { error: "Project ID is required." },
         { status: 400 }
       );
     }
 
-    // Supabase에서 프로젝트 삭제
+    // Delete project from Supabase
     await projectsApi.delete(projectId);
 
     return NextResponse.json(
       {
-        message: "프로젝트가 성공적으로 삭제되었습니다.",
+        message: "Project deleted successfully.",
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("프로젝트 삭제 실패:", error);
+    console.error("Failed to delete project:", error);
     return NextResponse.json(
-      { error: "프로젝트 삭제 중 오류가 발생했습니다." },
+      { error: "An error occurred while deleting the project." },
       { status: 500 }
     );
   }

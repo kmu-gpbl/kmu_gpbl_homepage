@@ -5,7 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// 데이터베이스 타입 정의
+// Database type definitions
 export interface Database {
   public: {
     Tables: {

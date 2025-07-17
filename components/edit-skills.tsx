@@ -169,7 +169,7 @@ export function EditSkills({
           </div>
         </div>
         <div className="p-6">
-          {/* 전문 분야 */}
+          {/* Specialties */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               Specialty
@@ -194,7 +194,7 @@ export function EditSkills({
             </div>
           </div>
 
-          {/* 기술 스택 */}
+          {/* Tech Stack */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               Tech Stack
@@ -303,7 +303,7 @@ export function EditSkills({
             </button>
           </div>
 
-          {/* 기술 목록 */}
+          {/* Tech List */}
           <div className="flex flex-wrap gap-2">
             {formData.skills.map((skill) => (
               <span

@@ -9,15 +9,15 @@ export async function POST(
     const { id } = await params;
     const body = await request.json();
 
-    // 필수 필드 검증
+    // Required field validation
     if (!body.type || !body.title || !body.url) {
       return NextResponse.json(
-        { error: "필수 필드가 누락되었습니다." },
+        { error: "Required fields are missing." },
         { status: 400 }
       );
     }
 
-    // 새 미디어 객체 생성
+    // Create new media object
     const newMedia = {
       project_id: id,
       type: body.type,
@@ -28,20 +28,20 @@ export async function POST(
       original_name: null,
     };
 
-    // Supabase에 미디어 추가
+    // Add media to Supabase
     const createdMedia = await projectMediaApi.create(newMedia);
 
     return NextResponse.json(
       {
-        message: "미디어가 성공적으로 추가되었습니다.",
+        message: "Media added successfully.",
         media: createdMedia,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("미디어 추가 실패:", error);
+    console.error("Failed to add media:", error);
     return NextResponse.json(
-      { error: "미디어 추가 중 오류가 발생했습니다." },
+      { error: "An error occurred while adding the media." },
       { status: 500 }
     );
   }

@@ -7,12 +7,12 @@ export async function GET() {
 
     return NextResponse.json({
       users,
-      message: "사용자 목록을 성공적으로 불러왔습니다.",
+      message: "User list loaded successfully.",
     });
   } catch (error) {
-    console.error("사용자 목록 로딩 실패:", error);
+    console.error("Failed to load user list:", error);
     return NextResponse.json(
-      { users: [], error: "사용자 목록을 불러오는 중 오류가 발생했습니다." },
+      { users: [], error: "An error occurred while loading the user list." },
       { status: 500 }
     );
   }
@@ -22,18 +22,18 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 필수 필드 검증
+    // Required field validation
     const requiredFields = ["name", "role", "specialties", "bio"];
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
-          { error: `${field} 필드는 필수입니다.` },
+          { error: `${field} field is required.` },
           { status: 400 }
         );
       }
     }
 
-    // 새 사용자 객체 생성
+    // Create new user object
     const newUser = {
       name: body.name,
       role: body.role,
@@ -49,17 +49,17 @@ export async function POST(request: NextRequest) {
       location: body.location || "",
     };
 
-    // Supabase에 사용자 추가
+    // Add user to Supabase
     const createdUser = await usersApi.create(newUser);
 
     return NextResponse.json({
-      message: "멤버가 성공적으로 추가되었습니다.",
+      message: "Member added successfully.",
       user: createdUser,
     });
   } catch (error) {
-    console.error("멤버 추가 실패:", error);
+    console.error("Failed to add member:", error);
     return NextResponse.json(
-      { error: "멤버 추가 중 오류가 발생했습니다." },
+      { error: "An error occurred while adding the member." },
       { status: 500 }
     );
   }

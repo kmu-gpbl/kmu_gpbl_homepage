@@ -114,7 +114,7 @@ export function EditBioForm({
         </div>
       </div>
 
-      {/* 에러 메시지 표시 */}
+      {/* Display error message */}
       {message && message.type === "error" && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500">
           <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export function EditBioForm({
       )}
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* 소개 */}
+        {/* Bio */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Bio *

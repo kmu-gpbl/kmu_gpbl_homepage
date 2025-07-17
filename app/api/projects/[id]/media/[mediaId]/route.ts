@@ -9,15 +9,15 @@ export async function PUT(
     const { id, mediaId } = await params;
     const body = await request.json();
 
-    // 필수 필드 검증
+    // Required field validation
     if (!body.type || !body.title || !body.url) {
       return NextResponse.json(
-        { error: "필수 필드가 누락되었습니다." },
+        { error: "Required fields are missing." },
         { status: 400 }
       );
     }
 
-    // 미디어 업데이트 데이터
+    // Media update data
     const updateData = {
       type: body.type,
       title: body.title,
@@ -25,20 +25,20 @@ export async function PUT(
       description: body.description || "",
     };
 
-    // Supabase에서 미디어 업데이트
+    // Update media in Supabase
     const updatedMedia = await projectMediaApi.update(mediaId, updateData);
 
     return NextResponse.json(
       {
-        message: "미디어가 성공적으로 수정되었습니다.",
+        message: "Media updated successfully.",
         media: updatedMedia,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("미디어 수정 실패:", error);
+    console.error("Failed to update media:", error);
     return NextResponse.json(
-      { error: "미디어 수정 중 오류가 발생했습니다." },
+      { error: "An error occurred while updating the media." },
       { status: 500 }
     );
   }
@@ -51,19 +51,19 @@ export async function DELETE(
   try {
     const { id, mediaId } = await params;
 
-    // Supabase에서 미디어 삭제
+    // Delete media from Supabase
     await projectMediaApi.delete(mediaId);
 
     return NextResponse.json(
       {
-        message: "미디어가 성공적으로 삭제되었습니다.",
+        message: "Media deleted successfully.",
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error("미디어 삭제 실패:", error);
+    console.error("Failed to delete media:", error);
     return NextResponse.json(
-      { error: "미디어 삭제 중 오류가 발생했습니다." },
+      { error: "An error occurred while deleting the media." },
       { status: 500 }
     );
   }

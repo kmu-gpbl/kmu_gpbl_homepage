@@ -214,7 +214,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 이미지 파일 체크
+      // Check if it's an image file
       if (!file.type.startsWith("image/")) {
         alert("Only image files can be uploaded.");
         return;
@@ -223,65 +223,65 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     }
   };
 
-  // URL 처리 함수들
+  // URL processing functions
   const processGithubUrl = (input: string) => {
     if (!input) return input;
 
-    // 이미 완전한 URL인 경우
+    // If already a complete URL
     if (input.startsWith("http://") || input.startsWith("https://")) {
       return input;
     }
 
-    // github.com으로 시작하는 경우
+    // If starts with github.com
     if (input.startsWith("github.com/")) {
       return "https://" + input;
     }
 
-    // 사용자명만 입력한 경우
+    // If only username is entered
     if (!input.includes("/") && !input.includes(".")) {
       return "https://github.com/" + input;
     }
 
-    // 기타 경우 (상대 경로 등)
+    // Other cases (relative paths, etc.)
     return "https://" + input;
   };
 
   const processLinkedinUrl = (input: string) => {
     if (!input) return input;
 
-    // 이미 완전한 URL인 경우
+    // If already a complete URL
     if (input.startsWith("http://") || input.startsWith("https://")) {
       return input;
     }
 
-    // linkedin.com으로 시작하는 경우
+    // If starts with linkedin.com
     if (input.startsWith("linkedin.com/")) {
       return "https://" + input;
     }
 
-    // 사용자명만 입력한 경우
+    // If only username is entered
     if (!input.includes("/") && !input.includes(".")) {
       return "https://linkedin.com/in/" + input;
     }
 
-    // 기타 경우
+    // Other cases
     return "https://" + input;
   };
 
   const processPortfolioUrl = (input: string) => {
     if (!input) return input;
 
-    // 이미 완전한 URL인 경우
+    // If already a complete URL
     if (input.startsWith("http://") || input.startsWith("https://")) {
       return input;
     }
 
-    // 도메인만 입력한 경우 (점이 포함되어 있음)
+    // If only domain is entered (contains dot)
     if (input.includes(".")) {
       return "https://" + input;
     }
 
-    // 기타 경우 (그대로 반환)
+    // Other cases (return as is)
     return input;
   };
 

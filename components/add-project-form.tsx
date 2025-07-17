@@ -23,7 +23,7 @@ interface ProjectFormData {
   description: string;
   startDate: string;
   endDate: string;
-  status: "completed" | "ongoing" | "planned";
+  status: "completed" | "ongoing" | "planned" | "live";
   type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
   technologies: string[];
   teamSize: number;
@@ -52,6 +52,7 @@ const projectStatuses = [
   { value: "completed", label: "Completed", color: "bg-green-500" },
   { value: "ongoing", label: "Ongoing", color: "bg-yellow-500" },
   { value: "planned", label: "Planned", color: "bg-gray-400" },
+  { value: "live", label: "⚪ Live", color: "bg-red-500 animate-pulse" },
 ];
 
 const mediaTypes = [
@@ -84,7 +85,7 @@ export function AddProjectForm({
     text: string;
   } | null>(null);
 
-  // 미디어 추가 상태
+  // Media addition state
   const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [mediaFormData, setMediaFormData] = useState({
     type: "image" as "image" | "video" | "presentation" | "url",
@@ -99,16 +100,23 @@ export function AddProjectForm({
     setMessage(null);
 
     try {
+      // Clean up endDate before sending
+      const submitData = {
+        ...formData,
+        endDate:
+          formData.endDate && formData.endDate.trim() !== ""
+            ? formData.endDate
+            : null,
+        memberIds: [memberId],
+        period: `${formData.startDate} - ${formData.endDate || "Present"}`,
+      };
+
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          memberIds: [memberId],
-          period: `${formData.startDate} - ${formData.endDate || "Present"}`,
-        }),
+        body: JSON.stringify(submitData),
       });
 
       const result = await response.json();
@@ -241,7 +249,7 @@ export function AddProjectForm({
         </div>
       </div>
 
-      {/* 메시지 표시 */}
+      {/* Display message */}
       {message && (
         <div
           className={`p-4 ${
@@ -351,7 +359,7 @@ export function AddProjectForm({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              End Date
+              End Date (Optional)
             </label>
             <input
               type="date"
@@ -360,7 +368,11 @@ export function AddProjectForm({
                 setFormData((prev) => ({ ...prev, endDate: e.target.value }))
               }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Leave empty for ongoing projects"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Leave empty for ongoing projects
+            </p>
           </div>
         </div>
 

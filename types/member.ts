@@ -5,7 +5,7 @@ export interface ProjectTimeline {
   period: string;
   date: string;
   technologies: string[];
-  status: "completed" | "ongoing" | "planned";
+  status: "completed" | "ongoing" | "planned" | "live";
   type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
 }
 
