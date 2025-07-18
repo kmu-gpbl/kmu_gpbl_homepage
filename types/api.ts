@@ -19,6 +19,17 @@ export interface PaginatedResponse<T> {
   timestamp: string;
 }
 
+// Certification Types
+export interface Certification {
+  id: string;
+  name: string;
+  organization: string;
+  issueDate: string;
+  expiryDate?: string | null;
+  credentialId?: string | null;
+  credentialUrl?: string | null;
+}
+
 // User Types
 export interface User {
   id: string;
@@ -34,6 +45,9 @@ export interface User {
   skills: string[];
   experience: string;
   location: string;
+  certifications?: Certification[];
+  resumeUrl?: string | null;
+  resumeFileName?: string | null;
   createdAt: string;
   updatedAt: string;
 }

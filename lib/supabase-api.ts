@@ -16,7 +16,14 @@ export const usersApi = {
       .order("created_at", { ascending: true });
 
     if (error) throw error;
-    return data;
+
+    // Ensure certifications field exists and is an array for all users, and map resume fields
+    return data.map((user) => ({
+      ...user,
+      certifications: user.certifications || [],
+      resumeUrl: user.resume_url,
+      resumeFileName: user.resume_file_name,
+    }));
   },
 
   // Get user by ID
@@ -28,7 +35,14 @@ export const usersApi = {
       .single();
 
     if (error) throw error;
-    return data;
+
+    // Ensure certifications field exists and is an array, and map resume fields
+    return {
+      ...data,
+      certifications: data.certifications || [],
+      resumeUrl: data.resume_url,
+      resumeFileName: data.resume_file_name,
+    };
   },
 
   // Create user

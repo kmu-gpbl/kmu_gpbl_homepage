@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Edit, Save, X, AlertCircle, User, Upload } from "lucide-react";
+import {
+  Edit,
+  Save,
+  X,
+  AlertCircle,
+  User,
+  Upload,
+  FileText,
+  Download,
+  Trash2,
+} from "lucide-react";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -10,6 +20,8 @@ interface EditProfileHeaderProps {
     role: string;
     avatar: string;
     bio: string;
+    resumeUrl?: string | null;
+    resumeFileName?: string | null;
   };
   onProfileUpdated: () => void;
 }
@@ -41,10 +53,14 @@ export function EditProfileHeader({
     role: initialData.role,
     avatar: initialData.avatar,
     bio: initialData.bio,
+    resumeUrl: initialData.resumeUrl || "",
+    resumeFileName: initialData.resumeFileName || "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -70,6 +86,12 @@ export function EditProfileHeader({
       }
       if (formData.bio !== initialData.bio) {
         changedFields.bio = formData.bio;
+      }
+      if (formData.resumeUrl !== (initialData.resumeUrl || "")) {
+        changedFields.resumeUrl = formData.resumeUrl || null;
+      }
+      if (formData.resumeFileName !== (initialData.resumeFileName || "")) {
+        changedFields.resumeFileName = formData.resumeFileName || null;
       }
 
       // If no fields were changed, just close the edit mode
@@ -114,6 +136,8 @@ export function EditProfileHeader({
       role: initialData.role,
       avatar: initialData.avatar,
       bio: initialData.bio,
+      resumeUrl: initialData.resumeUrl || "",
+      resumeFileName: initialData.resumeFileName || "",
     });
     setMessage(null);
   };
@@ -156,6 +180,87 @@ export function EditProfileHeader({
         return;
       }
       handleAvatarUpload(file);
+    }
+  };
+
+  const handleResumeUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // File type validation
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setMessage({
+        type: "error",
+        text: "Only PDF and Word documents are allowed for resume.",
+      });
+      return;
+    }
+
+    // File size validation (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({
+        type: "error",
+        text: "Resume file size cannot exceed 5MB.",
+      });
+      return;
+    }
+
+    setUploadingResume(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormData((prev) => ({
+          ...prev,
+          resumeUrl: result.url,
+          resumeFileName: file.name,
+        }));
+        setMessage({
+          type: "success",
+          text: "Resume uploaded successfully!",
+        });
+      } else {
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to upload resume.",
+        });
+      }
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "Network error occurred while uploading resume.",
+      });
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const handleResumeDelete = () => {
+    setFormData((prev) => ({
+      ...prev,
+      resumeUrl: "",
+      resumeFileName: "",
+    }));
+    if (resumeInputRef.current) {
+      resumeInputRef.current.value = "";
     }
   };
 
@@ -210,6 +315,35 @@ export function EditProfileHeader({
               {initialData.bio}
             </p>
           </div>
+
+          {/* Resume Download */}
+          {initialData.resumeUrl && (
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                Resume
+              </h4>
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <FileText className="w-5 h-5 text-blue-500" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {initialData.resumeFileName || "Resume"}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Download resume file
+                  </p>
+                </div>
+                <a
+                  href={initialData.resumeUrl}
+                  download={initialData.resumeFileName || "resume"}
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
+                  title="Download resume"
+                >
+                  <Download className="w-4 h-4" />
+                  Download
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -292,6 +426,70 @@ export function EditProfileHeader({
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter bio"
           />
+        </div>
+
+        {/* Resume Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Resume
+          </label>
+          <div className="space-y-3">
+            {/* Current resume */}
+            {formData.resumeUrl && (
+              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <FileText className="w-5 h-5 text-blue-500" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {formData.resumeFileName || "Resume"}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Current resume file
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResumeDelete}
+                  className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                  title="Remove resume"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Upload controls */}
+            <div className="flex gap-2">
+              <input
+                ref={resumeInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleResumeUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => resumeInputRef.current?.click()}
+                disabled={uploadingResume}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+              >
+                {uploadingResume ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    {formData.resumeUrl ? "Change Resume" : "Upload Resume"}
+                  </>
+                )}
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Supported formats: PDF, DOC, DOCX (max 5MB)
+            </p>
+          </div>
         </div>
 
         {/* Profile Image */}

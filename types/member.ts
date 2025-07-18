@@ -24,6 +24,17 @@ export interface Member {
   projects: string[];
   experience: string;
   location: string;
+  certifications?: Array<{
+    id: string;
+    name: string;
+    organization: string;
+    issueDate: string;
+    expiryDate?: string | null;
+    credentialId?: string | null;
+    credentialUrl?: string | null;
+  }>;
+  resumeUrl?: string | null;
+  resumeFileName?: string | null;
   projectTimeline?: ProjectTimeline[];
 }
 

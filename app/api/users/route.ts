@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
       skills: body.skills || [],
       experience: body.experience || "",
       location: body.location || "",
+      certifications: body.certifications || [],
+      resume_url: body.resumeUrl || null,
+      resume_file_name: body.resumeFileName || null,
     };
 
     // Add user to Supabase

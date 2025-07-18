@@ -16,6 +16,7 @@ CREATE TABLE users (
   skills TEXT[] DEFAULT '{}',
   experience TEXT,
   location TEXT,
+  certifications JSONB DEFAULT '[]',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
