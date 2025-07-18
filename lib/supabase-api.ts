@@ -21,6 +21,7 @@ export const usersApi = {
     return data.map((user) => ({
       ...user,
       certifications: user.certifications || [],
+      badges: user.badges || [],
       resumeUrl: user.resume_url,
       resumeFileName: user.resume_file_name,
     }));
@@ -40,6 +41,7 @@ export const usersApi = {
     return {
       ...data,
       certifications: data.certifications || [],
+      badges: data.badges || [],
       resumeUrl: data.resume_url,
       resumeFileName: data.resume_file_name,
     };

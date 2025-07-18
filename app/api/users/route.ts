@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       experience: body.experience || "",
       location: body.location || "",
       certifications: body.certifications || [],
+      badges: body.badges || [],
       resume_url: body.resumeUrl || null,
       resume_file_name: body.resumeFileName || null,
     };

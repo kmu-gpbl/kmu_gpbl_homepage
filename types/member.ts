@@ -1,3 +1,5 @@
+import type { BadgeType } from "./api";
+
 export interface ProjectTimeline {
   id: string;
   title: string;
@@ -33,6 +35,7 @@ export interface Member {
     credentialId?: string | null;
     credentialUrl?: string | null;
   }>;
+  badges?: BadgeType[];
   resumeUrl?: string | null;
   resumeFileName?: string | null;
   projectTimeline?: ProjectTimeline[];

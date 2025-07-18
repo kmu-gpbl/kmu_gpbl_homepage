@@ -19,6 +19,15 @@ export interface PaginatedResponse<T> {
   timestamp: string;
 }
 
+// Badge Types
+export type BadgeType = "verified" | "developer" | "designer";
+
+export interface Badge {
+  type: BadgeType;
+  label: string;
+  icon: string;
+}
+
 // Certification Types
 export interface Certification {
   id: string;
@@ -46,6 +55,7 @@ export interface User {
   experience: string;
   location: string;
   certifications?: Certification[];
+  badges?: BadgeType[];
   resumeUrl?: string | null;
   resumeFileName?: string | null;
   createdAt: string;
@@ -58,6 +68,7 @@ export interface UserSummary {
   role: string;
   avatar: string;
   specialties: string[];
+  badges?: BadgeType[];
 }
 
 // Media Types

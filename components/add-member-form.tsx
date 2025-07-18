@@ -63,6 +63,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     experience: "",
     location: "",
     certifications: [] as any[],
+    badges: [] as string[],
     resumeUrl: "",
     resumeFileName: "",
   });
@@ -135,6 +136,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
           experience: "",
           location: "",
           certifications: [],
+          badges: [],
           resumeUrl: "",
           resumeFileName: "",
         });
@@ -419,6 +421,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
       experience: "",
       location: "",
       certifications: [] as any[],
+      badges: [] as string[],
       resumeUrl: "",
       resumeFileName: "",
     });
@@ -465,8 +468,6 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 Add a new member to your team
               </p>
             </div>
-
-            <div className="text-2xl">➕</div>
           </div>
 
           {/* Placeholder specialties */}

@@ -11,7 +11,15 @@ import {
   FileText,
   Download,
   Trash2,
+  Check,
+  Code,
+  Palette,
 } from "lucide-react";
+import { UserBadges } from "./user-badges";
+import type { BadgeType } from "@/types/api";
+
+// 편집 가능한 뱃지 타입 정의
+type EditableBadgeType = "developer" | "designer";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -20,6 +28,7 @@ interface EditProfileHeaderProps {
     role: string;
     avatar: string;
     bio: string;
+    badges?: BadgeType[];
     resumeUrl?: string | null;
     resumeFileName?: string | null;
   };
@@ -53,6 +62,10 @@ export function EditProfileHeader({
     role: initialData.role,
     avatar: initialData.avatar,
     bio: initialData.bio,
+    badges: (initialData.badges || []).filter(
+      (badge): badge is EditableBadgeType =>
+        badge === "developer" || badge === "designer"
+    ),
     resumeUrl: initialData.resumeUrl || "",
     resumeFileName: initialData.resumeFileName || "",
   });
@@ -86,6 +99,23 @@ export function EditProfileHeader({
       }
       if (formData.bio !== initialData.bio) {
         changedFields.bio = formData.bio;
+      }
+      // 편집 가능한 뱃지들만 비교
+      const currentEditableBadges = (initialData.badges || []).filter(
+        (badge): badge is EditableBadgeType =>
+          badge === "developer" || badge === "designer"
+      );
+
+      if (
+        JSON.stringify(formData.badges.sort()) !==
+        JSON.stringify(currentEditableBadges.sort())
+      ) {
+        // verified 뱃지는 보존하고 다른 뱃지들만 업데이트
+        const hasVerified = (initialData.badges || []).includes("verified");
+        const finalBadges: BadgeType[] = hasVerified
+          ? ["verified", ...formData.badges]
+          : formData.badges;
+        changedFields.badges = finalBadges;
       }
       if (formData.resumeUrl !== (initialData.resumeUrl || "")) {
         changedFields.resumeUrl = formData.resumeUrl || null;
@@ -136,6 +166,10 @@ export function EditProfileHeader({
       role: initialData.role,
       avatar: initialData.avatar,
       bio: initialData.bio,
+      badges: (initialData.badges || []).filter(
+        (badge): badge is EditableBadgeType =>
+          badge === "developer" || badge === "designer"
+      ),
       resumeUrl: initialData.resumeUrl || "",
       resumeFileName: initialData.resumeFileName || "",
     });
@@ -297,9 +331,12 @@ export function EditProfileHeader({
               )}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {initialData.name}
-              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {initialData.name}
+                </h3>
+                <UserBadges badges={initialData.badges || []} size="md" />
+              </div>
               <p className="text-gray-600 dark:text-gray-400">
                 {initialData.role}
               </p>
@@ -426,6 +463,68 @@ export function EditProfileHeader({
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter bio"
           />
+        </div>
+
+        {/* Badges */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Badges
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {[
+              {
+                type: "developer" as const,
+                label: "Developer",
+                icon: Code,
+                color: "text-green-500",
+                bgColor: "bg-green-100 dark:bg-green-900/20",
+              },
+              {
+                type: "designer" as const,
+                label: "Designer",
+                icon: Palette,
+                color: "text-purple-500",
+                bgColor: "bg-purple-100 dark:bg-purple-900/20",
+              },
+            ].map((badge) => {
+              const isSelected = formData.badges.includes(badge.type);
+              const Icon = badge.icon;
+
+              return (
+                <button
+                  key={badge.type}
+                  type="button"
+                  onClick={() => {
+                    if (isSelected) {
+                      setFormData({
+                        ...formData,
+                        badges: formData.badges.filter((b) => b !== badge.type),
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        badges: [...formData.badges, badge.type],
+                      });
+                    }
+                  }}
+                  className={`
+                    flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all duration-200
+                    ${
+                      isSelected
+                        ? `${badge.bgColor} border-current ${badge.color}`
+                        : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500"
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{badge.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Select badges that represent your expertise and verification status
+          </p>
         </div>
 
         {/* Resume Upload */}

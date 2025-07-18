@@ -15,6 +15,7 @@ export async function GET(
     const safeUser = {
       ...user,
       certifications: user.certifications || [],
+      badges: user.badges || [],
       resumeUrl: user.resume_url,
       resumeFileName: user.resume_file_name,
     };
@@ -60,6 +61,7 @@ export async function PUT(
       experience: body.experience || "",
       location: body.location || "",
       certifications: body.certifications || [],
+      badges: body.badges || [],
       resume_url: body.resumeUrl || null,
       resume_file_name: body.resumeFileName || null,
     };
@@ -99,6 +101,11 @@ export async function PATCH(
     if ("resumeFileName" in body) {
       updateData.resume_file_name = body.resumeFileName;
       delete updateData.resumeFileName;
+    }
+
+    // Map badges field
+    if ("badges" in body) {
+      updateData.badges = body.badges || [];
     }
 
     // Partial update user in Supabase

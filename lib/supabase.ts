@@ -25,6 +25,7 @@ export interface Database {
           experience: string | null;
           location: string | null;
           certifications: any[] | null;
+          badges: string[] | null;
           resume_url: string | null;
           resume_file_name: string | null;
           created_at: string;
@@ -45,6 +46,7 @@ export interface Database {
           experience?: string | null;
           location?: string | null;
           certifications?: any[] | null;
+          badges?: string[] | null;
           resume_url?: string | null;
           resume_file_name?: string | null;
           created_at?: string;
@@ -65,6 +67,7 @@ export interface Database {
           experience?: string | null;
           location?: string | null;
           certifications?: any[] | null;
+          badges?: string[] | null;
           resume_url?: string | null;
           resume_file_name?: string | null;
           created_at?: string;

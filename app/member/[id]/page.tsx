@@ -11,6 +11,7 @@ import { EditProfileHeader } from "@/components/edit-profile-header";
 import { EditContactInfo } from "@/components/edit-contact-info";
 import { EditSkills } from "@/components/edit-skills";
 import { EditCertifications } from "@/components/edit-certifications";
+import { UserBadges } from "@/components/user-badges";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
 import {
   MapPin,
@@ -127,6 +128,7 @@ function MemberPageContent({ params }: MemberPageProps) {
                 role: member.role,
                 avatar: member.avatar,
                 bio: member.bio,
+                badges: member.badges,
                 resumeUrl: member.resumeUrl,
                 resumeFileName: member.resumeFileName,
               }}
@@ -144,9 +146,12 @@ function MemberPageContent({ params }: MemberPageProps) {
                     />
                   </div>
                   <div className="flex-1">
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      {member.name}
-                    </h2>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                        {member.name}
+                      </h2>
+                      <UserBadges badges={member.badges || []} size="md" />
+                    </div>
                     <p className="text-xl text-gray-600 dark:text-gray-400 font-medium mb-4">
                       {member.role}
                     </p>

@@ -47,15 +47,39 @@ BEGIN
   END IF;
 END $$;
 
+-- Add badges field if it doesn't exist
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 
+    FROM information_schema.columns 
+    WHERE table_name = 'users' 
+    AND column_name = 'badges'
+  ) THEN
+    ALTER TABLE users ADD COLUMN badges TEXT[] DEFAULT '{}';
+    RAISE NOTICE 'badges column added successfully';
+  ELSE
+    RAISE NOTICE 'badges column already exists';
+  END IF;
+END $$;
+
 -- Update existing users to have empty certifications array if null
 UPDATE users 
 SET certifications = '[]'::jsonb 
 WHERE certifications IS NULL;
 
+-- Update existing users to have empty badges array if null
+UPDATE users 
+SET badges = '{}' 
+WHERE badges IS NULL;
+
 -- Add index for better performance on certifications queries
 CREATE INDEX IF NOT EXISTS idx_users_certifications ON users USING GIN(certifications);
+
+-- Add index for badges
+CREATE INDEX IF NOT EXISTS idx_users_badges ON users USING GIN(badges);
 
 -- Verify the columns were added
 SELECT column_name, data_type, column_default
 FROM information_schema.columns
-WHERE table_name = 'users' AND column_name IN ('certifications', 'resume_url', 'resume_file_name'); 
+WHERE table_name = 'users' AND column_name IN ('certifications', 'resume_url', 'resume_file_name', 'badges'); 

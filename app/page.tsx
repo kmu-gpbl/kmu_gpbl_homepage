@@ -122,20 +122,6 @@ function HomePageContent() {
                 </div>
               </div>
             </div>
-
-            {/* Floating Icons */}
-            <div className="absolute top-10 left-10 animate-bounce delay-100">
-              <div className="text-2xl opacity-70">💻</div>
-            </div>
-            <div className="absolute top-20 right-16 animate-bounce delay-300">
-              <div className="text-2xl opacity-70">⚡</div>
-            </div>
-            <div className="absolute bottom-10 left-20 animate-bounce delay-500">
-              <div className="text-2xl opacity-70">🎨</div>
-            </div>
-            <div className="absolute bottom-16 right-10 animate-bounce delay-700">
-              <div className="text-2xl opacity-70">🚀</div>
-            </div>
           </div>
         </div>
       </header>
