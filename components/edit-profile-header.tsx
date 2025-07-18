@@ -14,6 +14,7 @@ import {
   Check,
   Code,
   Palette,
+  ExternalLink,
 } from "lucide-react";
 import { UserBadges } from "./user-badges";
 import type { BadgeType } from "@/types/api";
@@ -366,17 +367,18 @@ export function EditProfileHeader({
                     {initialData.resumeFileName || "Resume"}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Download resume file
+                    Open resume file
                   </p>
                 </div>
                 <a
                   href={initialData.resumeUrl}
-                  download={initialData.resumeFileName || "resume"}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
-                  title="Download resume"
+                  title="Open resume"
                 >
-                  <Download className="w-4 h-4" />
-                  Download
+                  Open
+                  <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
             </div>

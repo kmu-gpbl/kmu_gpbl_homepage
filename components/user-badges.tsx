@@ -11,7 +11,7 @@ interface UserBadgesProps {
 
 const badgeConfig = {
   verified: {
-    label: "Site operator. Reach out if assistance is needed.",
+    label: "Site Operator",
     icon: Check,
     color: "text-white",
     bgColor: "bg-blue-600 dark:bg-blue-700",
