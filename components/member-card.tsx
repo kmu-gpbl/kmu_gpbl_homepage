@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { UserSummary } from "@/types/api";
 import { Github, Linkedin, ExternalLink } from "lucide-react";
+import { UserBadges } from "./user-badges";
 
 interface MemberCardProps {
   member: UserSummary;
@@ -16,20 +17,10 @@ const specialtyColors = {
   design: "bg-purple-500",
 };
 
-const specialtyIcons = {
-  frontend: "🎨",
-  backend: "⚡",
-  mobile: "📱",
-  ai: "🤖",
-  devops: "🚀",
-  design: "✨",
-};
-
 export function MemberCard({ member }: MemberCardProps) {
   const primarySpecialty = member
     .specialties[0] as keyof typeof specialtyColors;
   const colorClass = specialtyColors[primarySpecialty] || "bg-gray-500";
-  const specialtyIcon = specialtyIcons[primarySpecialty] || "👤";
 
   return (
     <Link href={`/member/${member.id}`}>
@@ -56,15 +47,16 @@ export function MemberCard({ member }: MemberCardProps) {
             </div>
 
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                {member.name}
-              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {member.name}
+                </h3>
+                <UserBadges badges={member.badges || []} size="card" />
+              </div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {member.role}
               </p>
             </div>
-
-            <div className="text-2xl">{specialtyIcon}</div>
           </div>
 
           {/* Specialties */}

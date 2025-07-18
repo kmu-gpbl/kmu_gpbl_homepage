@@ -24,6 +24,10 @@ export interface Database {
           skills: string[];
           experience: string | null;
           location: string | null;
+          certifications: any[] | null;
+          badges: string[] | null;
+          resume_url: string | null;
+          resume_file_name: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -41,6 +45,10 @@ export interface Database {
           skills?: string[];
           experience?: string | null;
           location?: string | null;
+          certifications?: any[] | null;
+          badges?: string[] | null;
+          resume_url?: string | null;
+          resume_file_name?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -58,6 +66,10 @@ export interface Database {
           skills?: string[];
           experience?: string | null;
           location?: string | null;
+          certifications?: any[] | null;
+          badges?: string[] | null;
+          resume_url?: string | null;
+          resume_file_name?: string | null;
           created_at?: string;
           updated_at?: string;
         };

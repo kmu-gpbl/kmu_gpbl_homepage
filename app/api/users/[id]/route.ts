@@ -8,18 +8,22 @@ export async function GET(
   try {
     const { id: userId } = await params;
 
+    // Get user from Supabase
     const user = await usersApi.getById(userId);
 
-    return NextResponse.json({
-      user,
-      message: "User information loaded successfully.",
-    });
+    // Ensure certifications field exists
+    const safeUser = {
+      ...user,
+      certifications: user.certifications || [],
+      badges: user.badges || [],
+      resumeUrl: user.resume_url,
+      resumeFileName: user.resume_file_name,
+    };
+
+    return NextResponse.json({ user: safeUser });
   } catch (error) {
-    console.error("User information loading failed:", error);
-    return NextResponse.json(
-      { error: "An error occurred while loading user information." },
-      { status: 500 }
-    );
+    console.error("Failed to get user:", error);
+    return NextResponse.json({ error: "User not found." }, { status: 404 });
   }
 }
 
@@ -56,6 +60,10 @@ export async function PUT(
       skills: body.skills || [],
       experience: body.experience || "",
       location: body.location || "",
+      certifications: body.certifications || [],
+      badges: body.badges || [],
+      resume_url: body.resumeUrl || null,
+      resume_file_name: body.resumeFileName || null,
     };
 
     // Update user in Supabase
@@ -82,8 +90,26 @@ export async function PATCH(
     const { id: userId } = await params;
     const body = await request.json();
 
+    // Convert client field names to database field names
+    const updateData: any = { ...body };
+
+    // Map resume fields
+    if ("resumeUrl" in body) {
+      updateData.resume_url = body.resumeUrl;
+      delete updateData.resumeUrl;
+    }
+    if ("resumeFileName" in body) {
+      updateData.resume_file_name = body.resumeFileName;
+      delete updateData.resumeFileName;
+    }
+
+    // Map badges field
+    if ("badges" in body) {
+      updateData.badges = body.badges || [];
+    }
+
     // Partial update user in Supabase
-    const updatedUser = await usersApi.update(userId, body);
+    const updatedUser = await usersApi.update(userId, updateData);
 
     return NextResponse.json({
       message: "User information updated successfully.",

@@ -4,13 +4,14 @@ import { useState, useRef } from "react";
 import {
   Plus,
   X,
+  Save,
   User,
-  Mail,
-  MapPin,
-  Github,
-  Linkedin,
-  ExternalLink,
   Upload,
+  AlertCircle,
+  Award,
+  Building,
+  Calendar,
+  FileText,
 } from "lucide-react";
 
 interface AddMemberFormProps {
@@ -61,11 +62,25 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     skills: [] as string[],
     experience: "",
     location: "",
+    certifications: [] as any[],
+    badges: [] as string[],
+    resumeUrl: "",
+    resumeFileName: "",
   });
   const [newSkill, setNewSkill] = useState("");
+  const [newCert, setNewCert] = useState({
+    name: "",
+    organization: "",
+    issueDate: "",
+    expiryDate: "",
+    credentialId: "",
+    credentialUrl: "",
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -120,6 +135,10 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
           skills: [],
           experience: "",
           location: "",
+          certifications: [],
+          badges: [],
+          resumeUrl: "",
+          resumeFileName: "",
         });
         setNewSkill("");
         setTimeout(() => {
@@ -151,37 +170,60 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     }
   };
 
-  const removeSkill = (skill: string) => {
+  const removeSkill = (skillToRemove: string) => {
     setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.filter((s) => s !== skill),
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
   };
 
-  const handleAvatarUpload = async (file: File) => {
+  const addCertification = () => {
+    if (newCert.name && newCert.organization && newCert.issueDate) {
+      const certification = {
+        id: `cert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: newCert.name,
+        organization: newCert.organization,
+        issueDate: newCert.issueDate,
+        expiryDate: newCert.expiryDate || null,
+        credentialId: newCert.credentialId || null,
+        credentialUrl: newCert.credentialUrl || null,
+      };
+
+      setFormData((prev) => ({
+        ...prev,
+        certifications: [...prev.certifications, certification],
+      }));
+
+      setNewCert({
+        name: "",
+        organization: "",
+        issueDate: "",
+        expiryDate: "",
+        credentialId: "",
+        credentialUrl: "",
+      });
+    }
+  };
+
+  const removeCertification = (certId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      certifications: prev.certifications.filter((cert) => cert.id !== certId),
+    }));
+  };
+
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
     setUploadingAvatar(true);
+    setMessage(null);
+
     try {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        setMessage({
-          type: "error",
-          text: "Please select an image file.",
-        });
-        return;
-      }
-
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        setMessage({
-          type: "error",
-          text: "Image size must be less than 5MB.",
-        });
-        return;
-      }
-
       const formDataUpload = new FormData();
       formDataUpload.append("file", file);
-      formDataUpload.append("type", "avatar");
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -191,35 +233,105 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
       const result = await response.json();
 
       if (response.ok) {
-        setFormData({ ...formData, avatar: result.url });
+        setFormData((prev) => ({ ...prev, avatar: result.url }));
         setMessage({
           type: "success",
-          text: "Profile image uploaded successfully!",
+          text: "Avatar uploaded successfully!",
         });
-        setTimeout(() => setMessage(null), 3000);
       } else {
         setMessage({
           type: "error",
-          text: result.error || "Failed to upload image.",
+          text: result.error || "Failed to upload avatar.",
         });
       }
     } catch (error) {
-      console.error("Image upload failed:", error);
-      setMessage({ type: "error", text: "Failed to upload image." });
+      setMessage({
+        type: "error",
+        text: "Network error occurred while uploading avatar.",
+      });
     } finally {
       setUploadingAvatar(false);
     }
   };
 
-  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check if it's an image file
-      if (!file.type.startsWith("image/")) {
-        alert("Only image files can be uploaded.");
-        return;
+  const handleResumeUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // File type validation
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setMessage({
+        type: "error",
+        text: "Only PDF and Word documents are allowed for resume.",
+      });
+      return;
+    }
+
+    // File size validation (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({
+        type: "error",
+        text: "Resume file size cannot exceed 5MB.",
+      });
+      return;
+    }
+
+    setUploadingResume(true);
+    setMessage(null);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormData((prev) => ({
+          ...prev,
+          resumeUrl: result.url,
+          resumeFileName: file.name,
+        }));
+        setMessage({
+          type: "success",
+          text: "Resume uploaded successfully!",
+        });
+      } else {
+        setMessage({
+          type: "error",
+          text: result.error || "Failed to upload resume.",
+        });
       }
-      handleAvatarUpload(file);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: "Network error occurred while uploading resume.",
+      });
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const handleResumeDelete = () => {
+    setFormData((prev) => ({
+      ...prev,
+      resumeUrl: "",
+      resumeFileName: "",
+    }));
+    if (resumeInputRef.current) {
+      resumeInputRef.current.value = "";
     }
   };
 
@@ -294,6 +406,45 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      role: "",
+      specialties: [] as string[],
+      bio: "",
+      avatar: "",
+      github: "",
+      linkedin: "",
+      portfolio: "",
+      email: "",
+      skills: [] as string[],
+      experience: "",
+      location: "",
+      certifications: [] as any[],
+      badges: [] as string[],
+      resumeUrl: "",
+      resumeFileName: "",
+    });
+    setNewSkill("");
+    setNewCert({
+      name: "",
+      organization: "",
+      issueDate: "",
+      expiryDate: "",
+      credentialId: "",
+      credentialUrl: "",
+    });
+    setMessage(null);
+    setUploadingAvatar(false);
+    setUploadingResume(false);
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+    if (resumeInputRef.current) {
+      resumeInputRef.current.value = "";
+    }
+  };
+
   if (!isOpen) {
     return (
       <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 overflow-hidden h-full">
@@ -317,8 +468,6 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 Add a new member to your team
               </p>
             </div>
-
-            <div className="text-2xl">➕</div>
           </div>
 
           {/* Placeholder specialties */}
@@ -626,6 +775,166 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 </div>
               </div>
 
+              {/* Certifications */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Certifications
+                </label>
+
+                {/* Add New Certification */}
+                <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800 mb-4">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    Add New Certification
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Certification Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={newCert.name}
+                        onChange={(e) =>
+                          setNewCert({ ...newCert, name: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="e.g., AWS Certified Solutions Architect"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Issuing Organization *
+                      </label>
+                      <input
+                        type="text"
+                        value={newCert.organization}
+                        onChange={(e) =>
+                          setNewCert({
+                            ...newCert,
+                            organization: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="e.g., Amazon Web Services"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Issue Date *
+                      </label>
+                      <input
+                        type="date"
+                        value={newCert.issueDate}
+                        onChange={(e) =>
+                          setNewCert({ ...newCert, issueDate: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Expiry Date
+                      </label>
+                      <input
+                        type="date"
+                        value={newCert.expiryDate}
+                        onChange={(e) =>
+                          setNewCert({ ...newCert, expiryDate: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Credential ID
+                      </label>
+                      <input
+                        type="text"
+                        value={newCert.credentialId}
+                        onChange={(e) =>
+                          setNewCert({
+                            ...newCert,
+                            credentialId: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="Credential ID or License Number"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Credential URL
+                      </label>
+                      <input
+                        type="url"
+                        value={newCert.credentialUrl}
+                        onChange={(e) =>
+                          setNewCert({
+                            ...newCert,
+                            credentialUrl: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="URL to verify certification"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addCertification}
+                    disabled={
+                      !newCert.name ||
+                      !newCert.organization ||
+                      !newCert.issueDate
+                    }
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-md transition-colors text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Certification
+                  </button>
+                </div>
+
+                {/* Current Certifications */}
+                {formData.certifications.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                      Current Certifications
+                    </h4>
+                    <div className="space-y-2">
+                      {formData.certifications.map((cert) => (
+                        <div
+                          key={cert.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Award className="w-4 h-4 text-blue-500" />
+                            <div>
+                              <span className="font-medium text-gray-900 dark:text-white text-sm">
+                                {cert.name}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                                by {cert.organization}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeCertification(cert.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Avatar Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -650,7 +959,7 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                     <input
                       ref={avatarInputRef}
                       type="file"
-                      onChange={handleAvatarFileChange}
+                      onChange={handleAvatarChange}
                       className="hidden"
                       accept="image/*"
                     />
@@ -688,6 +997,72 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Upload JPG, PNG, GIF, etc. images. (Optional)
                 </p>
+              </div>
+
+              {/* Resume Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Resume
+                </label>
+                <div className="space-y-3">
+                  {/* Current resume */}
+                  {formData.resumeUrl && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <FileText className="w-5 h-5 text-blue-500" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {formData.resumeFileName || "Resume"}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Resume file uploaded
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleResumeDelete}
+                        className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                        title="Remove resume"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Upload controls */}
+                  <div className="flex gap-2">
+                    <input
+                      ref={resumeInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleResumeUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => resumeInputRef.current?.click()}
+                      disabled={uploadingResume}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                    >
+                      {uploadingResume ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          {formData.resumeUrl
+                            ? "Change Resume"
+                            : "Upload Resume"}
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Supported formats: PDF, DOC, DOCX (max 5MB)
+                  </p>
+                </div>
               </div>
 
               {/* Submit Buttons */}
