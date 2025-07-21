@@ -361,17 +361,17 @@ export function ProjectTimeline({
 
             {/* Project Card */}
             <div
-              className="ml-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group w-full cursor-pointer"
+              className="ml-6 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group w-full max-w-full overflow-hidden cursor-pointer"
               onClick={() => router.push(`/project/${project.id}`)}
             >
               {/* Project Header */}
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
                   <span className="text-2xl flex-shrink-0">
                     {typeIcons[project.type]}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  <div className="min-w-0 flex-1 max-w-full">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate overflow-hidden">
                       {project.title}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
@@ -388,7 +388,7 @@ export function ProjectTimeline({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0 min-w-fit">
                   {/* Status Badge */}
                   <div
                     className={`px-3 py-1 rounded-full text-xs font-bold text-white flex-shrink-0 ${
