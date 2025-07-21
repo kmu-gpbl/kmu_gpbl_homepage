@@ -22,6 +22,7 @@ import {
   Award,
   Building,
   Calendar,
+  FileText,
 } from "lucide-react";
 
 interface MemberPageProps {
@@ -34,6 +35,19 @@ const specialtyColors = {
   mobile: "bg-green-500",
   ai: "bg-orange-500",
   devops: "bg-indigo-500",
+};
+
+const specialtyLabels = {
+  frontend: "Frontend",
+  backend: "Backend",
+  mobile: "Mobile",
+  ai: "AI/ML",
+  devops: "DevOps",
+  design: "Design",
+  data: "Data",
+  security: "Security",
+  game: "Game",
+  blockchain: "Blockchain",
 };
 
 function MemberPageContent({ params }: MemberPageProps) {
@@ -137,8 +151,9 @@ function MemberPageContent({ params }: MemberPageProps) {
           ) : (
             <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
               <div className="p-6">
-                <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0">
+                {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <img
                       src={member.avatar || "/placeholder.svg"}
                       alt={member.name}
@@ -146,22 +161,52 @@ function MemberPageContent({ params }: MemberPageProps) {
                     />
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                         {member.name}
                       </h2>
                       <UserBadges badges={member.badges || []} size="md" />
                     </div>
-                    <p className="text-xl text-gray-600 dark:text-gray-400 font-medium mb-4">
+                    <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 font-medium mb-4">
                       {member.role}
                     </p>
                     {member.bio && (
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-base sm:text-lg whitespace-pre-line">
                         {member.bio}
                       </p>
                     )}
                   </div>
                 </div>
+
+                {/* Resume Download - Show in viewer mode */}
+                {member.resumeUrl && (
+                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                      Resume
+                    </h4>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <FileText className="w-5 h-5 text-blue-500" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {member.resumeFileName || "Resume"}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Open resume file
+                        </p>
+                      </div>
+                      <a
+                        href={member.resumeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
+                        title="Open resume"
+                      >
+                        Open
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -268,31 +313,45 @@ function MemberPageContent({ params }: MemberPageProps) {
                         Specialties
                       </h3>
                       <div className="flex flex-wrap gap-2">
-                        {member.specialties?.map((specialty: string) => (
-                          <span
-                            key={specialty}
-                            className="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
+                        {(member.specialties || []).length > 0 ? (
+                          member.specialties?.map((specialty: string) => (
+                            <span
+                              key={specialty}
+                              className="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full"
+                            >
+                              {specialtyLabels[
+                                specialty as keyof typeof specialtyLabels
+                              ] || specialty}
+                            </span>
+                          ))
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400 text-sm">
+                            No specialties registered.
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    {/* Skills */}
+                    {/* Technical Skills */}
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                         Technical Skills
                       </h3>
                       <div className="flex flex-wrap gap-2">
-                        {member.skills?.map((skill: string) => (
-                          <span
-                            key={skill}
-                            className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                        {(member.skills || []).length > 0 ? (
+                          member.skills?.map((skill: string) => (
+                            <span
+                              key={skill}
+                              className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md"
+                            >
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400 text-sm">
+                            No technical skills registered.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

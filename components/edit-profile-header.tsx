@@ -349,7 +349,7 @@ export function EditProfileHeader({
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               Bio
             </h4>
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
               {initialData.bio}
             </p>
           </div>

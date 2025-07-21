@@ -157,12 +157,12 @@ export function EditSkills({
         <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Tech Stack
+              Skills & Expertise
             </h2>
             <button
               onClick={() => setIsEditing(true)}
               className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="Edit Tech Stack"
+              title="Edit Skills & Expertise"
             >
               <Edit className="w-5 h-5" />
             </button>
@@ -172,14 +172,14 @@ export function EditSkills({
           {/* Specialties */}
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              Specialty
+              Specialties
             </h3>
             <div className="flex flex-wrap gap-2">
               {formData.specialties.length > 0 ? (
                 formData.specialties.map((specialty) => (
                   <span
                     key={specialty}
-                    className="px-3 py-1 text-sm font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-md"
+                    className="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full"
                   >
                     {specialtyLabels[
                       specialty as keyof typeof specialtyLabels
@@ -194,10 +194,10 @@ export function EditSkills({
             </div>
           </div>
 
-          {/* Tech Stack */}
+          {/* Technical Skills */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              Tech Stack
+              Technical Skills
             </h3>
             <div className="flex flex-wrap gap-2">
               {formData.skills.length > 0 ? (
@@ -211,7 +211,7 @@ export function EditSkills({
                 ))
               ) : (
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  No tech stack registered.
+                  No technical skills registered.
                 </p>
               )}
             </div>
@@ -226,7 +226,7 @@ export function EditSkills({
       <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            Edit Tech Stack
+            Edit Skills & Expertise
           </h2>
           <button
             onClick={handleCancel}
@@ -278,7 +278,7 @@ export function EditSkills({
         {/* Add Skills */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Skills
+            Technical Skills
           </label>
           <div className="flex gap-2 mb-3">
             <input

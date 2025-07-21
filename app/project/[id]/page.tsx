@@ -395,7 +395,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
               </h2>
             </div>
             <div className="p-6">
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg whitespace-pre-line">
                 {project.description}
               </p>
             </div>

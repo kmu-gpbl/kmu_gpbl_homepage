@@ -431,7 +431,7 @@ export function ProjectTimeline({
               </div>
 
               {/* Project Description */}
-              <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-3">
+              <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-3 whitespace-pre-line">
                 {project.description}
               </p>
 

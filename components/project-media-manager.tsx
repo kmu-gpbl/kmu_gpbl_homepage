@@ -127,7 +127,7 @@ export function ProjectMediaManager({
                     </div>
 
                     {mediaItem.description && (
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 whitespace-pre-line">
                         {mediaItem.description}
                       </p>
                     )}
