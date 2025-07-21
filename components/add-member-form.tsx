@@ -12,6 +12,7 @@ import {
   Building,
   Calendar,
   FileText,
+  Download,
 } from "lucide-react";
 
 interface AddMemberFormProps {
@@ -332,6 +333,27 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     }));
     if (resumeInputRef.current) {
       resumeInputRef.current.value = "";
+    }
+  };
+
+  const handleDownload = (url: string, filename: string) => {
+    try {
+      // Use server-side download API to avoid CORS issues
+      const downloadUrl = `/api/download?url=${encodeURIComponent(
+        url
+      )}&filename=${encodeURIComponent(filename)}`;
+
+      // Create a temporary anchor element and trigger download
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename || "resume";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback to opening in new tab
+      window.open(url, "_blank");
     }
   };
 
@@ -1017,14 +1039,29 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                           Resume file uploaded
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleResumeDelete}
-                        className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
-                        title="Remove resume"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDownload(
+                              formData.resumeUrl!,
+                              formData.resumeFileName || "resume"
+                            )
+                          }
+                          className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                          title="Download resume"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleResumeDelete}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                          title="Remove resume"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   )}
 

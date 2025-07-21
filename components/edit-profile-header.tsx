@@ -301,6 +301,27 @@ export function EditProfileHeader({
     }
   };
 
+  const handleDownload = (url: string, filename: string) => {
+    try {
+      // Use server-side download API to avoid CORS issues
+      const downloadUrl = `/api/download?url=${encodeURIComponent(
+        url
+      )}&filename=${encodeURIComponent(filename)}`;
+
+      // Create a temporary anchor element and trigger download
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename || "resume";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback to opening in new tab
+      window.open(url, "_blank");
+    }
+  };
+
   if (!isEditing) {
     return (
       <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
@@ -371,19 +392,34 @@ export function EditProfileHeader({
                     {initialData.resumeFileName || "Resume"}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Open resume file
+                    Open or download resume file
                   </p>
                 </div>
-                <a
-                  href={initialData.resumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
-                  title="Open resume"
-                >
-                  Open
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+                <div className="flex gap-2">
+                  <a
+                    href={initialData.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
+                    title="Open resume"
+                  >
+                    Open
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <button
+                    onClick={() =>
+                      handleDownload(
+                        initialData.resumeUrl!,
+                        initialData.resumeFileName || "resume"
+                      )
+                    }
+                    className="flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm"
+                    title="Download resume"
+                  >
+                    Download
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -551,14 +587,29 @@ export function EditProfileHeader({
                     Current resume file
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleResumeDelete}
-                  className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
-                  title="Remove resume"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDownload(
+                        formData.resumeUrl!,
+                        formData.resumeFileName || "resume"
+                      )
+                    }
+                    className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                    title="Download resume"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResumeDelete}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    title="Remove resume"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
 
