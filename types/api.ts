@@ -20,7 +20,12 @@ export interface PaginatedResponse<T> {
 }
 
 // Badge Types
-export type BadgeType = "verified" | "developer" | "designer";
+export type BadgeType =
+  | "verified"
+  | "developer"
+  | "designer"
+  | "seniorStudent"
+  | "openToWork";
 
 export interface Badge {
   type: BadgeType;

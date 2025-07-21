@@ -14,6 +14,8 @@ import {
   Check,
   Code,
   Palette,
+  GraduationCap,
+  Briefcase,
   ExternalLink,
 } from "lucide-react";
 import { UserBadges } from "./user-badges";
@@ -21,7 +23,11 @@ import type { BadgeType } from "@/types/api";
 import { useEditMode } from "@/contexts/edit-mode-context";
 
 // 편집 가능한 뱃지 타입 정의
-type EditableBadgeType = "developer" | "designer";
+type EditableBadgeType =
+  | "developer"
+  | "designer"
+  | "seniorStudent"
+  | "openToWork";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -67,7 +73,10 @@ export function EditProfileHeader({
     bio: initialData.bio,
     badges: (initialData.badges || []).filter(
       (badge): badge is EditableBadgeType =>
-        badge === "developer" || badge === "designer"
+        badge === "developer" ||
+        badge === "designer" ||
+        badge === "seniorStudent" ||
+        badge === "openToWork"
     ),
     resumeUrl: initialData.resumeUrl || "",
     resumeFileName: initialData.resumeFileName || "",
@@ -106,7 +115,10 @@ export function EditProfileHeader({
       // 편집 가능한 뱃지들만 비교
       const currentEditableBadges = (initialData.badges || []).filter(
         (badge): badge is EditableBadgeType =>
-          badge === "developer" || badge === "designer"
+          badge === "developer" ||
+          badge === "designer" ||
+          badge === "seniorStudent" ||
+          badge === "openToWork"
       );
 
       if (
@@ -516,7 +528,7 @@ export function EditProfileHeader({
             {[
               {
                 type: "developer" as const,
-                label: "Developer",
+                label: "Software Developer",
                 icon: Code,
                 color: "text-green-500",
                 bgColor: "bg-green-100 dark:bg-green-900/20",
@@ -527,6 +539,20 @@ export function EditProfileHeader({
                 icon: Palette,
                 color: "text-purple-500",
                 bgColor: "bg-purple-100 dark:bg-purple-900/20",
+              },
+              {
+                type: "seniorStudent" as const,
+                label: "Senior Student (Graduation Expected Next Semester)",
+                icon: GraduationCap,
+                color: "text-amber-500",
+                bgColor: "bg-amber-100 dark:bg-amber-900/20",
+              },
+              {
+                type: "openToWork" as const,
+                label: "Open to Work",
+                icon: Briefcase,
+                color: "text-teal-500",
+                bgColor: "bg-teal-100 dark:bg-teal-900/20",
               },
             ].map((badge) => {
               const isSelected = formData.badges.includes(badge.type);
