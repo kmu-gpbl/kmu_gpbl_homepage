@@ -116,14 +116,14 @@ export async function POST(request: NextRequest) {
       const startDate = new Date(body.startDate);
       if (cleanEndDate) {
         const endDate = new Date(cleanEndDate);
-        period = `${startDate.getFullYear()}.${String(
-          startDate.getMonth() + 1
-        ).padStart(2, "0")} - ${endDate.getFullYear()}.${String(
-          endDate.getMonth() + 1
+        period = `${startDate.getUTCFullYear()}.${String(
+          startDate.getUTCMonth() + 1
+        ).padStart(2, "0")} - ${endDate.getUTCFullYear()}.${String(
+          endDate.getUTCMonth() + 1
         ).padStart(2, "0")}`;
       } else {
-        period = `${startDate.getFullYear()}.${String(
-          startDate.getMonth() + 1
+        period = `${startDate.getUTCFullYear()}.${String(
+          startDate.getUTCMonth() + 1
         ).padStart(2, "0")} - Present`;
       }
     }

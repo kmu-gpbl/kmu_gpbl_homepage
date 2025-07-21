@@ -11,6 +11,7 @@ import {
   Linkedin,
   ExternalLink,
 } from "lucide-react";
+import { useEditMode } from "@/contexts/edit-mode-context";
 
 interface EditContactInfoProps {
   memberId: string;
@@ -28,6 +29,7 @@ export function EditContactInfo({
   initialData,
   onContactUpdated,
 }: EditContactInfoProps) {
+  const { isEditMode } = useEditMode();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     email: initialData.email || "",
@@ -191,13 +193,15 @@ export function EditContactInfo({
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Contact Information
             </h2>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="Edit Contact"
-            >
-              <Edit className="w-5 h-5" />
-            </button>
+            {isEditMode && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                title="Edit Contact"
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
         <div className="p-6">

@@ -90,7 +90,7 @@ export function EditBioForm({
           </div>
         </div>
         <div className="p-6">
-          <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+          <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4 whitespace-pre-line">
             {bio}
           </p>
         </div>

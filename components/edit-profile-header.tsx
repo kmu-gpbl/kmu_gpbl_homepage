@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { UserBadges } from "./user-badges";
 import type { BadgeType } from "@/types/api";
+import { useEditMode } from "@/contexts/edit-mode-context";
 
 // 편집 가능한 뱃지 타입 정의
 type EditableBadgeType = "developer" | "designer";
@@ -57,6 +58,7 @@ export function EditProfileHeader({
   initialData,
   onProfileUpdated,
 }: EditProfileHeaderProps) {
+  const { isEditMode } = useEditMode();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: initialData.name,
@@ -307,13 +309,15 @@ export function EditProfileHeader({
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Profile Information
             </h2>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-              title="Edit Profile"
-            >
-              <Edit className="w-5 h-5" />
-            </button>
+            {isEditMode && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                title="Edit Profile"
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -349,7 +353,7 @@ export function EditProfileHeader({
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
               Bio
             </h4>
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
               {initialData.bio}
             </p>
           </div>

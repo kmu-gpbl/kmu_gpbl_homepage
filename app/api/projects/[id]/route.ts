@@ -87,14 +87,14 @@ export async function PUT(
       const startDateObj = new Date(startDate);
       if (cleanEndDate) {
         const endDateObj = new Date(cleanEndDate);
-        period = `${startDateObj.getFullYear()}.${String(
-          startDateObj.getMonth() + 1
-        ).padStart(2, "0")} - ${endDateObj.getFullYear()}.${String(
-          endDateObj.getMonth() + 1
+        period = `${startDateObj.getUTCFullYear()}.${String(
+          startDateObj.getUTCMonth() + 1
+        ).padStart(2, "0")} - ${endDateObj.getUTCFullYear()}.${String(
+          endDateObj.getUTCMonth() + 1
         ).padStart(2, "0")}`;
       } else {
-        period = `${startDateObj.getFullYear()}.${String(
-          startDateObj.getMonth() + 1
+        period = `${startDateObj.getUTCFullYear()}.${String(
+          startDateObj.getUTCMonth() + 1
         ).padStart(2, "0")} - Present`;
       }
     }
