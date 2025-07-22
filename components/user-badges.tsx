@@ -135,7 +135,7 @@ export function UserBadges({
                 transition-opacity duration-200
                 pointer-events-none
                 whitespace-nowrap
-                z-30
+                z-50
               `}
             >
               {config.label}
