@@ -17,6 +17,7 @@ import {
   GraduationCap,
   Briefcase,
   ExternalLink,
+  Shield,
 } from "lucide-react";
 import { UserBadges } from "./user-badges";
 import type { BadgeType } from "@/types/api";
@@ -368,12 +369,35 @@ export function EditProfileHeader({
                 <User className="w-8 h-8 text-gray-400" />
               )}
             </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {initialData.name}
-                </h3>
-                <UserBadges badges={initialData.badges || []} size="md" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {initialData.name}
+                  </h3>
+                  <UserBadges
+                    badges={(initialData.badges || []).filter(
+                      (badge) => badge !== "verified"
+                    )}
+                    size="md"
+                  />
+                </div>
+
+                {/* Site Administrator Icon */}
+                {(initialData.badges || []).includes("verified") && (
+                  <div className="relative z-20 group/admin">
+                    <div className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-110 cursor-help">
+                      <Shield className="w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" />
+                    </div>
+
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full right-0 mb-1 px-2 py-1 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 text-sm rounded opacity-0 group-hover/admin:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      Site Administrator
+                      {/* Tooltip arrow */}
+                      <div className="absolute top-full right-2 border-2 border-transparent border-t-gray-900 dark:border-t-gray-100" />
+                    </div>
+                  </div>
+                )}
               </div>
               <p className="text-gray-600 dark:text-gray-400">
                 {initialData.role}
