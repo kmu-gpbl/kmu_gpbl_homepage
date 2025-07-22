@@ -1,6 +1,6 @@
 "use client";
 
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -52,6 +52,7 @@ const specialtyLabels = {
 
 function MemberPageContent({ params }: MemberPageProps) {
   const { isEditMode } = useEditMode();
+  const router = useRouter();
   const [member, setMember] = useState<any>(null);
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,7 +130,7 @@ function MemberPageContent({ params }: MemberPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <PageHeader title={member.name} />
+      <PageHeader title={member.name} onBack={() => router.push("/")} />
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-8">

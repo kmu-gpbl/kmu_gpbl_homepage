@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Code, Palette } from "lucide-react";
+import { Check, Code, Palette, GraduationCap, Briefcase } from "lucide-react";
 import type { BadgeType } from "@/types/api";
 
 interface UserBadgesProps {
@@ -11,13 +11,13 @@ interface UserBadgesProps {
 
 const badgeConfig = {
   verified: {
-    label: "Site Operator",
+    label: "Site Administrator",
     icon: Check,
     color: "text-white",
     bgColor: "bg-blue-600 dark:bg-blue-700",
   },
   developer: {
-    label: "Developer",
+    label: "Software Developer",
     icon: Code,
     color: "text-white",
     bgColor: "bg-green-600 dark:bg-green-700",
@@ -27,6 +27,18 @@ const badgeConfig = {
     icon: Palette,
     color: "text-white",
     bgColor: "bg-purple-600 dark:bg-purple-700",
+  },
+  seniorStudent: {
+    label: "Senior Student (Graduation Expected Next Semester)",
+    icon: GraduationCap,
+    color: "text-white",
+    bgColor: "bg-amber-600 dark:bg-amber-700",
+  },
+  openToWork: {
+    label: "Open to Work",
+    icon: Briefcase,
+    color: "text-white",
+    bgColor: "bg-teal-600 dark:bg-teal-700",
   },
 };
 
@@ -64,8 +76,14 @@ export function UserBadges({
 
   const sizeStyles = sizeConfig[size];
 
-  // 뱃지 순서 정의 (verified, developer, designer)
-  const badgeOrder: BadgeType[] = ["verified", "developer", "designer"];
+  // 뱃지 순서 정의 (verified, developer, designer, seniorStudent, openToWork)
+  const badgeOrder: BadgeType[] = [
+    "verified",
+    "developer",
+    "designer",
+    "seniorStudent",
+    "openToWork",
+  ];
 
   // 전달받은 뱃지들을 정의된 순서대로 정렬
   const sortedBadges = badgeOrder.filter((badgeType) =>

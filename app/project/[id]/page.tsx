@@ -1,6 +1,6 @@
 "use client";
 
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { PageHeader } from "@/components/page-header";
 import { ProjectMediaManager } from "@/components/project-media-manager";
@@ -59,6 +59,7 @@ const statusLabels = {
 
 function ProjectPageContent({ params }: ProjectPageProps) {
   const { isEditMode } = useEditMode();
+  const router = useRouter();
   const [project, setProject] = useState<ProjectWithMembers | null>(null);
   const [loading, setLoading] = useState(true);
   const [projectId, setProjectId] = useState<string>("");
@@ -328,9 +329,23 @@ function ProjectPageContent({ params }: ProjectPageProps) {
 
   const colorClass = typeColors[project.type];
 
+  const handleBack = () => {
+    // 프로젝트의 첫 번째 멤버의 프로필 페이지로 이동
+    if (project?.members && project.members.length > 0) {
+      router.push(`/member/${project.members[0].id}`);
+    } else {
+      // 멤버 정보가 없으면 메인 페이지로 이동
+      router.push("/");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <PageHeader showBackButton={true} showHomeButton={true} />
+      <PageHeader
+        showBackButton={true}
+        showHomeButton={true}
+        onBack={handleBack}
+      />
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">

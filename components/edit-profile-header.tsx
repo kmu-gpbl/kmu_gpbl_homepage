@@ -14,6 +14,8 @@ import {
   Check,
   Code,
   Palette,
+  GraduationCap,
+  Briefcase,
   ExternalLink,
 } from "lucide-react";
 import { UserBadges } from "./user-badges";
@@ -21,7 +23,11 @@ import type { BadgeType } from "@/types/api";
 import { useEditMode } from "@/contexts/edit-mode-context";
 
 // 편집 가능한 뱃지 타입 정의
-type EditableBadgeType = "developer" | "designer";
+type EditableBadgeType =
+  | "developer"
+  | "designer"
+  | "seniorStudent"
+  | "openToWork";
 
 interface EditProfileHeaderProps {
   memberId: string;
@@ -67,7 +73,10 @@ export function EditProfileHeader({
     bio: initialData.bio,
     badges: (initialData.badges || []).filter(
       (badge): badge is EditableBadgeType =>
-        badge === "developer" || badge === "designer"
+        badge === "developer" ||
+        badge === "designer" ||
+        badge === "seniorStudent" ||
+        badge === "openToWork"
     ),
     resumeUrl: initialData.resumeUrl || "",
     resumeFileName: initialData.resumeFileName || "",
@@ -106,7 +115,10 @@ export function EditProfileHeader({
       // 편집 가능한 뱃지들만 비교
       const currentEditableBadges = (initialData.badges || []).filter(
         (badge): badge is EditableBadgeType =>
-          badge === "developer" || badge === "designer"
+          badge === "developer" ||
+          badge === "designer" ||
+          badge === "seniorStudent" ||
+          badge === "openToWork"
       );
 
       if (
@@ -301,6 +313,27 @@ export function EditProfileHeader({
     }
   };
 
+  const handleDownload = (url: string, filename: string) => {
+    try {
+      // Use server-side download API to avoid CORS issues
+      const downloadUrl = `/api/download?url=${encodeURIComponent(
+        url
+      )}&filename=${encodeURIComponent(filename)}`;
+
+      // Create a temporary anchor element and trigger download
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename || "resume";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Download failed:", error);
+      // Fallback to opening in new tab
+      window.open(url, "_blank");
+    }
+  };
+
   if (!isEditing) {
     return (
       <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
@@ -364,26 +397,46 @@ export function EditProfileHeader({
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                 Resume
               </h4>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {initialData.resumeFileName || "Resume"}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Open resume file
-                  </p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      title={initialData.resumeFileName || "Resume"}
+                    >
+                      {initialData.resumeFileName || "Resume"}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Open or download resume file
+                    </p>
+                  </div>
                 </div>
-                <a
-                  href={initialData.resumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
-                  title="Open resume"
-                >
-                  Open
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+                <div className="flex gap-2 flex-shrink-0 self-end sm:self-auto">
+                  <a
+                    href={initialData.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
+                    title="Open resume"
+                  >
+                    Open
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <button
+                    onClick={() =>
+                      handleDownload(
+                        initialData.resumeUrl!,
+                        initialData.resumeFileName || "resume"
+                      )
+                    }
+                    className="flex items-center gap-2 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm"
+                    title="Download resume"
+                  >
+                    Download
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -480,7 +533,7 @@ export function EditProfileHeader({
             {[
               {
                 type: "developer" as const,
-                label: "Developer",
+                label: "Software Developer",
                 icon: Code,
                 color: "text-green-500",
                 bgColor: "bg-green-100 dark:bg-green-900/20",
@@ -491,6 +544,20 @@ export function EditProfileHeader({
                 icon: Palette,
                 color: "text-purple-500",
                 bgColor: "bg-purple-100 dark:bg-purple-900/20",
+              },
+              {
+                type: "seniorStudent" as const,
+                label: "Senior Student (Graduation Expected Next Semester)",
+                icon: GraduationCap,
+                color: "text-amber-500",
+                bgColor: "bg-amber-100 dark:bg-amber-900/20",
+              },
+              {
+                type: "openToWork" as const,
+                label: "Open to Work",
+                icon: Briefcase,
+                color: "text-teal-500",
+                bgColor: "bg-teal-100 dark:bg-teal-900/20",
               },
             ].map((badge) => {
               const isSelected = formData.badges.includes(badge.type);
@@ -541,24 +608,44 @@ export function EditProfileHeader({
           <div className="space-y-3">
             {/* Current resume */}
             {formData.resumeUrl && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {formData.resumeFileName || "Resume"}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Current resume file
-                  </p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      title={formData.resumeFileName || "Resume"}
+                    >
+                      {formData.resumeFileName || "Resume"}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Current resume file
+                    </p>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleResumeDelete}
-                  className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
-                  title="Remove resume"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDownload(
+                        formData.resumeUrl!,
+                        formData.resumeFileName || "resume"
+                      )
+                    }
+                    className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                    title="Download resume"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResumeDelete}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    title="Remove resume"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
 
