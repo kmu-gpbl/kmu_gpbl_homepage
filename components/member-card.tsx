@@ -24,9 +24,11 @@ export function MemberCard({ member }: MemberCardProps) {
 
   return (
     <Link href={`/member/${member.id}`}>
-      <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white transition-colors duration-200 overflow-hidden h-full">
+      <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white transition-colors duration-200 overflow-visible h-full">
         {/* Header with specialty color */}
-        <div className={`${colorClass} h-2 w-full`} />
+        <div className="overflow-hidden rounded-t-[10px]">
+          <div className={`${colorClass} h-2.5 w-full`} />
+        </div>
 
         <div className="p-6 flex flex-col h-full">
           {/* Profile section */}
