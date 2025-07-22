@@ -397,17 +397,22 @@ export function EditProfileHeader({
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                 Resume
               </h4>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {initialData.resumeFileName || "Resume"}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Open or download resume file
-                  </p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      title={initialData.resumeFileName || "Resume"}
+                    >
+                      {initialData.resumeFileName || "Resume"}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Open or download resume file
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0 self-end sm:self-auto">
                   <a
                     href={initialData.resumeUrl}
                     target="_blank"
@@ -603,17 +608,22 @@ export function EditProfileHeader({
           <div className="space-y-3">
             {/* Current resume */}
             {formData.resumeUrl && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-500" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {formData.resumeFileName || "Resume"}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Current resume file
-                  </p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                      title={formData.resumeFileName || "Resume"}
+                    >
+                      {formData.resumeFileName || "Resume"}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Current resume file
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-auto">
                   <button
                     type="button"
                     onClick={() =>
