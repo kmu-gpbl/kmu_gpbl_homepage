@@ -32,6 +32,19 @@ const specialtyOptions = [
   "blockchain",
 ];
 
+const specialtyLabels = {
+  frontend: "Frontend",
+  backend: "Backend",
+  mobile: "Mobile",
+  ai: "AI/ML",
+  devops: "DevOps",
+  design: "Design",
+  data: "Data",
+  security: "Security",
+  game: "Game",
+  blockchain: "Blockchain",
+};
+
 const roleOptions = [
   "Frontend Developer",
   "Backend Developer",
@@ -613,8 +626,12 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       }`}
                     >
                       <div className="text-center">
-                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
-                          {specialty}
+                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                          {
+                            specialtyLabels[
+                              specialty as keyof typeof specialtyLabels
+                            ]
+                          }
                         </div>
                       </div>
                     </button>

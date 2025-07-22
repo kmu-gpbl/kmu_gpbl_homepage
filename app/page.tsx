@@ -128,7 +128,7 @@ function HomePageContent() {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto">
           <FilterTabs members={members} onMemberAdded={handleMemberAdded} />
         </div>
       </main>
