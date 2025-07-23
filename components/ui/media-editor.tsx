@@ -272,6 +272,68 @@ export function MediaEditor({
     return mediaType ? mediaType.icon : File;
   };
 
+  const MediaThumbnail = ({ item }: { item: MediaItem }) => {
+    const [imageError, setImageError] = useState(false);
+    const [videoError, setVideoError] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    if (item.type === "image" && item.url && !imageError) {
+      return (
+        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+          )}
+          <img
+            src={item.url}
+            alt={item.title}
+            className="w-full h-full object-cover"
+            onLoad={() => setLoading(false)}
+            onError={() => {
+              setImageError(true);
+              setLoading(false);
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (item.type === "video" && item.url && !videoError) {
+      return (
+        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+          )}
+          <video
+            src={item.url}
+            className="w-full h-full object-cover"
+            muted
+            playsInline
+            onLoadedData={() => setLoading(false)}
+            onError={() => {
+              setVideoError(true);
+              setLoading(false);
+            }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            <Play className="w-6 h-6 text-white" />
+          </div>
+        </div>
+      );
+    }
+
+    // Fallback to icon for other types or errors
+    const IconComponent = getMediaIcon(item.type);
+    return (
+      <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+        <IconComponent className="w-8 h-8 text-gray-500" />
+      </div>
+    );
+  };
+
   const resetForm = () => {
     setNewItem({
       type: "image",
@@ -436,48 +498,51 @@ export function MediaEditor({
             return (
               <div
                 key={index}
-                className="group p-6 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors min-h-[140px] flex flex-col"
+                className="group p-6 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors min-h-[160px] flex flex-col"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <IconComponent className="w-5 h-5 text-gray-500" />
-                    <h4 className="font-medium text-gray-900 dark:text-white">
-                      {item.title}
-                    </h4>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setEditingIndex(index)}
-                      className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                      title="Edit"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(index)}
-                      className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      title="Remove"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <MediaThumbnail item={item} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-medium text-gray-900 dark:text-white truncate pr-2">
+                          {item.title}
+                        </h4>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setEditingIndex(index)}
+                            className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                            title="Edit"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(index)}
+                            className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                            title="Remove"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
+                        {mediaTypes.find((t) => t.value === item.type)?.label}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex-1 mb-4">
                   {item.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                       {item.description}
                     </p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between mt-auto">
-                  <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
-                    {mediaTypes.find((t) => t.value === item.type)?.label}
-                  </span>
-
+                <div className="flex items-center justify-end mt-auto">
                   {item.url && (
                     <a
                       href={item.url}
