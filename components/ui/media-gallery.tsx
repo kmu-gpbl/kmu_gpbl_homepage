@@ -21,6 +21,59 @@ interface MediaGalleryProps {
   className?: string;
 }
 
+// YouTube utility functions
+function isYouTubeUrl(url: string): boolean {
+  const youtubePatterns = [
+    /^https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
+    /^https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)/,
+    /^https?:\/\/(m\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
+  ];
+
+  return youtubePatterns.some((pattern) => pattern.test(url));
+}
+
+function extractYouTubeVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+
+  return null;
+}
+
+// YouTube Embed Component
+const YouTubeEmbed = React.memo(({ item }: { item: ProjectMedia }) => {
+  const videoId = extractYouTubeVideoId(item.url);
+
+  if (!videoId) {
+    return null;
+  }
+
+  const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+
+  return (
+    <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
+      <iframe
+        src={embedUrl}
+        title={item.title || "YouTube Video"}
+        className="w-full h-full"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+
+      {/* No overlay for YouTube embed to avoid interfering with player controls */}
+    </div>
+  );
+});
+
 // LinkPreview component for OpenGraph data
 const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
   const [ogData, setOgData] = useState<any>(null);
@@ -209,10 +262,19 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Filter media types for different displays
+  // Include YouTube videos in visual media
   const visualMedia = media.filter(
-    (item) => item.type === "image" || item.type === "video"
+    (item) =>
+      item.type === "image" ||
+      item.type === "video" ||
+      (item.type === "url" && isYouTubeUrl(item.url))
   );
-  const linkMedia = media.filter((item) => item.type === "url");
+
+  // Exclude YouTube videos from link media
+  const linkMedia = media.filter(
+    (item) => item.type === "url" && !isYouTubeUrl(item.url)
+  );
+
   const documentMedia = media.filter((item) => item.type === "presentation");
 
   const openLightbox = (index: number) => {
@@ -256,6 +318,20 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [isLightboxOpen]);
 
+  // Prevent background scroll when lightbox is open
+  useEffect(() => {
+    if (isLightboxOpen) {
+      // Save current overflow and disable scrolling
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        // Restore original overflow when lightbox closes
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isLightboxOpen]);
+
   if (media.length === 0) {
     return (
       <div className={`text-center py-12 ${className}`}>
@@ -272,7 +348,7 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
 
   return (
     <>
-      {/* Lightbox Modal - Outside of space-y-8 container */}
+      {/* Lightbox Modal - All visual media including YouTube */}
       {isLightboxOpen && visualMedia.length > 0 && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
           <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
@@ -310,14 +386,32 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                   alt={visualMedia[lightboxIndex].title}
                   className="max-w-full max-h-full object-contain"
                 />
-              ) : (
+              ) : visualMedia[lightboxIndex]?.type === "video" ? (
                 <video
                   src={visualMedia[lightboxIndex].url}
                   className="max-w-full max-h-full"
                   controls
                   autoPlay
                 />
-              )}
+              ) : visualMedia[lightboxIndex]?.type === "url" &&
+                isYouTubeUrl(visualMedia[lightboxIndex].url) ? (
+                <div className="w-[95vw] h-[95vh] flex items-center justify-center">
+                  <div className="aspect-video max-w-full max-h-full w-full">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${extractYouTubeVideoId(
+                        visualMedia[lightboxIndex].url
+                      )}`}
+                      title={
+                        visualMedia[lightboxIndex].title || "YouTube Video"
+                      }
+                      className="w-full h-full rounded-lg"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {/* Info bar - Bottom for both image and video */}
@@ -339,7 +433,7 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
       )}
 
       <div className={`space-y-8 ${className}`}>
-        {/* Visual Media Carousel (Images & Videos) */}
+        {/* Visual Media Carousel (Images, Videos & YouTube) */}
         {visualMedia.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -349,39 +443,92 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
 
             {/* Main Display */}
             <div className="relative group">
-              <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
-                {visualMedia[selectedIndex]?.type === "image" ? (
-                  <img
-                    src={visualMedia[selectedIndex].url}
-                    alt={visualMedia[selectedIndex].title}
-                    className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                    onClick={() => openLightbox(selectedIndex)}
-                  />
-                ) : (
-                  <div className="relative w-full h-full">
-                    <video
+              {/* Check if current item is YouTube video */}
+              {visualMedia[selectedIndex]?.type === "url" &&
+              isYouTubeUrl(visualMedia[selectedIndex].url) ? (
+                <YouTubeEmbed item={visualMedia[selectedIndex]} />
+              ) : (
+                <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden">
+                  {visualMedia[selectedIndex]?.type === "image" ? (
+                    <img
                       src={visualMedia[selectedIndex].url}
-                      className="w-full h-full object-cover"
-                      controls
-                      poster=""
+                      alt={visualMedia[selectedIndex].title}
+                      className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                      onClick={() => openLightbox(selectedIndex)}
                     />
-                  </div>
-                )}
-
-                {/* Zoom overlay for images */}
-                {visualMedia[selectedIndex]?.type === "image" && (
-                  <div
-                    className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
-                    onClick={() => openLightbox(selectedIndex)}
-                  >
-                    <div className="bg-black/50 hover:bg-black/70 rounded-full p-3 transition-colors">
-                      <ZoomIn className="w-6 h-6 text-white" />
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={visualMedia[selectedIndex].url}
+                        className="w-full h-full object-cover"
+                        controls
+                        poster=""
+                      />
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Navigation arrows */}
-                {visualMedia.length > 1 && (
+                  {/* Zoom overlay for images */}
+                  {visualMedia[selectedIndex]?.type === "image" && (
+                    <div
+                      className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer"
+                      onClick={() => openLightbox(selectedIndex)}
+                    >
+                      <div className="bg-black/50 hover:bg-black/70 rounded-full p-3 transition-colors">
+                        <ZoomIn className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Navigation arrows */}
+                  {visualMedia.length > 1 && (
+                    <>
+                      <button
+                        onClick={() =>
+                          setSelectedIndex(
+                            (prev) =>
+                              (prev - 1 + visualMedia.length) %
+                              visualMedia.length
+                          )
+                        }
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          setSelectedIndex(
+                            (prev) => (prev + 1) % visualMedia.length
+                          )
+                        }
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Media info overlay for non-YouTube videos */}
+                  {(visualMedia[selectedIndex]?.type === "video" ||
+                    visualMedia[selectedIndex]?.type === "image") && (
+                    /* Both Video and Image: Top overlay */
+                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4">
+                      <h4 className="text-white font-semibold text-lg line-clamp-2 leading-tight">
+                        {visualMedia[selectedIndex]?.title}
+                      </h4>
+                      {visualMedia[selectedIndex]?.description && (
+                        <p className="text-white/80 text-sm mt-1 line-clamp-2 leading-relaxed">
+                          {visualMedia[selectedIndex].description}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Navigation arrows for YouTube videos (outside the iframe) */}
+              {visualMedia[selectedIndex]?.type === "url" &&
+                isYouTubeUrl(visualMedia[selectedIndex].url) &&
+                visualMedia.length > 1 && (
                   <>
                     <button
                       onClick={() =>
@@ -390,7 +537,7 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                             (prev - 1 + visualMedia.length) % visualMedia.length
                         )
                       }
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 z-10"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
@@ -400,40 +547,12 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                           (prev) => (prev + 1) % visualMedia.length
                         )
                       }
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 z-10"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
                   </>
                 )}
-
-                {/* Media info overlay */}
-                {visualMedia[selectedIndex]?.type === "video" ? (
-                  /* Video: Top overlay to avoid controls */
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4">
-                    <h4 className="text-white font-semibold text-lg line-clamp-2 leading-tight">
-                      {visualMedia[selectedIndex]?.title}
-                    </h4>
-                    {visualMedia[selectedIndex]?.description && (
-                      <p className="text-white/80 text-sm mt-1 line-clamp-2 leading-relaxed">
-                        {visualMedia[selectedIndex].description}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  /* Image: Bottom overlay */
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                    <h4 className="text-white font-semibold text-lg line-clamp-2 leading-tight">
-                      {visualMedia[selectedIndex]?.title}
-                    </h4>
-                    {visualMedia[selectedIndex]?.description && (
-                      <p className="text-white/80 text-sm mt-1 line-clamp-2 leading-relaxed">
-                        {visualMedia[selectedIndex].description}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Thumbnail Navigation */}
@@ -455,7 +574,7 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                         alt={item.title}
                         className="w-full h-full object-cover"
                       />
-                    ) : (
+                    ) : item.type === "video" ? (
                       <div className="relative w-full h-full">
                         <video
                           src={item.url}
@@ -471,7 +590,17 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                           </div>
                         </div>
                       </div>
-                    )}
+                    ) : item.type === "url" && isYouTubeUrl(item.url) ? (
+                      /* YouTube thumbnail */
+                      <div className="relative w-full h-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                        <Play className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
+                          <span className="text-white text-xs font-medium truncate block">
+                            YouTube
+                          </span>
+                        </div>
+                      </div>
+                    ) : null}
                     {selectedIndex !== index && (
                       <div className="absolute inset-0 bg-black/20"></div>
                     )}
