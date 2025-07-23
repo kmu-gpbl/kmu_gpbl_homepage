@@ -1,8 +1,6 @@
 "use client";
 
 import { notFound, useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ProjectTimeline } from "@/components/project-timeline";
 import { PageHeader } from "@/components/page-header";
@@ -11,44 +9,12 @@ import { EditProfileHeader } from "@/components/edit-profile-header";
 import { EditContactInfo } from "@/components/edit-contact-info";
 import { EditSkills } from "@/components/edit-skills";
 import { EditCertifications } from "@/components/edit-certifications";
-import { UserBadges } from "@/components/user-badges";
+import { Loading } from "@/components/ui/loading";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
-import {
-  MapPin,
-  Mail,
-  Github,
-  Linkedin,
-  ExternalLink,
-  Award,
-  Building,
-  Calendar,
-  FileText,
-} from "lucide-react";
 
 interface MemberPageProps {
   params: Promise<{ id: string }>;
 }
-
-const specialtyColors = {
-  frontend: "bg-pink-500",
-  backend: "bg-blue-500",
-  mobile: "bg-green-500",
-  ai: "bg-orange-500",
-  devops: "bg-indigo-500",
-};
-
-const specialtyLabels = {
-  frontend: "Frontend",
-  backend: "Backend",
-  mobile: "Mobile",
-  ai: "AI/ML",
-  devops: "DevOps",
-  design: "Design",
-  data: "Data",
-  security: "Security",
-  game: "Game",
-  blockchain: "Blockchain",
-};
 
 function MemberPageContent({ params }: MemberPageProps) {
   const { isEditMode } = useEditMode();
@@ -115,12 +81,7 @@ function MemberPageContent({ params }: MemberPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
+      <Loading variant="page" size="lg" text="Loading member profile..." />
     );
   }
 

@@ -11,6 +11,7 @@ import {
   File,
   AlertTriangle,
 } from "lucide-react";
+import { Loading } from "./ui/loading";
 import type { ProjectMedia } from "@/types/api";
 import { useEditMode } from "@/contexts/edit-mode-context";
 
@@ -117,10 +118,14 @@ export function ProjectMediaManager({
                           <button
                             onClick={() => handleDelete(mediaItem.id)}
                             disabled={deletingMediaId === mediaItem.id}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50"
                             title="Delete Media"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {deletingMediaId === mediaItem.id ? (
+                              <Loading variant="button" size="sm" text="" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       )}

@@ -1,19 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import {
-  Plus,
-  X,
-  Save,
-  User,
-  Upload,
-  AlertCircle,
-  Award,
-  Building,
-  Calendar,
-  FileText,
-  Download,
-} from "lucide-react";
+import { Plus, X, User, Upload, Award, FileText, Download } from "lucide-react";
+import { Loading } from "./ui/loading";
 
 interface AddMemberFormProps {
   onMemberAdded: () => void;
@@ -1009,10 +998,11 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
                     >
                       {uploadingAvatar ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                          Uploading...
-                        </span>
+                        <Loading
+                          variant="button"
+                          size="sm"
+                          text="Uploading..."
+                        />
                       ) : (
                         <span className="flex items-center justify-center gap-2">
                           <Upload className="w-4 h-4" />
@@ -1103,10 +1093,11 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                       className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
                     >
                       {uploadingResume ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Uploading...
-                        </>
+                        <Loading
+                          variant="button"
+                          size="sm"
+                          text="Uploading..."
+                        />
                       ) : (
                         <>
                           <Upload className="w-4 h-4" />
@@ -1131,7 +1122,11 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                   disabled={isSubmitting}
                   className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
                 >
-                  {isSubmitting ? "Adding..." : "Add Member"}
+                  {isSubmitting ? (
+                    <Loading variant="button" size="sm" text="Adding..." />
+                  ) : (
+                    "Add Member"
+                  )}
                 </button>
                 <button
                   type="button"

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   Edit,
-  Save,
   X,
   AlertCircle,
   Mail,
@@ -11,6 +10,7 @@ import {
   Linkedin,
   ExternalLink,
 } from "lucide-react";
+import { Loading } from "./ui/loading";
 import { useEditMode } from "@/contexts/edit-mode-context";
 
 interface EditContactInfoProps {
@@ -373,7 +373,11 @@ export function EditContactInfo({
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? (
+              <Loading variant="button" size="sm" text="Saving..." />
+            ) : (
+              "Save"
+            )}
           </button>
           <button
             type="button"

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { projectsApi, projectMembersApi } from "@/lib/supabase-api";
+import {
+  projectsApi,
+  projectMembersApi,
+  projectMediaApi,
+} from "@/lib/supabase-api";
 
 export async function GET(request: NextRequest) {
   try {
@@ -151,6 +155,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Add project media
+    if (body.media && body.media.length > 0) {
+      console.log(
+        `Adding ${body.media.length} media items to project ${createdProject.id}`
+      );
+      await projectMediaApi.updateProjectMedia(createdProject.id, body.media);
+    }
+
+    // Get the complete project with media
+    const projectMedia = await projectMediaApi.getByProjectId(
+      createdProject.id
+    );
+
     // Response data field mapping (Supabase -> Client)
     const mappedProject = {
       ...createdProject,
@@ -158,7 +175,7 @@ export async function POST(request: NextRequest) {
       endDate: createdProject.end_date,
       teamSize: createdProject.team_size,
       memberIds: body.memberIds || [],
-      media: [],
+      media: projectMedia || [],
     };
 
     return NextResponse.json({

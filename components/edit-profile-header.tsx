@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import {
   Edit,
-  Save,
   X,
   AlertCircle,
   User,
@@ -11,7 +10,6 @@ import {
   FileText,
   Download,
   Trash2,
-  Check,
   Code,
   Palette,
   GraduationCap,
@@ -20,10 +18,10 @@ import {
   Shield,
 } from "lucide-react";
 import { UserBadges } from "./user-badges";
+import { Loading } from "./ui/loading";
 import type { BadgeType } from "@/types/api";
 import { useEditMode } from "@/contexts/edit-mode-context";
 
-// 편집 가능한 뱃지 타입 정의
 type EditableBadgeType =
   | "developer"
   | "designer"
@@ -113,7 +111,7 @@ export function EditProfileHeader({
       if (formData.bio !== initialData.bio) {
         changedFields.bio = formData.bio;
       }
-      // 편집 가능한 뱃지들만 비교
+      // Compare only editable badges
       const currentEditableBadges = (initialData.badges || []).filter(
         (badge): badge is EditableBadgeType =>
           badge === "developer" ||
@@ -126,7 +124,7 @@ export function EditProfileHeader({
         JSON.stringify(formData.badges.sort()) !==
         JSON.stringify(currentEditableBadges.sort())
       ) {
-        // verified 뱃지는 보존하고 다른 뱃지들만 업데이트
+        // Preserve verified badge and update other badges
         const hasVerified = (initialData.badges || []).includes("verified");
         const finalBadges: BadgeType[] = hasVerified
           ? ["verified", ...formData.badges]
@@ -184,7 +182,10 @@ export function EditProfileHeader({
       bio: initialData.bio,
       badges: (initialData.badges || []).filter(
         (badge): badge is EditableBadgeType =>
-          badge === "developer" || badge === "designer"
+          badge === "developer" ||
+          badge === "designer" ||
+          badge === "seniorStudent" ||
+          badge === "openToWork"
       ),
       resumeUrl: initialData.resumeUrl || "",
       resumeFileName: initialData.resumeFileName || "",
@@ -345,7 +346,25 @@ export function EditProfileHeader({
             </h2>
             {isEditMode && (
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setIsEditing(true);
+                  setFormData({
+                    name: initialData.name,
+                    role: initialData.role,
+                    avatar: initialData.avatar,
+                    bio: initialData.bio,
+                    badges: (initialData.badges || []).filter(
+                      (badge): badge is EditableBadgeType =>
+                        badge === "developer" ||
+                        badge === "designer" ||
+                        badge === "seniorStudent" ||
+                        badge === "openToWork"
+                    ),
+                    resumeUrl: initialData.resumeUrl || "",
+                    resumeFileName: initialData.resumeFileName || "",
+                  });
+                  setMessage(null);
+                }}
                 className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                 title="Edit Profile"
               >
@@ -689,10 +708,7 @@ export function EditProfileHeader({
                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
               >
                 {uploadingResume ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Uploading...
-                  </>
+                  <Loading variant="button" size="sm" text="Uploading..." />
                 ) : (
                   <>
                     <Upload className="w-4 h-4" />
@@ -743,10 +759,7 @@ export function EditProfileHeader({
                 className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
               >
                 {uploadingAvatar ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                    Uploading...
-                  </span>
+                  <Loading variant="button" size="sm" text="Uploading..." />
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     <Upload className="w-4 h-4" />
@@ -777,7 +790,11 @@ export function EditProfileHeader({
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? (
+              <Loading variant="button" size="sm" text="Saving..." />
+            ) : (
+              "Save"
+            )}
           </button>
           <button
             type="button"
