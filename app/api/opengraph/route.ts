@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const html = await response.text();
 
     // Extract OpenGraph and basic meta tags
-    const ogData = extractMetadata(html);
+    const ogData = extractMetadata(html, url);
 
     return NextResponse.json({
       success: true,
@@ -52,7 +52,22 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function extractMetadata(html: string) {
+function resolveUrl(url: string, baseUrl: string): string {
+  try {
+    // If URL is already absolute, return as is
+    return new URL(url).href;
+  } catch {
+    // If URL is relative, resolve it against the base URL
+    try {
+      return new URL(url, baseUrl).href;
+    } catch {
+      // If resolution fails, return original URL
+      return url;
+    }
+  }
+}
+
+function extractMetadata(html: string, baseUrl: string) {
   const metadata: {
     title?: string;
     description?: string;
@@ -82,7 +97,7 @@ function extractMetadata(html: string) {
             metadata.description = content;
             break;
           case "image":
-            metadata.image = content;
+            metadata.image = resolveUrl(content, baseUrl);
             break;
           case "site_name":
             metadata.siteName = content;

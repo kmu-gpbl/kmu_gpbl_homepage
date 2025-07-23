@@ -425,16 +425,28 @@ function ProjectPageContent({ params }: ProjectPageProps) {
             <div className="xl:col-span-2 space-y-8">
               {/* Project Description */}
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                     <FileText className="w-6 h-6 text-blue-600" />
                     Project Overview
                   </h2>
                 </div>
                 <div className="p-8">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">
-                    {project.description}
-                  </p>
+                  {project.description ? (
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                      {project.description}
+                    </p>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No description available
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                        Project description will appear here when added
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -443,11 +455,11 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                 data-section="media-gallery"
                 className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden"
               >
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                     <ExternalLink className="w-6 h-6 text-purple-600" />
                     Media Gallery
-                    <span className="ml-auto text-sm font-normal text-gray-500 dark:text-gray-400 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                    <span className="ml-auto text-sm font-normal text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
                       {project.media?.length || 0} items
                     </span>
                   </h2>
@@ -462,32 +474,44 @@ function ProjectPageContent({ params }: ProjectPageProps) {
             <div className="space-y-6">
               {/* Technologies Used */}
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <Tag className="w-5 h-5 text-emerald-600" />
                     Tech Stack
                   </h3>
                 </div>
                 <div className="p-6">
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.map((tech, index) => (
-                      <TechStackBadge key={index} tech={tech} />
-                    ))}
-                  </div>
+                  {project.technologies && project.technologies.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {project.technologies.map((tech, index) => (
+                        <TechStackBadge key={index} tech={tech} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Tag className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No technologies listed
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                        Technology stack will appear here when added
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Project Information */}
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <Activity className="w-5 h-5 text-amber-600" />
                     Project Info
                   </h3>
                 </div>
                 <div className="p-6 space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900 rounded-xl">
-                    <div className="p-2 bg-amber-100 dark:bg-amber-800 rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                       <Calendar className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
@@ -500,8 +524,8 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900 rounded-xl">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                       <Activity className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
@@ -520,29 +544,41 @@ function ProjectPageContent({ params }: ProjectPageProps) {
               </div>
 
               {/* Team Members */}
-              {project.members && project.members.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                      <User className="w-5 h-5 text-indigo-600" />
-                      Team Members
-                    </h3>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    {project.members.map((member, index) => (
-                      <TeamMemberCard
-                        key={member.id}
-                        member={member}
-                        index={index}
-                        onClick={() => {
-                          // Navigate to member profile
-                          router.push(`/member/${member.id}`);
-                        }}
-                      />
-                    ))}
-                  </div>
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <User className="w-5 h-5 text-indigo-600" />
+                    Team Members
+                  </h3>
                 </div>
-              )}
+                <div className="p-6">
+                  {project.members && project.members.length > 0 ? (
+                    <div className="space-y-3">
+                      {project.members.map((member, index) => (
+                        <TeamMemberCard
+                          key={member.id}
+                          member={member}
+                          index={index}
+                          onClick={() => {
+                            // Navigate to member profile
+                            router.push(`/member/${member.id}`);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <User className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No team members yet
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                        Team members will appear here when added
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
