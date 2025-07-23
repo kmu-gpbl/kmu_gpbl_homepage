@@ -78,6 +78,7 @@ export function ProjectTimeline({
 
   // Project editing state
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [loadingProjectData, setLoadingProjectData] = useState(false);
   const [editFormData, setEditFormData] = useState<{
     title: string;
     description: string;
@@ -151,18 +152,99 @@ export function ProjectTimeline({
     setProjectToDelete(null);
   };
 
-  const handleEditClick = (project: Project) => {
-    setEditingProjectId(project.id);
+  const handleEditClick = async (project: Project) => {
+    // Reset form data first to prevent showing previous project data
     setEditFormData({
-      title: project.title,
-      description: project.description,
-      startDate: project.startDate,
-      endDate: project.endDate || "",
-      status: project.status,
-      type: project.type,
-      technologies: [...project.technologies],
-      teamSize: project.teamSize || 1,
-      media: [...(project.media || [])],
+      title: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      status: "ongoing",
+      type: "web",
+      technologies: [],
+      teamSize: 1,
+      media: [],
+    });
+
+    setLoadingProjectData(true);
+
+    try {
+      // Load detailed project data including media
+      const response = await fetch(`/api/projects/${project.id}`);
+      if (response.ok) {
+        const detailedProject = await response.json();
+        setEditFormData({
+          title: detailedProject.project.title,
+          description: detailedProject.project.description,
+          startDate: detailedProject.project.startDate,
+          endDate: detailedProject.project.endDate || "",
+          status: detailedProject.project.status,
+          type: detailedProject.project.type,
+          technologies: [...detailedProject.project.technologies],
+          teamSize: detailedProject.project.teamSize || 1,
+          media: (detailedProject.project.media || []).map(
+            (projectMedia: any) => ({
+              id: projectMedia.id,
+              type: projectMedia.type,
+              title: projectMedia.title,
+              url: projectMedia.url,
+              description: projectMedia.description,
+              fileName: projectMedia.fileName,
+              originalName: projectMedia.originalName,
+            })
+          ),
+        });
+        // Open modal only after data is loaded
+        setEditingProjectId(project.id);
+      } else {
+        // Fallback to project data without media
+        setEditFormData({
+          title: project.title,
+          description: project.description,
+          startDate: project.startDate,
+          endDate: project.endDate || "",
+          status: project.status,
+          type: project.type,
+          technologies: [...project.technologies],
+          teamSize: project.teamSize || 1,
+          media: [],
+        });
+        setEditingProjectId(project.id);
+      }
+    } catch (error) {
+      console.error("Failed to load project details:", error);
+      // Fallback to project data without media
+      setEditFormData({
+        title: project.title,
+        description: project.description,
+        startDate: project.startDate,
+        endDate: project.endDate || "",
+        status: project.status,
+        type: project.type,
+        technologies: [...project.technologies],
+        teamSize: project.teamSize || 1,
+        media: [],
+      });
+      setEditingProjectId(project.id);
+    } finally {
+      setLoadingProjectData(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingProjectId(null);
+    setMessage(null);
+    // Reset form data when closing
+    setEditFormData({
+      title: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      status: "ongoing",
+      type: "web",
+      technologies: [],
+      teamSize: 1,
+      media: [],
     });
   };
 
@@ -311,10 +393,15 @@ export function ProjectTimeline({
                           e.stopPropagation();
                           handleEditClick(project);
                         }}
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                        disabled={loadingProjectData}
+                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Edit Project"
                       >
-                        <Edit className="w-4 h-4" />
+                        {loadingProjectData ? (
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                        ) : (
+                          <Edit className="w-4 h-4" />
+                        )}
                       </button>
 
                       {/* Delete Button */}
@@ -367,7 +454,7 @@ export function ProjectTimeline({
                 Edit Project
               </h3>
               <button
-                onClick={() => setEditingProjectId(null)}
+                onClick={handleEditCancel}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -609,7 +696,7 @@ export function ProjectTimeline({
                   media={editFormData.media}
                   onChange={handleMediaChange}
                   allowUpload={true}
-                  maxItems={8}
+                  maxItems={10}
                 />
               </div>
 
@@ -628,7 +715,7 @@ export function ProjectTimeline({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setEditingProjectId(null)}
+                  onClick={handleEditCancel}
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors"
                 >
