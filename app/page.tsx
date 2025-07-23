@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MemberCard } from "@/components/member-card";
 import { FilterTabs } from "@/components/filter-tabs";
 import { AnimatedBackground } from "@/components/animated-background";
-
-import { AddMemberForm } from "@/components/add-member-form";
+import { Loading } from "@/components/ui/loading";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
-import { Edit, Eye } from "lucide-react";
 
 function HomePageContent() {
   const [members, setMembers] = useState<any[]>([]);
@@ -42,14 +39,7 @@ function HomePageContent() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
+    return <Loading variant="page" size="lg" text="Loading team members..." />;
   }
 
   return (

@@ -1,17 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
-import {
-  Plus,
-  X,
-  Calendar,
-  Tag,
-  Activity,
-  Play,
-  FileText,
-  Link as LinkIcon,
-  ExternalLink,
-} from "lucide-react";
+import { useState } from "react";
+import { Plus, X } from "lucide-react";
+import { Loading } from "./ui/loading";
+import MediaEditor, { MediaItem } from "./ui/media-editor";
 
 interface AddProjectFormProps {
   memberId: string;
@@ -27,17 +19,10 @@ interface ProjectFormData {
   type: "web" | "mobile" | "ai" | "infrastructure" | "desktop" | "other";
   technologies: string[];
   teamSize: number;
-  media: ProjectMedia[];
+  media: MediaItem[];
 }
 
-interface ProjectMedia {
-  type: "image" | "video" | "presentation" | "url";
-  title: string;
-  url: string;
-  description?: string;
-  fileName?: string;
-  originalName?: string;
-}
+// Use MediaItem from the MediaEditor component
 
 const projectTypes = [
   { value: "web", label: "Web Development", icon: "🌐" },
@@ -55,12 +40,7 @@ const projectStatuses = [
   { value: "live", label: "⚪ Live", color: "bg-red-500 animate-pulse" },
 ];
 
-const mediaTypes = [
-  { value: "image", label: "Image", icon: "🖼️" },
-  { value: "video", label: "Project Video", icon: "🎥" },
-  { value: "presentation", label: "Presentation", icon: "📄" },
-  { value: "url", label: "Related Link", icon: "🔗" },
-];
+// Media types now handled by MediaEditor
 
 export function AddProjectForm({
   memberId,
@@ -85,14 +65,7 @@ export function AddProjectForm({
     text: string;
   } | null>(null);
 
-  // Media addition state
-  const [isAddingMedia, setIsAddingMedia] = useState(false);
-  const [mediaFormData, setMediaFormData] = useState({
-    type: "image" as "image" | "video" | "presentation" | "url",
-    title: "",
-    url: "",
-    description: "",
-  });
+  // Removed media addition state - now handled by MediaEditor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +83,11 @@ export function AddProjectForm({
         memberIds: [memberId],
         period: `${formData.startDate} - ${formData.endDate || "Present"}`,
       };
+
+      console.log("Submitting project with media:", {
+        mediaCount: submitData.media?.length || 0,
+        media: submitData.media,
+      });
 
       const response = await fetch("/api/projects", {
         method: "POST",
@@ -176,26 +154,10 @@ export function AddProjectForm({
     }));
   };
 
-  const addMedia = () => {
-    if (mediaFormData.title && mediaFormData.url) {
-      setFormData((prev) => ({
-        ...prev,
-        media: [...prev.media, { ...mediaFormData }],
-      }));
-      setMediaFormData({
-        type: "image",
-        title: "",
-        url: "",
-        description: "",
-      });
-      setIsAddingMedia(false);
-    }
-  };
-
-  const removeMedia = (index: number) => {
+  const handleMediaChange = (media: MediaItem[]) => {
     setFormData((prev) => ({
       ...prev,
-      media: prev.media.filter((_, i) => i !== index),
+      media,
     }));
   };
 
@@ -214,7 +176,7 @@ export function AddProjectForm({
     setNewTech("");
     setMessage(null);
     setIsOpen(false);
-    setIsAddingMedia(false);
+    // Media state reset handled by MediaEditor
   };
 
   if (!isOpen) {
@@ -498,135 +460,13 @@ export function AddProjectForm({
           </div>
         </div>
 
-        {/* Add Media */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Add Media
-          </label>
-          <div className="flex gap-2 mb-3">
-            <select
-              value={mediaFormData.type}
-              onChange={(e) =>
-                setMediaFormData((prev) => ({
-                  ...prev,
-                  type: e.target.value as
-                    | "image"
-                    | "video"
-                    | "presentation"
-                    | "url",
-                }))
-              }
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {mediaTypes.map((mediaType) => (
-                <option key={mediaType.value} value={mediaType.value}>
-                  {mediaType.label}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => setIsAddingMedia(true)}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-            >
-              Add
-            </button>
-          </div>
-          {isAddingMedia && (
-            <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  value={mediaFormData.title}
-                  onChange={(e) =>
-                    setMediaFormData((prev) => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Media title"
-                />
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={mediaFormData.url}
-                    onChange={(e) =>
-                      setMediaFormData((prev) => ({
-                        ...prev,
-                        url: e.target.value,
-                      }))
-                    }
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Media URL (image/video/presentation)"
-                  />
-                </div>
-              </div>
-              <textarea
-                value={mediaFormData.description}
-                onChange={(e) =>
-                  setMediaFormData((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Media description (optional)"
-              />
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={addMedia}
-                  disabled={!mediaFormData.title || !mediaFormData.url}
-                  className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-                >
-                  Add Media
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAddingMedia(false);
-                    setMediaFormData({
-                      type: "image",
-                      title: "",
-                      url: "",
-                      description: "",
-                    });
-                  }}
-                  className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {formData.media.map((media, index) => (
-              <div
-                key={index}
-                className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm"
-              >
-                <span>{media.title}</span>
-                <a
-                  href={media.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-500"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-                <button
-                  type="button"
-                  onClick={() => removeMedia(index)}
-                  className="hover:text-red-500"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Project Media */}
+        <MediaEditor
+          media={formData.media}
+          onChange={handleMediaChange}
+          allowUpload={true}
+          maxItems={10}
+        />
 
         {/* Submit Button */}
         <div className="flex gap-3 pt-4">
@@ -635,7 +475,11 @@ export function AddProjectForm({
             disabled={isSubmitting}
             className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors"
           >
-            {isSubmitting ? "Adding..." : "Add Project"}
+            {isSubmitting ? (
+              <Loading variant="button" size="sm" text="Adding..." />
+            ) : (
+              "Add Project"
+            )}
           </button>
           <button
             type="button"

@@ -76,7 +76,7 @@ export function UserBadges({
 
   const sizeStyles = sizeConfig[size];
 
-  // 뱃지 순서 정의 (verified, developer, designer, seniorStudent, openToWork)
+  // Define badge order (verified, developer, designer, seniorStudent, openToWork)
   const badgeOrder: BadgeType[] = [
     "verified",
     "developer",
@@ -85,13 +85,13 @@ export function UserBadges({
     "openToWork",
   ];
 
-  // 전달받은 뱃지들을 정의된 순서대로 정렬
+  // Sort badges according to the defined order
   const sortedBadges = badgeOrder.filter((badgeType) =>
     badges.includes(badgeType)
   );
 
   const handleBadgeClick = (e: React.MouseEvent) => {
-    // 뱃지 클릭 시 Link 클릭 방지
+    // Prevent Link click when badge is clicked
     e.preventDefault();
     e.stopPropagation();
   };

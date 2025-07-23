@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Building,
 } from "lucide-react";
+import { Loading } from "./ui/loading";
 import type { Certification } from "@/types/api";
 import { useEditMode } from "@/contexts/edit-mode-context";
 
@@ -438,7 +439,11 @@ export function EditCertifications({
             className="flex items-center gap-2 px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-medium rounded-md transition-colors"
           >
             <Save className="w-4 h-4" />
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isSubmitting ? (
+              <Loading variant="button" size="sm" text="Saving..." />
+            ) : (
+              "Save Changes"
+            )}
           </button>
           <button
             type="button"
