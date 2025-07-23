@@ -102,8 +102,8 @@ export function ProjectMediaManager({
                         <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                           <IconComponent className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
                             {mediaItem.title}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -132,7 +132,7 @@ export function ProjectMediaManager({
                     </div>
 
                     {mediaItem.description && (
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 whitespace-pre-line">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 whitespace-pre-line line-clamp-3 leading-relaxed">
                         {mediaItem.description}
                       </p>
                     )}

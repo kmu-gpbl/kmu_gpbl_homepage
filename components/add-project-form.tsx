@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Radio } from "lucide-react";
 import { Loading } from "./ui/loading";
 import MediaEditor, { MediaItem } from "./ui/media-editor";
 
@@ -37,7 +37,7 @@ const projectStatuses = [
   { value: "completed", label: "Completed", color: "bg-green-500" },
   { value: "ongoing", label: "Ongoing", color: "bg-yellow-500" },
   { value: "planned", label: "Planned", color: "bg-gray-400" },
-  { value: "live", label: "⚪ Live", color: "bg-red-500 animate-pulse" },
+  { value: "live", label: "Live", color: "bg-red-500" },
 ];
 
 // Media types now handled by MediaEditor
@@ -405,12 +405,13 @@ export function AddProjectForm({
                     status: status.value as any,
                   }))
                 }
-                className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                className={`px-4 py-2 rounded-lg border-2 transition-all flex items-center gap-1 ${
                   formData.status === status.value
                     ? `${status.color} border-transparent text-white`
                     : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                 }`}
               >
+                {status.value === "live" && <Radio className="w-4 h-4" />}
                 {status.label}
               </button>
             ))}

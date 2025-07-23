@@ -11,6 +11,7 @@ import { EditSkills } from "@/components/edit-skills";
 import { EditCertifications } from "@/components/edit-certifications";
 import { Loading } from "@/components/ui/loading";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
+import { smartBackForMember } from "@/lib/navigation-utils";
 
 interface MemberPageProps {
   params: Promise<{ id: string }>;
@@ -91,7 +92,10 @@ function MemberPageContent({ params }: MemberPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <PageHeader title={member.name} onBack={() => router.push("/")} />
+      <PageHeader
+        title={member.name}
+        onBack={() => smartBackForMember(router)}
+      />
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-8">

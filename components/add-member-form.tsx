@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Plus, X, User, Upload, Award, FileText, Download } from "lucide-react";
 import { Loading } from "./ui/loading";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface AddMemberFormProps {
   onMemberAdded: () => void;
@@ -70,6 +71,14 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
     resumeUrl: "",
     resumeFileName: "",
   });
+
+  // Generate initials from name
+  const initials = formData.name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("")
+    .slice(0, 2);
+
   const [newSkill, setNewSkill] = useState("");
   const [newCert, setNewCert] = useState({
     name: "",
@@ -970,17 +979,16 @@ export function AddMemberForm({ onMemberAdded }: AddMemberFormProps) {
                 </label>
                 <div className="flex items-center gap-4">
                   {/* Preview */}
-                  <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    {formData.avatar ? (
-                      <img
-                        src={formData.avatar}
-                        alt="Profile Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="w-8 h-8 text-gray-400" />
-                    )}
-                  </div>
+                  <Avatar className="w-[64px] h-[64px] border-3 border-gray-200 dark:border-gray-700">
+                    <AvatarImage
+                      src={formData.avatar}
+                      alt="Profile Preview"
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-xl">
+                      {initials || "??"}
+                    </AvatarFallback>
+                  </Avatar>
 
                   {/* File upload button */}
                   <div className="flex-1">

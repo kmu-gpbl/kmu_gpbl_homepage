@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { UserSummary } from "@/types/api";
 import { Github, Linkedin, ExternalLink, Shield } from "lucide-react";
 import { UserBadges } from "./user-badges";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface MemberCardProps {
   member: UserSummary;
@@ -35,6 +36,13 @@ export function MemberCard({ member }: MemberCardProps) {
     .specialties[0] as keyof typeof specialtyColors;
   const colorClass = specialtyColors[primarySpecialty] || "bg-gray-500";
 
+  // Generate initials from name
+  const initials = member.name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("")
+    .slice(0, 2);
+
   return (
     <Link href={`/member/${member.id}`}>
       <div className="group bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-white transition-colors duration-200 overflow-visible h-full min-h-[280px]">
@@ -47,23 +55,26 @@ export function MemberCard({ member }: MemberCardProps) {
           {/* Profile section */}
           <div className="flex items-center gap-4 mb-4">
             <div className="relative">
-              <div className="w-[60px] h-[60px] rounded-full overflow-hidden border-3 border-gray-200 dark:border-gray-700 flex-shrink-0">
-                <Image
-                  src={member.avatar || "/placeholder.svg"}
+              <Avatar className="w-[60px] h-[60px] border-3 border-gray-200 dark:border-gray-700">
+                <AvatarImage
+                  src={member.avatar}
                   alt={member.name}
-                  width={60}
-                  height={60}
-                  className="w-full h-full object-cover"
+                  className="object-cover"
                 />
-              </div>
+                <AvatarFallback
+                  className={`${colorClass} text-white font-bold text-lg`}
+                >
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
               <div
                 className={`absolute -bottom-1 -right-1 w-4 h-4 ${colorClass} rounded-full border-2 border-white dark:border-gray-900`}
               />
             </div>
 
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight">
                   {member.name}
                 </h3>
                 <UserBadges
@@ -73,7 +84,7 @@ export function MemberCard({ member }: MemberCardProps) {
                   size="card"
                 />
               </div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 line-clamp-1 leading-tight">
                 {member.role}
               </p>
             </div>

@@ -17,13 +17,14 @@ import {
   User,
   Edit,
   X,
-  Plus,
   File,
   FileText,
   Play,
   LinkIcon,
+  Radio,
 } from "lucide-react";
-import type { ProjectWithMembers, ProjectMedia } from "@/types/api";
+import type { ProjectWithMembers } from "@/types/api";
+import { smartBackForProject } from "@/lib/navigation-utils";
 
 import * as React from "react";
 
@@ -53,14 +54,14 @@ const statusColors = {
   completed: "bg-green-500",
   ongoing: "bg-yellow-500",
   planned: "bg-gray-400",
-  live: "bg-red-500 animate-pulse",
+  live: "bg-red-500",
 };
 
 const statusLabels = {
   completed: "Completed",
   ongoing: "Ongoing",
   planned: "Planned",
-  live: "⚪ Live",
+  live: "Live",
 };
 
 // Memoized media section to prevent re-rendering when other form fields change
@@ -265,13 +266,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
   const colorClass = typeColors[project.type];
 
   const handleBack = () => {
-    // Navigate to the first member's profile page
-    if (project?.members && project.members.length > 0) {
-      router.push(`/member/${project.members[0].id}`);
-    } else {
-      // Navigate to main page if no member information
-      router.push("/");
-    }
+    smartBackForProject(router, project);
   };
 
   return (
@@ -285,45 +280,35 @@ function ProjectPageContent({ params }: ProjectPageProps) {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Hero Section */}
-          <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10"></div>
-
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
             {/* Hero Background Image (if available) */}
             {project.media &&
               project.media.length > 0 &&
               project.media.find((m) => m.type === "image") && (
-                <div className="absolute inset-0">
-                  <img
-                    src={project.media.find((m) => m.type === "image")?.url}
-                    alt=""
-                    className="w-full h-full object-cover opacity-30"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/80 to-indigo-900/80"></div>
+                <div className="relative">
+                  <div className="h-48 md:h-64 overflow-hidden rounded-t-2xl">
+                    <img
+                      src={project.media.find((m) => m.type === "image")?.url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
                 </div>
               )}
 
-            <div className="relative z-10 p-8 md:p-12">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
+            {/* Hero Content */}
+            <div className="p-8 md:p-12">
+              <div className="flex flex-col lg:flex-row items-start gap-8">
                 {/* Project Icon & Type */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center">
                   <div className="relative">
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl md:text-6xl border border-white/40">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl md:text-4xl border border-blue-200 dark:border-blue-800">
                       {typeIcons[project.type]}
                     </div>
-                    <div className="absolute -bottom-2 -right-2 px-3 py-1 bg-white/30 rounded-full text-xs font-medium text-white border border-white/50">
+                    <div className="absolute -bottom-2 -right-2 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
                       {project.type.toUpperCase()}
                     </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div
-                    className={`px-6 py-3 rounded-full text-sm font-bold text-white ${
-                      statusColors[project.status]
-                    } ring-2 ring-white/50`}
-                  >
-                    {statusLabels[project.status]}
                   </div>
                 </div>
 
@@ -331,18 +316,31 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4 mb-6">
                     <div className="flex-1 min-w-0">
-                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3 leading-tight">
-                        {project.title}
-                      </h1>
-                      <p className="text-xl md:text-2xl text-white/80 font-medium mb-4">
+                      <div className="flex flex-wrap items-center gap-4 mb-3">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
+                          {project.title}
+                        </h1>
+                        {/* Status Badge */}
+                        <div
+                          className={`px-4 py-2 rounded-full text-sm font-bold text-white flex items-center gap-2 ${
+                            statusColors[project.status]
+                          }`}
+                        >
+                          {project.status === "live" && (
+                            <Radio className="w-4 h-4" />
+                          )}
+                          {statusLabels[project.status]}
+                        </div>
+                      </div>
+                      <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 font-medium mb-4">
                         {project.period}
                       </p>
 
                       {/* Quick Stats */}
-                      <div className="flex flex-wrap items-center gap-4 text-white/70">
+                      <div className="flex flex-wrap items-center gap-4">
                         {project.technologies &&
                           project.technologies.length > 0 && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                               <Tag className="w-4 h-4" />
                               <span className="font-medium text-sm">
                                 {project.technologies.length} Tech
@@ -351,7 +349,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                             </div>
                           )}
                         {project.members && project.members.length > 0 && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                             <User className="w-4 h-4" />
                             <span className="font-medium text-sm">
                               {project.members.length} Member
@@ -360,16 +358,19 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                           </div>
                         )}
                         {project.media && project.media.length > 0 && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                             <ExternalLink className="w-4 h-4" />
                             <span className="font-medium text-sm">
                               {project.media.length} Media
                             </span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                           <Calendar className="w-4 h-4" />
-                          <span className="font-medium text-sm">
+                          <span className="font-medium text-sm flex items-center gap-1">
+                            {project.status === "live" && (
+                              <Radio className="w-3 h-3" />
+                            )}
                             {statusLabels[project.status]}
                           </span>
                         </div>
@@ -380,10 +381,10 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                     {isEditMode && (
                       <button
                         onClick={handleEditClick}
-                        className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200 hover:scale-105 border border-white/40"
+                        className="p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-200 dark:border-gray-700"
                         title="Edit Project"
                       >
-                        <Edit className="w-6 h-6 text-white" />
+                        <Edit className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                       </button>
                     )}
                   </div>
@@ -395,7 +396,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                         href={project.media.find((m) => m.type === "url")?.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 hover:scale-105"
+                        className="group inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105"
                       >
                         <ExternalLink className="w-5 h-5" />
                         View Live
@@ -409,7 +410,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                         );
                         mediaSection?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="group inline-flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 border border-white/50"
+                      className="group inline-flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105"
                     >
                       <FileText className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
                       Explore Media
@@ -426,16 +427,28 @@ function ProjectPageContent({ params }: ProjectPageProps) {
             <div className="xl:col-span-2 space-y-8">
               {/* Project Description */}
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                     <FileText className="w-6 h-6 text-blue-600" />
                     Project Overview
                   </h2>
                 </div>
                 <div className="p-8">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">
-                    {project.description}
-                  </p>
+                  {project.description ? (
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                      {project.description}
+                    </p>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No description available
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                        Project description will appear here when added
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -444,11 +457,11 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                 data-section="media-gallery"
                 className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden"
               >
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                     <ExternalLink className="w-6 h-6 text-purple-600" />
                     Media Gallery
-                    <span className="ml-auto text-sm font-normal text-gray-500 dark:text-gray-400 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                    <span className="ml-auto text-sm font-normal text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
                       {project.media?.length || 0} items
                     </span>
                   </h2>
@@ -463,32 +476,44 @@ function ProjectPageContent({ params }: ProjectPageProps) {
             <div className="space-y-6">
               {/* Technologies Used */}
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <Tag className="w-5 h-5 text-emerald-600" />
                     Tech Stack
                   </h3>
                 </div>
                 <div className="p-6">
-                  <div className="flex flex-wrap gap-2">
-                    {project.technologies.map((tech, index) => (
-                      <TechStackBadge key={index} tech={tech} index={index} />
-                    ))}
-                  </div>
+                  {project.technologies && project.technologies.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {project.technologies.map((tech, index) => (
+                        <TechStackBadge key={index} tech={tech} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Tag className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No technologies listed
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                        Technology stack will appear here when added
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Project Information */}
               <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <Activity className="w-5 h-5 text-amber-600" />
                     Project Info
                   </h3>
                 </div>
                 <div className="p-6 space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900 rounded-xl">
-                    <div className="p-2 bg-amber-100 dark:bg-amber-800 rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                       <Calendar className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
@@ -501,15 +526,18 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900 rounded-xl">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                       <Activity className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                         Status
                       </p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                      <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-1">
+                        {project.status === "live" && (
+                          <Radio className="w-4 h-4" />
+                        )}
                         {statusLabels[project.status]}
                       </p>
                     </div>
@@ -518,29 +546,41 @@ function ProjectPageContent({ params }: ProjectPageProps) {
               </div>
 
               {/* Team Members */}
-              {project.members && project.members.length > 0 && (
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                      <User className="w-5 h-5 text-indigo-600" />
-                      Team Members
-                    </h3>
-                  </div>
-                  <div className="p-6 space-y-3">
-                    {project.members.map((member, index) => (
-                      <TeamMemberCard
-                        key={member.id}
-                        member={member}
-                        index={index}
-                        onClick={() => {
-                          // Navigate to member profile
-                          router.push(`/member/${member.id}`);
-                        }}
-                      />
-                    ))}
-                  </div>
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <User className="w-5 h-5 text-indigo-600" />
+                    Team Members
+                  </h3>
                 </div>
-              )}
+                <div className="p-6">
+                  {project.members && project.members.length > 0 ? (
+                    <div className="space-y-3">
+                      {project.members.map((member, index) => (
+                        <TeamMemberCard
+                          key={member.id}
+                          member={member}
+                          index={index}
+                          onClick={() => {
+                            // Navigate to member profile
+                            router.push(`/member/${member.id}`);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <User className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No team members yet
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                        Team members will appear here when added
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

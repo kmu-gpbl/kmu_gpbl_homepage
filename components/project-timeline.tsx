@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Upload,
   File,
+  Radio,
 } from "lucide-react";
 import { Loading } from "./ui/loading";
 import { useEditMode } from "@/contexts/edit-mode-context";
@@ -39,7 +40,7 @@ const statusColors = {
   completed: "bg-green-500",
   ongoing: "bg-yellow-500",
   planned: "bg-gray-400",
-  live: "bg-red-500 animate-pulse",
+  live: "bg-red-500",
 };
 
 const statusColorsForDots = {
@@ -53,7 +54,7 @@ const statusLabels = {
   completed: "Completed",
   ongoing: "Ongoing",
   planned: "Planned",
-  live: "⚪ Live",
+  live: "Live",
 };
 
 const mediaTypes = [
@@ -377,10 +378,11 @@ export function ProjectTimeline({
                 <div className="flex items-center gap-2 flex-shrink-0 min-w-fit">
                   {/* Status Badge */}
                   <div
-                    className={`px-3 py-1 rounded-full text-xs font-bold text-white flex-shrink-0 ${
+                    className={`px-3 py-1 rounded-full text-xs font-bold text-white flex-shrink-0 flex items-center gap-1 ${
                       statusColors[project.status]
                     }`}
                   >
+                    {project.status === "live" && <Radio className="w-3 h-3" />}
                     {statusLabels[project.status]}
                   </div>
 
@@ -622,7 +624,7 @@ export function ProjectTimeline({
                     <option value="planned">Planned</option>
                     <option value="ongoing">Ongoing</option>
                     <option value="completed">Completed</option>
-                    <option value="live">⚪ Live</option>
+                    <option value="live">Live</option>
                   </select>
                 </div>
 

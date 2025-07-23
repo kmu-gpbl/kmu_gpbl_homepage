@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Home } from "lucide-react";
+import { smartBack } from "@/lib/navigation-utils";
 
 interface PageHeaderProps {
   title?: string;
   showBackButton?: boolean;
   showHomeButton?: boolean;
   onBack?: () => void;
+  fallbackPath?: string;
 }
 
 export function PageHeader({
@@ -15,12 +18,15 @@ export function PageHeader({
   showBackButton = true,
   showHomeButton = false,
   onBack,
+  fallbackPath = "/",
 }: PageHeaderProps) {
+  const router = useRouter();
+
   const handleBack = () => {
     if (onBack) {
       onBack();
     } else {
-      window.history.back();
+      smartBack({ router, fallbackPath });
     }
   };
 
