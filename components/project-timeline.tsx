@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Loading } from "./ui/loading";
 import { useEditMode } from "@/contexts/edit-mode-context";
-import { MediaEditor, MediaItem } from "./ui/media-editor";
+import MediaEditor, { MediaItem } from "./ui/media-editor";
 
 interface ProjectTimelineProps {
   projects: Project[];

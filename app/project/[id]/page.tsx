@@ -1,10 +1,10 @@
 "use client";
 
 import { notFound, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
 import { ProjectMediaManager } from "@/components/project-media-manager";
-import { MediaEditor, MediaItem } from "@/components/ui/media-editor";
+import MediaEditor, { MediaItem } from "@/components/ui/media-editor";
 import { Loading } from "@/components/ui/loading";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
 import {
@@ -22,6 +22,8 @@ import {
   LinkIcon,
 } from "lucide-react";
 import type { ProjectWithMembers, ProjectMedia } from "@/types/api";
+
+import * as React from "react";
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -58,6 +60,24 @@ const statusLabels = {
   planned: "Planned",
   live: "⚪ Live",
 };
+
+// Memoized media section to prevent re-rendering when other form fields change
+const ProjectMediaSection = React.memo(
+  ({
+    media,
+    onChange,
+  }: {
+    media: MediaItem[];
+    onChange: (media: MediaItem[]) => void;
+  }) => (
+    <MediaEditor
+      media={media}
+      onChange={onChange}
+      allowUpload={true}
+      maxItems={10}
+    />
+  )
+);
 
 function ProjectPageContent({ params }: ProjectPageProps) {
   const { isEditMode } = useEditMode();
@@ -206,7 +226,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
     }
   };
 
-  const addTech = () => {
+  const addTech = useCallback(() => {
     if (newTech.trim() && !editFormData.technologies.includes(newTech.trim())) {
       setEditFormData((prev) => ({
         ...prev,
@@ -214,59 +234,21 @@ function ProjectPageContent({ params }: ProjectPageProps) {
       }));
       setNewTech("");
     }
-  };
+  }, [newTech, editFormData.technologies]);
 
-  const removeTech = (tech: string) => {
+  const removeTech = useCallback((tech: string) => {
     setEditFormData((prev) => ({
       ...prev,
       technologies: prev.technologies.filter((t) => t !== tech),
     }));
-  };
+  }, []);
 
-  const handleMediaChange = (media: MediaItem[]) => {
+  const handleMediaChange = useCallback((media: MediaItem[]) => {
     setEditFormData((prev) => ({
       ...prev,
       media,
     }));
-  };
-
-  const handleFileUpload = async (file: File) => {
-    setUploadingFile(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setMediaFormData((prev) => ({
-          ...prev,
-          url: result.url,
-          fileName: result.fileName,
-          originalName: result.originalName,
-        }));
-      } else {
-        alert(result.error || "Failed to upload file.");
-      }
-    } catch (error) {
-      console.error("Failed to upload file:", error);
-      alert("An error occurred while uploading file.");
-    } finally {
-      setUploadingFile(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
-    }
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -506,33 +488,76 @@ function ProjectPageContent({ params }: ProjectPageProps) {
               )}
 
               <form onSubmit={handleEditSubmit} className="space-y-6">
-                {/* Basic Info */}
+                {/* Project Title */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Project Title
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.title}
+                    onChange={(e) =>
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter project title"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) =>
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Describe your project..."
+                  />
+                </div>
+
+                {/* Status and Type */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Project Title *
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Status
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={editFormData.title}
+                    <select
+                      value={editFormData.status}
                       onChange={(e) =>
                         setEditFormData((prev) => ({
                           ...prev,
-                          title: e.target.value,
+                          status: e.target.value as
+                            | "completed"
+                            | "ongoing"
+                            | "planned"
+                            | "live",
                         }))
                       }
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter project title"
-                    />
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="planned">Planned</option>
+                      <option value="ongoing">Ongoing</option>
+                      <option value="completed">Completed</option>
+                      <option value="live">Live</option>
+                    </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Project Type *
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Type
                     </label>
                     <select
-                      required
                       value={editFormData.type}
                       onChange={(e) =>
                         setEditFormData((prev) => ({
@@ -546,137 +571,43 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                             | "other",
                         }))
                       }
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="web">Web Development</option>
-                      <option value="mobile">Mobile App</option>
-                      <option value="ai">AI/ML</option>
-                      <option value="infrastructure">
-                        Infrastructure/DevOps
-                      </option>
-                      <option value="desktop">Desktop Application</option>
+                      <option value="web">Web</option>
+                      <option value="mobile">Mobile</option>
+                      <option value="ai">AI</option>
+                      <option value="infrastructure">Infrastructure</option>
+                      <option value="desktop">Desktop</option>
                       <option value="other">Other</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Description */}
+                {/* Team Size */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Project Description *
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Team Size
                   </label>
-                  <textarea
-                    required
-                    value={editFormData.description}
+                  <input
+                    type="number"
+                    min="1"
+                    value={editFormData.teamSize}
                     onChange={(e) =>
                       setEditFormData((prev) => ({
                         ...prev,
-                        description: e.target.value,
+                        teamSize: parseInt(e.target.value) || 1,
                       }))
                     }
-                    rows={4}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter detailed description of the project"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
 
-                {/* Dates */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Start Date *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={editFormData.startDate}
-                      onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          startDate: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      End Date (Optional)
-                    </label>
-                    <input
-                      type="date"
-                      value={editFormData.endDate}
-                      onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          endDate: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Leave empty for ongoing projects"
-                    />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Leave empty for ongoing projects
-                    </p>
-                  </div>
-                </div>
-
-                {/* Status and Team Size */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Project Status *
-                    </label>
-                    <select
-                      required
-                      value={editFormData.status}
-                      onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          status: e.target.value as
-                            | "completed"
-                            | "ongoing"
-                            | "planned"
-                            | "live",
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="planned">Planned</option>
-                      <option value="ongoing">Ongoing</option>
-                      <option value="completed">Completed</option>
-                      <option value="live">⚪ Live</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Team Size *
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      value={editFormData.teamSize}
-                      onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          teamSize: parseInt(e.target.value),
-                        }))
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Number of team members"
-                    />
-                  </div>
-                </div>
-
                 {/* Technologies */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Technologies Used
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Technologies
                   </label>
-                  <div className="flex gap-2 mb-2">
+                  <div className="flex gap-2">
                     <input
                       type="text"
                       value={newTech}
@@ -715,11 +646,9 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                 </div>
 
                 {/* Project Media */}
-                <MediaEditor
+                <ProjectMediaSection
                   media={editFormData.media}
                   onChange={handleMediaChange}
-                  allowUpload={true}
-                  maxItems={10}
                 />
 
                 {/* Submit Buttons */}

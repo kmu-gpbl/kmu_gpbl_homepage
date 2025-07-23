@@ -56,7 +56,323 @@ const mediaTypes = [
   { value: "url", label: "Link", icon: LinkIcon, accept: "" },
 ];
 
-export function MediaEditor({
+// Separate MediaItem component to prevent unnecessary re-renders
+const MediaItem = React.memo(
+  ({
+    item,
+    index,
+    onEdit,
+    onRemove,
+    isEditing,
+  }: {
+    item: MediaItem;
+    index: number;
+    onEdit: (index: number) => void;
+    onRemove: (index: number) => void;
+    isEditing: boolean;
+  }) => {
+    const LinkPreview = React.memo(({ item }: { item: MediaItem }) => {
+      const [ogData, setOgData] = useState(item.ogData || null);
+      const [loading, setLoading] = useState(!item.ogData && !ogData);
+      const [error, setError] = useState(false);
+
+      const fetchOpenGraphData = useCallback(async () => {
+        if (ogData || item.ogData) return; // Don't fetch if we already have data
+
+        try {
+          setLoading(true);
+          setError(false);
+
+          const response = await fetch("/api/opengraph", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: item.url }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            setOgData(result.data);
+          } else {
+            setError(true);
+          }
+        } catch (err) {
+          console.error("Failed to fetch OpenGraph data:", err);
+          setError(true);
+        } finally {
+          setLoading(false);
+        }
+      }, [item.url, item.ogData, ogData]);
+
+      React.useEffect(() => {
+        if (item.type === "url" && item.url && !item.ogData && !ogData) {
+          fetchOpenGraphData();
+        }
+      }, [item.type, item.url, item.ogData, ogData, fetchOpenGraphData]);
+
+      if (loading) {
+        return (
+          <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (error || !ogData) {
+        return (
+          <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                <LinkIcon className="w-8 h-8 text-gray-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-gray-900 dark:text-white truncate">
+                  {item.title}
+                </h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                  {new URL(item.url).hostname}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors">
+          <div className="flex items-start gap-3">
+            {ogData.image ? (
+              <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                <img
+                  src={ogData.image}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                <LinkIcon className="w-8 h-8 text-gray-500" />
+              </div>
+            )}
+
+            <div className="flex-1 min-w-0">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-1 leading-tight">
+                {ogData.title || item.title}
+              </h4>
+              {ogData.description && (
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 leading-relaxed line-clamp-2">
+                  {ogData.description}
+                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {ogData.siteName || new URL(item.url).hostname}
+                </span>
+                {ogData.siteName && (
+                  <span className="text-xs text-gray-400">•</span>
+                )}
+                <span className="text-xs text-gray-400">
+                  {new URL(item.url).hostname}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    });
+
+    const MediaThumbnail = React.memo(({ item }: { item: MediaItem }) => {
+      const [imageError, setImageError] = useState(false);
+      const [videoError, setVideoError] = useState(false);
+      const [loading, setLoading] = useState(true);
+
+      if (item.type === "url") {
+        return <LinkPreview item={item} />;
+      }
+
+      if (item.type === "image" && item.url && !imageError) {
+        return (
+          <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+            )}
+            <img
+              src={item.url}
+              alt={item.title}
+              className="w-full h-full object-cover"
+              onLoad={() => setLoading(false)}
+              onError={() => {
+                setImageError(true);
+                setLoading(false);
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (item.type === "video" && item.url && !videoError) {
+        return (
+          <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+            )}
+            <video
+              src={item.url}
+              className="w-full h-full object-cover"
+              muted
+              playsInline
+              onLoadedData={() => setLoading(false)}
+              onError={() => {
+                setVideoError(true);
+                setLoading(false);
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+              <Play className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        );
+      }
+
+      // Fallback to icon for other types or errors
+      const getMediaIcon = (type: string) => {
+        const mediaType = mediaTypes.find((t) => t.value === type);
+        return mediaType ? mediaType.icon : File;
+      };
+
+      const IconComponent = getMediaIcon(item.type);
+      return (
+        <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+          <IconComponent className="w-8 h-8 text-gray-500" />
+        </div>
+      );
+    });
+
+    const handleEdit = useCallback(() => onEdit(index), [onEdit, index]);
+    const handleRemove = useCallback(() => onRemove(index), [onRemove, index]);
+
+    if (item.type === "url") {
+      return (
+        <div className="group relative">
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
+            <button
+              type="button"
+              onClick={handleEdit}
+              className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              title="Edit"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+              title="Remove"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block hover:scale-[1.02] transition-transform"
+          >
+            <MediaThumbnail item={item} />
+          </a>
+
+          {item.description && (
+            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                {item.description}
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="group p-6 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors min-h-[160px] flex flex-col">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <MediaThumbnail item={item} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="font-medium text-gray-900 dark:text-white truncate pr-2">
+                  {item.title}
+                </h4>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleEdit}
+                    className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                    title="Edit"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    title="Remove"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
+                {mediaTypes.find((t) => t.value === item.type)?.label}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 mb-4">
+          {item.description && (
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              {item.description}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end mt-auto">
+          {item.url && (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-600 text-sm font-medium px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              View
+            </a>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+
+export default function MediaEditor({
   media,
   onChange,
   className = "",
@@ -64,6 +380,7 @@ export function MediaEditor({
   maxItems = 10,
 }: MediaEditorProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const [isLinkOnly, setIsLinkOnly] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -237,16 +554,7 @@ export function MediaEditor({
     [allowUpload, media, onChange]
   );
 
-  const addItem = () => {
-    const itemErrors = validateItem(newItem);
-    if (Object.keys(itemErrors).length > 0) {
-      setErrors(itemErrors);
-      return;
-    }
-
-    const updatedMedia = [...media, { ...newItem, id: `temp-${Date.now()}` }];
-    onChange(updatedMedia);
-
+  const resetForm = useCallback(() => {
     setNewItem({
       type: "image",
       title: "",
@@ -254,227 +562,46 @@ export function MediaEditor({
       description: "",
     });
     setIsAdding(false);
+    setIsLinkOnly(false);
     setErrors({});
-  };
+  }, []);
 
-  const updateItem = (index: number, updatedItem: MediaItem) => {
-    const itemErrors = validateItem(updatedItem);
-    if (Object.keys(itemErrors).length > 0) {
-      setErrors(itemErrors);
-      return;
+  const addItem = useCallback(() => {
+    const errors = validateItem(newItem);
+    setErrors(errors);
+
+    if (Object.keys(errors).length === 0) {
+      onChange([...media, { ...newItem, id: Date.now().toString() }]);
+      resetForm();
     }
+  }, [newItem, media, onChange, resetForm]);
 
-    const updatedMedia = [...media];
-    updatedMedia[index] = updatedItem;
-    onChange(updatedMedia);
-    setEditingIndex(null);
-    setErrors({});
-  };
+  const updateItem = useCallback(
+    (index: number, updatedItem: MediaItem) => {
+      const errors = validateItem(updatedItem);
+      setErrors(errors);
 
-  const removeItem = (index: number) => {
-    const updatedMedia = media.filter((_, i) => i !== index);
-    onChange(updatedMedia);
-  };
+      if (Object.keys(errors).length === 0) {
+        const updatedMedia = [...media];
+        updatedMedia[index] = updatedItem;
+        onChange(updatedMedia);
+        setEditingIndex(null);
+      }
+    },
+    [media, onChange]
+  );
+
+  const removeItem = useCallback(
+    (index: number) => {
+      const updatedMedia = media.filter((_, i) => i !== index);
+      onChange(updatedMedia);
+    },
+    [media, onChange]
+  );
 
   const getMediaIcon = (type: string) => {
     const mediaType = mediaTypes.find((t) => t.value === type);
     return mediaType ? mediaType.icon : File;
-  };
-
-  const LinkPreview = ({ item }: { item: MediaItem }) => {
-    const [ogData, setOgData] = useState(item.ogData || null);
-    const [loading, setLoading] = useState(!item.ogData);
-    const [error, setError] = useState(false);
-
-    React.useEffect(() => {
-      if (item.type === "url" && item.url && !item.ogData) {
-        fetchOpenGraphData();
-      }
-    }, [item.url]);
-
-    const fetchOpenGraphData = async () => {
-      try {
-        setLoading(true);
-        setError(false);
-
-        const response = await fetch("/api/opengraph", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url: item.url }),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setOgData(result.data);
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        console.error("Failed to fetch OpenGraph data:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (loading) {
-      return (
-        <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
-            </div>
-            <div className="flex-1">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse"></div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (error || !ogData) {
-      const IconComponent = getMediaIcon(item.type);
-      return (
-        <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-              <IconComponent className="w-8 h-8 text-gray-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-gray-900 dark:text-white truncate">
-                {item.title}
-              </h4>
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                {new URL(item.url).hostname}
-              </p>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors">
-        <div className="flex items-start gap-3">
-          {ogData.image ? (
-            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-              <img
-                src={ogData.image}
-                alt=""
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
-                }}
-              />
-            </div>
-          ) : (
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
-              <LinkIcon className="w-8 h-8 text-gray-500" />
-            </div>
-          )}
-
-          <div className="flex-1 min-w-0">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-1 leading-tight">
-              {ogData.title || item.title}
-            </h4>
-            {ogData.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 leading-relaxed line-clamp-2">
-                {ogData.description}
-              </p>
-            )}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {ogData.siteName || new URL(item.url).hostname}
-              </span>
-              {ogData.siteName && (
-                <span className="text-xs text-gray-400">•</span>
-              )}
-              <span className="text-xs text-gray-400">
-                {new URL(item.url).hostname}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const MediaThumbnail = ({ item }: { item: MediaItem }) => {
-    const [imageError, setImageError] = useState(false);
-    const [videoError, setVideoError] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    if (item.type === "image" && item.url && !imageError) {
-      return (
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-            </div>
-          )}
-          <img
-            src={item.url}
-            alt={item.title}
-            className="w-full h-full object-cover"
-            onLoad={() => setLoading(false)}
-            onError={() => {
-              setImageError(true);
-              setLoading(false);
-            }}
-          />
-        </div>
-      );
-    }
-
-    if (item.type === "video" && item.url && !videoError) {
-      return (
-        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-            </div>
-          )}
-          <video
-            src={item.url}
-            className="w-full h-full object-cover"
-            muted
-            playsInline
-            onLoadedData={() => setLoading(false)}
-            onError={() => {
-              setVideoError(true);
-              setLoading(false);
-            }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-            <Play className="w-6 h-6 text-white" />
-          </div>
-        </div>
-      );
-    }
-
-    // Fallback to icon for other types or errors
-    const IconComponent = getMediaIcon(item.type);
-    return (
-      <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-        <IconComponent className="w-8 h-8 text-gray-500" />
-      </div>
-    );
-  };
-
-  const resetForm = () => {
-    setNewItem({
-      type: "image",
-      title: "",
-      url: "",
-      description: "",
-    });
-    setIsAdding(false);
-    setEditingIndex(null);
-    setErrors({});
   };
 
   return (
@@ -626,109 +753,15 @@ export function MediaEditor({
               );
             }
 
-            if (item.type === "url") {
-              return (
-                <div key={index} className="group relative">
-                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
-                    <button
-                      type="button"
-                      onClick={() => setEditingIndex(index)}
-                      className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                      title="Edit"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeItem(index)}
-                      className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      title="Remove"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block hover:scale-[1.02] transition-transform"
-                  >
-                    <LinkPreview item={item} />
-                  </a>
-
-                  {item.description && (
-                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                        {item.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
             return (
-              <div
-                key={index}
-                className="group p-6 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors min-h-[160px] flex flex-col"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <MediaThumbnail item={item} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-medium text-gray-900 dark:text-white truncate pr-2">
-                          {item.title}
-                        </h4>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setEditingIndex(index)}
-                            className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                            title="Edit"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeItem(index)}
-                            className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                            title="Remove"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full">
-                        {mediaTypes.find((t) => t.value === item.type)?.label}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex-1 mb-4">
-                  {item.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-end mt-auto">
-                  {item.url && (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-500 hover:text-blue-600 text-sm font-medium px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      View
-                    </a>
-                  )}
-                </div>
-              </div>
+              <MediaItem
+                key={item.id || `media-${index}`}
+                item={item}
+                index={index}
+                onEdit={setEditingIndex}
+                onRemove={removeItem}
+                isEditing={false}
+              />
             );
           })}
         </div>
