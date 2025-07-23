@@ -280,46 +280,35 @@ function ProjectPageContent({ params }: ProjectPageProps) {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Hero Section */}
-          <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-black/20"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10"></div>
-
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
             {/* Hero Background Image (if available) */}
             {project.media &&
               project.media.length > 0 &&
               project.media.find((m) => m.type === "image") && (
-                <div className="absolute inset-0">
-                  <img
-                    src={project.media.find((m) => m.type === "image")?.url}
-                    alt=""
-                    className="w-full h-full object-cover opacity-30"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/80 to-indigo-900/80"></div>
+                <div className="relative">
+                  <div className="h-48 md:h-64 overflow-hidden rounded-t-2xl">
+                    <img
+                      src={project.media.find((m) => m.type === "image")?.url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
                 </div>
               )}
 
-            <div className="relative z-10 p-8 md:p-12">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
+            {/* Hero Content */}
+            <div className="p-8 md:p-12">
+              <div className="flex flex-col lg:flex-row items-start gap-8">
                 {/* Project Icon & Type */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center">
                   <div className="relative">
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl md:text-6xl border border-white/40">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl md:text-4xl border border-blue-200 dark:border-blue-800">
                       {typeIcons[project.type]}
                     </div>
-                    <div className="absolute -bottom-2 -right-2 px-3 py-1 bg-white/30 rounded-full text-xs font-medium text-white border border-white/50">
+                    <div className="absolute -bottom-2 -right-2 px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
                       {project.type.toUpperCase()}
                     </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div
-                    className={`px-6 py-3 rounded-full text-sm font-bold text-white flex items-center gap-2 ${
-                      statusColors[project.status]
-                    } ring-2 ring-white/50`}
-                  >
-                    {project.status === "live" && <Radio className="w-4 h-4" />}
-                    {statusLabels[project.status]}
                   </div>
                 </div>
 
@@ -327,18 +316,31 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4 mb-6">
                     <div className="flex-1 min-w-0">
-                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3 leading-tight">
-                        {project.title}
-                      </h1>
-                      <p className="text-xl md:text-2xl text-white/80 font-medium mb-4">
+                      <div className="flex flex-wrap items-center gap-4 mb-3">
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
+                          {project.title}
+                        </h1>
+                        {/* Status Badge */}
+                        <div
+                          className={`px-4 py-2 rounded-full text-sm font-bold text-white flex items-center gap-2 ${
+                            statusColors[project.status]
+                          }`}
+                        >
+                          {project.status === "live" && (
+                            <Radio className="w-4 h-4" />
+                          )}
+                          {statusLabels[project.status]}
+                        </div>
+                      </div>
+                      <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 font-medium mb-4">
                         {project.period}
                       </p>
 
                       {/* Quick Stats */}
-                      <div className="flex flex-wrap items-center gap-4 text-white/70">
+                      <div className="flex flex-wrap items-center gap-4">
                         {project.technologies &&
                           project.technologies.length > 0 && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                               <Tag className="w-4 h-4" />
                               <span className="font-medium text-sm">
                                 {project.technologies.length} Tech
@@ -347,7 +349,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                             </div>
                           )}
                         {project.members && project.members.length > 0 && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                             <User className="w-4 h-4" />
                             <span className="font-medium text-sm">
                               {project.members.length} Member
@@ -356,14 +358,14 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                           </div>
                         )}
                         {project.media && project.media.length > 0 && (
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                             <ExternalLink className="w-4 h-4" />
                             <span className="font-medium text-sm">
                               {project.media.length} Media
                             </span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300">
                           <Calendar className="w-4 h-4" />
                           <span className="font-medium text-sm flex items-center gap-1">
                             {project.status === "live" && (
@@ -379,10 +381,10 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                     {isEditMode && (
                       <button
                         onClick={handleEditClick}
-                        className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200 hover:scale-105 border border-white/40"
+                        className="p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:scale-105 border border-gray-200 dark:border-gray-700"
                         title="Edit Project"
                       >
-                        <Edit className="w-6 h-6 text-white" />
+                        <Edit className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                       </button>
                     )}
                   </div>
@@ -394,7 +396,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                         href={project.media.find((m) => m.type === "url")?.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 hover:scale-105"
+                        className="group inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105"
                       >
                         <ExternalLink className="w-5 h-5" />
                         View Live
@@ -408,7 +410,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                         );
                         mediaSection?.scrollIntoView({ behavior: "smooth" });
                       }}
-                      className="group inline-flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 border border-white/50"
+                      className="group inline-flex items-center gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105"
                     >
                       <FileText className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
                       Explore Media

@@ -136,7 +136,7 @@ const MediaItem = React.memo(
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2 leading-tight">
-                  {item.title}
+                  {item.title || new URL(item.url).hostname || "Link"}
                 </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                   {new URL(item.url).hostname}
@@ -170,7 +170,10 @@ const MediaItem = React.memo(
 
             <div className="flex-1 min-w-0">
               <h4 className="font-medium text-gray-900 dark:text-white mb-1 leading-tight line-clamp-2">
-                {ogData.title || item.title}
+                {ogData.title ||
+                  item.title ||
+                  new URL(item.url).hostname ||
+                  "Link"}
               </h4>
               {ogData.description && (
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 leading-relaxed line-clamp-2">
@@ -813,9 +816,29 @@ function EditForm({
           <input
             type="url"
             value={editItem.url}
-            onChange={(e) =>
-              setEditItem((prev) => ({ ...prev, url: e.target.value }))
-            }
+            onChange={(e) => {
+              const newUrl = e.target.value;
+              let newTitle = editItem.title;
+
+              if (newUrl) {
+                try {
+                  // Try to extract hostname from valid URL
+                  const url = new URL(newUrl);
+                  newTitle = url.hostname;
+                } catch {
+                  // If URL is invalid, use the raw input as title
+                  newTitle = newUrl;
+                }
+              }
+
+              setEditItem((prev) => ({
+                ...prev,
+                url: newUrl,
+                title: newTitle,
+                // Clear any cached ogData when URL changes
+                ogData: undefined,
+              }));
+            }}
             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
               errors.url
                 ? "border-red-500"
@@ -957,13 +980,27 @@ function AddForm({
           <input
             type="url"
             value={item.url}
-            onChange={(e) =>
+            onChange={(e) => {
+              const newUrl = e.target.value;
+              let newTitle = "Link";
+
+              if (newUrl) {
+                try {
+                  // Try to extract hostname from valid URL
+                  const url = new URL(newUrl);
+                  newTitle = url.hostname;
+                } catch {
+                  // If URL is invalid, use the raw input as title
+                  newTitle = newUrl;
+                }
+              }
+
               onChange({
                 ...item,
-                url: e.target.value,
-                title: e.target.value || "Link",
-              })
-            }
+                url: newUrl,
+                title: newTitle,
+              });
+            }}
             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
               errors.url
                 ? "border-red-500"
@@ -1064,7 +1101,32 @@ function AddForm({
           <input
             type="url"
             value={item.url}
-            onChange={(e) => onChange({ ...item, url: e.target.value })}
+            onChange={(e) => {
+              const newUrl = e.target.value;
+              let updatedItem = { ...item, url: newUrl };
+
+              // Only auto-update title if it's empty or was previously auto-generated
+              if (
+                !item.title ||
+                item.title === "Link" ||
+                item.title === item.url
+              ) {
+                if (newUrl) {
+                  try {
+                    // Try to extract hostname from valid URL
+                    const url = new URL(newUrl);
+                    updatedItem.title = url.hostname;
+                  } catch {
+                    // If URL is invalid, use the raw input as title
+                    updatedItem.title = newUrl;
+                  }
+                } else {
+                  updatedItem.title = "Link";
+                }
+              }
+
+              onChange(updatedItem);
+            }}
             className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
               errors.url
                 ? "border-red-500"

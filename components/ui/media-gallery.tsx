@@ -76,7 +76,7 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
-              {item.title}
+              {item.title || new URL(item.url).hostname || "Link"}
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
               Loading preview...
@@ -118,7 +118,7 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
-              {item.title}
+              {item.title || new URL(item.url).hostname || "Link"}
             </h4>
             <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 truncate">
               {new URL(item.url).hostname}
@@ -177,7 +177,7 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
         {/* OpenGraph Content */}
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
-            {ogData.title || item.title}
+            {ogData.title || item.title || new URL(item.url).hostname || "Link"}
           </h4>
           <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed mt-1">
             {ogData.description || "No description available"}
