@@ -62,7 +62,7 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
 
   if (loading) {
     return (
-      <div className="group transition-all duration-200 hover:scale-[1.02]">
+      <div className="group transition-all duration-200 hover:scale-[1.02] min-w-0">
         <a
           href={item.url}
           target="_blank"
@@ -75,13 +75,13 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
             <div className="w-4 h-4 border-2 border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+            <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
               {item.title}
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
               Loading preview...
             </p>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 truncate">
               {new URL(item.url).hostname}
             </p>
           </div>
@@ -92,8 +92,8 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
           <div className="px-4 py-3 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-700 border-t-0 rounded-b-xl">
             <div className="flex items-start gap-2">
               <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-gray-800 dark:text-white italic break-words">
-                "{item.description}"
+              <p className="text-sm text-gray-800 dark:text-white line-clamp-3 leading-relaxed">
+                {item.description}
               </p>
             </div>
           </div>
@@ -104,7 +104,7 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
 
   if (error || !ogData) {
     return (
-      <div className="group transition-all duration-200 hover:scale-[1.02]">
+      <div className="group transition-all duration-200 hover:scale-[1.02] min-w-0">
         <a
           href={item.url}
           target="_blank"
@@ -117,10 +117,10 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
             <ExternalLink className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+            <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
               {item.title}
             </h4>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 truncate">
               {new URL(item.url).hostname}
             </p>
           </div>
@@ -131,8 +131,8 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
           <div className="px-4 py-3 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-700 border-t-0 rounded-b-xl">
             <div className="flex items-start gap-2">
               <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-gray-800 dark:text-white italic break-words">
-                "{item.description}"
+              <p className="text-sm text-gray-800 dark:text-white line-clamp-3 leading-relaxed">
+                {item.description}
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
   }
 
   return (
-    <div className="group transition-all duration-200 hover:scale-[1.02]">
+    <div className="group transition-all duration-200 hover:scale-[1.02] min-w-0">
       <a
         href={item.url}
         target="_blank"
@@ -176,13 +176,13 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
 
         {/* OpenGraph Content */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+          <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
             {ogData.title || item.title}
           </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-400 break-words mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed mt-1">
             {ogData.description || "No description available"}
           </p>
-          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 truncate">
             {ogData.siteName || new URL(item.url).hostname}
           </p>
         </div>
@@ -193,8 +193,8 @@ const LinkPreview = React.memo(({ item }: { item: ProjectMedia }) => {
         <div className="px-4 py-3 bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-700 border-t-0 rounded-b-xl">
           <div className="flex items-start gap-2">
             <MessageSquare className="w-4 h-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-gray-800 dark:text-white italic break-words">
-              "{item.description}"
+            <p className="text-sm text-gray-800 dark:text-white line-clamp-3 leading-relaxed">
+              {item.description}
             </p>
           </div>
         </div>
@@ -322,11 +322,11 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
 
             {/* Info bar - Bottom for both image and video */}
             <div className="absolute bottom-4 left-4 right-4 bg-black/70 rounded-lg p-4 text-white">
-              <h3 className="font-semibold text-lg truncate">
+              <h3 className="font-semibold text-lg line-clamp-2 leading-tight">
                 {visualMedia[lightboxIndex]?.title}
               </h3>
               {visualMedia[lightboxIndex]?.description && (
-                <p className="text-white/80 mt-1">
+                <p className="text-white/80 mt-1 line-clamp-3 leading-relaxed">
                   {visualMedia[lightboxIndex].description}
                 </p>
               )}
@@ -411,11 +411,11 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                 {visualMedia[selectedIndex]?.type === "video" ? (
                   /* Video: Top overlay to avoid controls */
                   <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4">
-                    <h4 className="text-white font-semibold text-lg truncate">
+                    <h4 className="text-white font-semibold text-lg line-clamp-2 leading-tight">
                       {visualMedia[selectedIndex]?.title}
                     </h4>
                     {visualMedia[selectedIndex]?.description && (
-                      <p className="text-white/80 text-sm mt-1">
+                      <p className="text-white/80 text-sm mt-1 line-clamp-2 leading-relaxed">
                         {visualMedia[selectedIndex].description}
                       </p>
                     )}
@@ -423,11 +423,11 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                 ) : (
                   /* Image: Bottom overlay */
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                    <h4 className="text-white font-semibold text-lg truncate">
+                    <h4 className="text-white font-semibold text-lg line-clamp-2 leading-tight">
                       {visualMedia[selectedIndex]?.title}
                     </h4>
                     {visualMedia[selectedIndex]?.description && (
-                      <p className="text-white/80 text-sm mt-1">
+                      <p className="text-white/80 text-sm mt-1 line-clamp-2 leading-relaxed">
                         {visualMedia[selectedIndex].description}
                       </p>
                     )}
@@ -517,11 +517,11 @@ export function MediaGallery({ media, className = "" }: MediaGalleryProps) {
                     <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                    <h4 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
                       {item.title}
                     </h4>
                     {item.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed mt-1">
                         {item.description}
                       </p>
                     )}

@@ -135,7 +135,7 @@ const MediaItem = React.memo(
                 <LinkIcon className="w-8 h-8 text-gray-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-gray-900 dark:text-white truncate">
+                <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2 leading-tight">
                   {item.title}
                 </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -169,7 +169,7 @@ const MediaItem = React.memo(
             )}
 
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-gray-900 dark:text-white mb-1 leading-tight">
+              <h4 className="font-medium text-gray-900 dark:text-white mb-1 leading-tight line-clamp-2">
                 {ogData.title || item.title}
               </h4>
               {ogData.description && (
@@ -178,13 +178,13 @@ const MediaItem = React.memo(
                 </p>
               )}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {ogData.siteName || new URL(item.url).hostname}
                 </span>
                 {ogData.siteName && (
                   <span className="text-xs text-gray-400">•</span>
                 )}
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 truncate">
                   {new URL(item.url).hostname}
                 </span>
               </div>
@@ -317,7 +317,7 @@ const MediaItem = React.memo(
             <MediaThumbnail item={item} />
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between mb-2">
-                <h4 className="font-medium text-gray-900 dark:text-white truncate pr-2">
+                <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2 leading-tight pr-2">
                   {item.title}
                 </h4>
                 <div className="flex items-center gap-1 flex-shrink-0">
@@ -348,7 +348,7 @@ const MediaItem = React.memo(
 
         <div className="flex-1 mb-4">
           {item.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3">
               {item.description}
             </p>
           )}
@@ -445,7 +445,7 @@ export default function MediaEditor({
           ? "video"
           : "presentation";
 
-        // 파일 업로드 후 자동으로 미디어 추가 (폼 없이)
+        // Auto-add media after file upload (without form)
         const newMedia: MediaItem = {
           id: `temp-${Date.now()}`,
           type: fileType,

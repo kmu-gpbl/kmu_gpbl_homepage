@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       role: body.role,
       specialties: body.specialties || [],
       bio: body.bio,
-      avatar: body.avatar || "/placeholder.svg",
+      avatar: body.avatar || null,
       github: body.github || null,
       linkedin: body.linkedin || null,
       portfolio: body.portfolio || null,

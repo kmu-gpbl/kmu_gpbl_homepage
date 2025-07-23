@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { User, Mail, Phone, MapPin, ExternalLink } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 interface TeamMemberCardProps {
   member: {
     id: string;
     name: string;
     role: string;
+    avatar?: string;
     email?: string;
     phone?: string;
     location?: string;
@@ -90,18 +92,25 @@ export function TeamMemberCard({
         {/* Header with avatar and basic info */}
         <div className="flex items-center gap-4 mb-4">
           {/* Avatar */}
-          <div
-            className={`relative w-14 h-14 bg-gradient-to-br ${gradientColor} rounded-full flex items-center justify-center text-white font-bold text-lg`}
-          >
-            {initials}
-          </div>
+          <Avatar className="w-14 h-14">
+            <AvatarImage
+              src={member.avatar}
+              alt={member.name}
+              className="object-cover"
+            />
+            <AvatarFallback
+              className={`bg-gradient-to-br ${gradientColor} text-white font-bold text-lg`}
+            >
+              {initials}
+            </AvatarFallback>
+          </Avatar>
 
           {/* Name and role */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-white truncate text-lg">
+            <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1 leading-tight text-lg">
               {member.name}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 truncate font-medium">
+            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 leading-tight font-medium">
               {member.role}
             </p>
           </div>

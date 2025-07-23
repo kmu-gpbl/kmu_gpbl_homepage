@@ -17,13 +17,14 @@ import {
   User,
   Edit,
   X,
-  Plus,
   File,
   FileText,
   Play,
   LinkIcon,
+  Radio,
 } from "lucide-react";
-import type { ProjectWithMembers, ProjectMedia } from "@/types/api";
+import type { ProjectWithMembers } from "@/types/api";
+import { smartBackForProject } from "@/lib/navigation-utils";
 
 import * as React from "react";
 
@@ -53,14 +54,14 @@ const statusColors = {
   completed: "bg-green-500",
   ongoing: "bg-yellow-500",
   planned: "bg-gray-400",
-  live: "bg-red-500 animate-pulse",
+  live: "bg-red-500",
 };
 
 const statusLabels = {
   completed: "Completed",
   ongoing: "Ongoing",
   planned: "Planned",
-  live: "⚪ Live",
+  live: "Live",
 };
 
 // Memoized media section to prevent re-rendering when other form fields change
@@ -265,13 +266,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
   const colorClass = typeColors[project.type];
 
   const handleBack = () => {
-    // Navigate to the first member's profile page
-    if (project?.members && project.members.length > 0) {
-      router.push(`/member/${project.members[0].id}`);
-    } else {
-      // Navigate to main page if no member information
-      router.push("/");
-    }
+    smartBackForProject(router, project);
   };
 
   return (
@@ -319,10 +314,11 @@ function ProjectPageContent({ params }: ProjectPageProps) {
 
                   {/* Status Badge */}
                   <div
-                    className={`px-6 py-3 rounded-full text-sm font-bold text-white ${
+                    className={`px-6 py-3 rounded-full text-sm font-bold text-white flex items-center gap-2 ${
                       statusColors[project.status]
                     } ring-2 ring-white/50`}
                   >
+                    {project.status === "live" && <Radio className="w-4 h-4" />}
                     {statusLabels[project.status]}
                   </div>
                 </div>
@@ -369,7 +365,10 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                         )}
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
                           <Calendar className="w-4 h-4" />
-                          <span className="font-medium text-sm">
+                          <span className="font-medium text-sm flex items-center gap-1">
+                            {project.status === "live" && (
+                              <Radio className="w-3 h-3" />
+                            )}
                             {statusLabels[project.status]}
                           </span>
                         </div>
@@ -472,7 +471,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                 <div className="p-6">
                   <div className="flex flex-wrap gap-2">
                     {project.technologies.map((tech, index) => (
-                      <TechStackBadge key={index} tech={tech} index={index} />
+                      <TechStackBadge key={index} tech={tech} />
                     ))}
                   </div>
                 </div>
@@ -509,7 +508,10 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                       <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                         Status
                       </p>
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                      <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-1">
+                        {project.status === "live" && (
+                          <Radio className="w-4 h-4" />
+                        )}
                         {statusLabels[project.status]}
                       </p>
                     </div>
