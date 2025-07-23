@@ -317,7 +317,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
                   <div className="flex items-start justify-between gap-4 mb-6">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-4 mb-3">
-                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight tracking-tight">
                           {project.title}
                         </h1>
                         {/* Status Badge */}

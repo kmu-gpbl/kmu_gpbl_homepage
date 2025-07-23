@@ -27,6 +27,8 @@ function isYouTubeUrl(url: string): boolean {
     /^https?:\/\/(www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
     /^https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)/,
     /^https?:\/\/(m\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
+    /^https?:\/\/(www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/,
+    /^https?:\/\/(m\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/,
   ];
 
   return youtubePatterns.some((pattern) => pattern.test(url));
@@ -36,6 +38,7 @@ function extractYouTubeVideoId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
     /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/,
   ];
 
   for (const pattern of patterns) {
