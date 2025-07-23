@@ -3,9 +3,11 @@
 import { notFound, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
-import { ProjectMediaManager } from "@/components/project-media-manager";
+import { MediaGallery } from "@/components/ui/media-gallery";
 import MediaEditor, { MediaItem } from "@/components/ui/media-editor";
 import { Loading } from "@/components/ui/loading";
+import { TechStackBadge } from "@/components/ui/tech-stack-badge";
+import { TeamMemberCard } from "@/components/ui/team-member-card";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
 import {
   Tag,
@@ -281,174 +283,266 @@ function ProjectPageContent({ params }: ProjectPageProps) {
       />
 
       <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Project Header */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-            <div className={`${colorClass} h-4 w-full`} />
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Hero Section */}
+          <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10"></div>
 
-            <div className="p-8">
-              <div className="flex items-start gap-6 mb-6">
-                <div className="text-6xl">{typeIcons[project.type]}</div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2">
+            {/* Hero Background Image (if available) */}
+            {project.media &&
+              project.media.length > 0 &&
+              project.media.find((m) => m.type === "image") && (
+                <div className="absolute inset-0">
+                  <img
+                    src={project.media.find((m) => m.type === "image")?.url}
+                    alt=""
+                    className="w-full h-full object-cover opacity-30"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-purple-900/80 to-indigo-900/80"></div>
+                </div>
+              )}
+
+            <div className="relative z-10 p-8 md:p-12">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
+                {/* Project Icon & Type */}
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 rounded-2xl flex items-center justify-center text-5xl md:text-6xl border border-white/40">
+                      {typeIcons[project.type]}
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 px-3 py-1 bg-white/30 rounded-full text-xs font-medium text-white border border-white/50">
+                      {project.type.toUpperCase()}
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div
+                    className={`px-6 py-3 rounded-full text-sm font-bold text-white ${
+                      statusColors[project.status]
+                    } ring-2 ring-white/50`}
+                  >
+                    {statusLabels[project.status]}
+                  </div>
+                </div>
+
+                {/* Project Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-4 mb-6">
+                    <div className="flex-1 min-w-0">
+                      <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3 leading-tight">
                         {project.title}
                       </h1>
-                      <p className="text-xl text-gray-600 dark:text-gray-400 font-medium">
+                      <p className="text-xl md:text-2xl text-white/80 font-medium mb-4">
+                        {project.period}
+                      </p>
+
+                      {/* Quick Stats */}
+                      <div className="flex flex-wrap items-center gap-4 text-white/70">
+                        {project.technologies &&
+                          project.technologies.length > 0 && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                              <Tag className="w-4 h-4" />
+                              <span className="font-medium text-sm">
+                                {project.technologies.length} Tech
+                                {project.technologies.length > 1 ? "s" : ""}
+                              </span>
+                            </div>
+                          )}
+                        {project.members && project.members.length > 0 && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                            <User className="w-4 h-4" />
+                            <span className="font-medium text-sm">
+                              {project.members.length} Member
+                              {project.members.length > 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        )}
+                        {project.media && project.media.length > 0 && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                            <ExternalLink className="w-4 h-4" />
+                            <span className="font-medium text-sm">
+                              {project.media.length} Media
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-full border border-white/40">
+                          <Calendar className="w-4 h-4" />
+                          <span className="font-medium text-sm">
+                            {statusLabels[project.status]}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Edit Button - Only show in edit mode */}
+                    {isEditMode && (
+                      <button
+                        onClick={handleEditClick}
+                        className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200 hover:scale-105 border border-white/40"
+                        title="Edit Project"
+                      >
+                        <Edit className="w-6 h-6 text-white" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* CTA Buttons */}
+                  <div className="flex flex-wrap gap-3">
+                    {project.media?.find((m) => m.type === "url") && (
+                      <a
+                        href={project.media.find((m) => m.type === "url")?.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 hover:scale-105"
+                      >
+                        <ExternalLink className="w-5 h-5" />
+                        View Live
+                      </a>
+                    )}
+                    <button
+                      onClick={() => {
+                        // Smooth scroll to media gallery
+                        const mediaSection = document.querySelector(
+                          '[data-section="media-gallery"]'
+                        );
+                        mediaSection?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="group inline-flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 border border-white/50"
+                    >
+                      <FileText className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                      Explore Media
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content - 2 Column Layout */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            {/* Left Column - Main Content */}
+            <div className="xl:col-span-2 space-y-8">
+              {/* Project Description */}
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    <FileText className="w-6 h-6 text-blue-600" />
+                    Project Overview
+                  </h2>
+                </div>
+                <div className="p-8">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-lg whitespace-pre-line">
+                    {project.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Project Media Gallery */}
+              <div
+                data-section="media-gallery"
+                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden"
+              >
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-800 px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    <ExternalLink className="w-6 h-6 text-purple-600" />
+                    Media Gallery
+                    <span className="ml-auto text-sm font-normal text-gray-500 dark:text-gray-400 px-2 py-1 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                      {project.media?.length || 0} items
+                    </span>
+                  </h2>
+                </div>
+                <div className="p-8">
+                  <MediaGallery media={project.media || []} />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Sidebar */}
+            <div className="space-y-6">
+              {/* Technologies Used */}
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Tag className="w-5 h-5 text-emerald-600" />
+                    Tech Stack
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <div className="flex flex-wrap gap-2">
+                    {project.technologies.map((tech, index) => (
+                      <TechStackBadge key={index} tech={tech} index={index} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Project Information */}
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-amber-600" />
+                    Project Info
+                  </h3>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div className="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900 rounded-xl">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-800 rounded-lg">
+                      <Calendar className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        Duration
+                      </p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
                         {project.period}
                       </p>
                     </div>
+                  </div>
 
-                    {/* Status Badge */}
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`px-4 py-2 rounded-full text-sm font-bold text-white ${
-                          statusColors[project.status]
-                        }`}
-                      >
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900 rounded-xl">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                      <Activity className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        Status
+                      </p>
+                      <p className="font-semibold text-gray-900 dark:text-white">
                         {statusLabels[project.status]}
-                      </div>
-
-                      {/* Edit Button - Only show in edit mode */}
-                      {isEditMode && (
-                        <button
-                          onClick={handleEditClick}
-                          className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-                          title="Edit Project"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </button>
-                      )}
+                      </p>
                     </div>
                   </div>
-
-                  {/* Project Type */}
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg">
-                    <Tag className="w-4 h-4" />
-                    {project.type.charAt(0).toUpperCase() +
-                      project.type.slice(1)}{" "}
-                    Project
-                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Project Description */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-            <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Project Description
-              </h2>
-            </div>
-            <div className="p-6">
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg whitespace-pre-line">
-                {project.description}
-              </p>
-            </div>
-          </div>
-
-          {/* Project Media Manager */}
-          <ProjectMediaManager
-            projectId={projectId}
-            media={project.media || []}
-            onMediaUpdated={handleMediaUpdated}
-          />
-
-          {/* Technologies Used */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-            <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Technologies Used
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {project.technologies.map((tech, index) => (
-                  <div
-                    key={index}
-                    className="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-center"
-                  >
-                    {tech}
+              {/* Team Members */}
+              {project.members && project.members.length > 0 && (
+                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      <User className="w-5 h-5 text-indigo-600" />
+                      Team Members
+                    </h3>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Project Timeline */}
-          <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-            <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Project Information
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Duration
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {project.period}
-                    </p>
+                  <div className="p-6 space-y-3">
+                    {project.members.map((member, index) => (
+                      <TeamMemberCard
+                        key={member.id}
+                        member={member}
+                        index={index}
+                        onClick={() => {
+                          // Navigate to member profile
+                          router.push(`/member/${member.id}`);
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Status
-                    </p>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {statusLabels[project.status]}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
-
-          {/* Team Members */}
-          {project.members && project.members.length > 0 && (
-            <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-              <div className="bg-gray-100 dark:bg-gray-800 px-6 py-4 border-b-2 border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Team Members
-                </h2>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {project.members.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {member.name}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {member.role}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Project Edit Modal */}
