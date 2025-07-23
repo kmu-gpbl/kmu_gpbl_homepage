@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import * as React from "react";
 import {
   Plus,
   X,
@@ -25,6 +26,14 @@ export interface MediaItem {
   description?: string;
   fileName?: string;
   originalName?: string;
+  ogData?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    siteName?: string;
+    url?: string;
+    type?: string;
+  };
 }
 
 interface MediaEditorProps {
@@ -75,7 +84,7 @@ export function MediaEditor({
       itemErrors.title = "Title is required";
     }
 
-    if (item.type !== "image" && !item.url.trim()) {
+    if (item.type === "url" && !item.url.trim()) {
       itemErrors.url = "URL is required";
     }
 
@@ -270,6 +279,128 @@ export function MediaEditor({
   const getMediaIcon = (type: string) => {
     const mediaType = mediaTypes.find((t) => t.value === type);
     return mediaType ? mediaType.icon : File;
+  };
+
+  const LinkPreview = ({ item }: { item: MediaItem }) => {
+    const [ogData, setOgData] = useState(item.ogData || null);
+    const [loading, setLoading] = useState(!item.ogData);
+    const [error, setError] = useState(false);
+
+    React.useEffect(() => {
+      if (item.type === "url" && item.url && !item.ogData) {
+        fetchOpenGraphData();
+      }
+    }, [item.url]);
+
+    const fetchOpenGraphData = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+
+        const response = await fetch("/api/opengraph", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: item.url }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setOgData(result.data);
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch OpenGraph data:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (loading) {
+      return (
+        <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+            <div className="flex-1">
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse"></div>
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (error || !ogData) {
+      const IconComponent = getMediaIcon(item.type);
+      return (
+        <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+              <IconComponent className="w-8 h-8 text-gray-500" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-medium text-gray-900 dark:text-white truncate">
+                {item.title}
+              </h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                {new URL(item.url).hostname}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-gray-300 dark:hover:border-gray-500 transition-colors">
+        <div className="flex items-start gap-3">
+          {ogData.image ? (
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+              <img
+                src={ogData.image}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                }}
+              />
+            </div>
+          ) : (
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0">
+              <LinkIcon className="w-8 h-8 text-gray-500" />
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-gray-900 dark:text-white mb-1 leading-tight">
+              {ogData.title || item.title}
+            </h4>
+            {ogData.description && (
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 leading-relaxed line-clamp-2">
+                {ogData.description}
+              </p>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {ogData.siteName || new URL(item.url).hostname}
+              </span>
+              {ogData.siteName && (
+                <span className="text-xs text-gray-400">•</span>
+              )}
+              <span className="text-xs text-gray-400">
+                {new URL(item.url).hostname}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const MediaThumbnail = ({ item }: { item: MediaItem }) => {
@@ -495,6 +626,48 @@ export function MediaEditor({
               );
             }
 
+            if (item.type === "url") {
+              return (
+                <div key={index} className="group relative">
+                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setEditingIndex(index)}
+                      className="p-1 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                      title="Edit"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(index)}
+                      className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      title="Remove"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:scale-[1.02] transition-transform"
+                  >
+                    <LinkPreview item={item} />
+                  </a>
+
+                  {item.description && (
+                    <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {item.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <div
                 key={index}
@@ -551,7 +724,7 @@ export function MediaEditor({
                       className="flex items-center gap-1 text-blue-500 hover:text-blue-600 text-sm font-medium px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      {item.type === "url" ? "Open" : "View"}
+                      View
                     </a>
                   )}
                 </div>
@@ -596,55 +769,13 @@ function EditForm({
 }) {
   const [editItem, setEditItem] = useState(item);
 
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  if (editItem.type === "url") {
+    // Simplified edit form for links
+    return (
+      <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Type
-          </label>
-          <select
-            value={editItem.type}
-            onChange={(e) =>
-              setEditItem((prev) => ({ ...prev, type: e.target.value as any }))
-            }
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-          >
-            {mediaTypes.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Title *
-          </label>
-          <input
-            type="text"
-            value={editItem.title}
-            onChange={(e) =>
-              setEditItem((prev) => ({ ...prev, title: e.target.value }))
-            }
-            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-              errors.title
-                ? "border-red-500"
-                : "border-gray-300 dark:border-gray-600"
-            }`}
-            placeholder="Enter title"
-          />
-          {errors.title && (
-            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
-          )}
-        </div>
-      </div>
-
-      {editItem.type !== "image" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            URL *
+            Link URL *
           </label>
           <input
             type="url"
@@ -657,13 +788,77 @@ function EditForm({
                 ? "border-red-500"
                 : "border-gray-300 dark:border-gray-600"
             }`}
-            placeholder="Enter URL"
+            placeholder="https://example.com"
           />
           {errors.url && (
             <p className="text-red-500 text-xs mt-1">{errors.url}</p>
           )}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Title and description will be automatically updated from the page
+          </p>
         </div>
-      )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Additional Notes
+          </label>
+          <textarea
+            value={editItem.description || ""}
+            onChange={(e) =>
+              setEditItem((prev) => ({ ...prev, description: e.target.value }))
+            }
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            placeholder="Add your own notes about this link (optional)"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onSave(editItem)}
+            className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
+          >
+            <Check className="w-4 h-4" />
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Title *
+        </label>
+        <input
+          type="text"
+          value={editItem.title}
+          onChange={(e) =>
+            setEditItem((prev) => ({ ...prev, title: e.target.value }))
+          }
+          className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+            errors.title
+              ? "border-red-500"
+              : "border-gray-300 dark:border-gray-600"
+          }`}
+          placeholder="Enter title"
+        />
+        {errors.title && (
+          <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+        )}
+      </div>
+
+      {/* URL editing is only available for link type items */}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -718,33 +913,96 @@ function AddForm({
   allowUpload: boolean;
   isLinkOnly?: boolean;
 }) {
+  if (isLinkOnly) {
+    // Simplified form for links - only URL and optional note
+    return (
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Link URL *
+          </label>
+          <input
+            type="url"
+            value={item.url}
+            onChange={(e) =>
+              onChange({
+                ...item,
+                url: e.target.value,
+                title: e.target.value || "Link",
+              })
+            }
+            className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+              errors.url
+                ? "border-red-500"
+                : "border-gray-300 dark:border-gray-600"
+            }`}
+            placeholder="https://example.com"
+          />
+          {errors.url && (
+            <p className="text-red-500 text-xs mt-1">{errors.url}</p>
+          )}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Title and description will be automatically detected from the page
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Additional Notes
+          </label>
+          <textarea
+            value={item.description || ""}
+            onChange={(e) => onChange({ ...item, description: e.target.value })}
+            rows={2}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            placeholder="Add your own notes about this link (optional)"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onSave}
+            className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
+          >
+            <Plus className="w-4 h-4" />
+            Add Link
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {!isLinkOnly && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Type
-            </label>
-            <select
-              value={item.type}
-              onChange={(e) =>
-                onChange({ ...item, type: e.target.value as any })
-              }
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              {mediaTypes
-                .filter((type) => allowUpload || type.value === "url")
-                .map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-            </select>
-          </div>
-        )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Type
+          </label>
+          <select
+            value={item.type}
+            onChange={(e) => onChange({ ...item, type: e.target.value as any })}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          >
+            {mediaTypes
+              .filter((type) => allowUpload || type.value === "url")
+              .map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+          </select>
+        </div>
 
-        <div className={isLinkOnly ? "col-span-full" : ""}>
+        <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Title *
           </label>
@@ -757,7 +1015,7 @@ function AddForm({
                 ? "border-red-500"
                 : "border-gray-300 dark:border-gray-600"
             }`}
-            placeholder={isLinkOnly ? "Enter link title" : "Enter title"}
+            placeholder="Enter title"
           />
           {errors.title && (
             <p className="text-red-500 text-xs mt-1">{errors.title}</p>
@@ -765,7 +1023,7 @@ function AddForm({
         </div>
       </div>
 
-      {(item.type !== "image" || isLinkOnly) && (
+      {item.type === "url" && (
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             URL *
@@ -779,7 +1037,7 @@ function AddForm({
                 ? "border-red-500"
                 : "border-gray-300 dark:border-gray-600"
             }`}
-            placeholder={isLinkOnly ? "Enter link URL" : "Enter URL"}
+            placeholder="Enter URL"
           />
           {errors.url && (
             <p className="text-red-500 text-xs mt-1">{errors.url}</p>
@@ -807,7 +1065,7 @@ function AddForm({
           className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm flex items-center justify-center gap-1"
         >
           <Plus className="w-4 h-4" />
-          {isLinkOnly ? "Add Link" : "Add Media"}
+          Add Media
         </button>
         <button
           type="button"
