@@ -33,6 +33,7 @@ CREATE TABLE projects (
   type TEXT NOT NULL,
   technologies TEXT[] DEFAULT '{}',
   team_size INTEGER NOT NULL DEFAULT 1,
+  display_order INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

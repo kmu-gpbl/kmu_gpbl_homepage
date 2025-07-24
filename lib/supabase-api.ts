@@ -164,6 +164,16 @@ export const projectsApi = {
 
     if (error) throw error;
   },
+
+  // Update project display order
+  async updateDisplayOrder(id: string, displayOrder: number) {
+    const { error } = await supabase
+      .from("projects")
+      .update({ display_order: displayOrder })
+      .eq("id", id);
+
+    if (error) throw error;
+  },
 };
 
 // Project Members API

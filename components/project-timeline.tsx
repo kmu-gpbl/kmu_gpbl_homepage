@@ -14,6 +14,7 @@ import {
   Link as LinkIcon,
   File,
   Radio,
+  GripVertical,
 } from "lucide-react";
 import { Loading } from "./ui/loading";
 import { useEditMode } from "@/contexts/edit-mode-context";
@@ -107,10 +108,99 @@ export function ProjectTimeline({
     text: string;
   } | null>(null);
 
+  // Drag and drop state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dropIndicator, setDropIndicator] = useState<{
+    index: number;
+    position: "before" | "after";
+  } | null>(null);
+
   // Media is now handled by MediaEditor component
 
-  const sortedProjects = [...projects].sort(
-    (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+  const sortedProjects = [...projects].sort((a, b) => {
+    // Sort by display order first, then by start date
+    if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+      return a.displayOrder - b.displayOrder;
+    }
+    return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+  });
+
+  // Drag and drop handlers
+  const handleProjectDragStart = useCallback((index: number) => {
+    setDraggedIndex(index);
+  }, []);
+
+  const handleProjectDragEnd = useCallback(() => {
+    setDraggedIndex(null);
+    setDropIndicator(null);
+  }, []);
+
+  const handleProjectDragOver = useCallback(
+    (e: React.DragEvent, index: number) => {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === index) return;
+
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const height = rect.height;
+      const position = y < height / 2 ? "before" : "after";
+
+      setDropIndicator({ index, position });
+    },
+    [draggedIndex]
+  );
+
+  const handleProjectDrop = useCallback(
+    async (e: React.DragEvent, index: number) => {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === index || !dropIndicator)
+        return;
+
+      try {
+        const newProjects = [...sortedProjects];
+        const draggedProject = newProjects[draggedIndex];
+
+        // Remove dragged item
+        newProjects.splice(draggedIndex, 1);
+
+        // Calculate new position
+        let newIndex = index;
+        if (draggedIndex < index) {
+          newIndex = index - 1;
+        }
+        if (dropIndicator.position === "after") {
+          newIndex = newIndex + 1;
+        }
+
+        // Insert at new position
+        newProjects.splice(newIndex, 0, draggedProject);
+
+        // Update display order in backend
+        const projectIds = newProjects.map((p) => p.id);
+        const response = await fetch("/api/projects/reorder", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ projectIds }),
+        });
+
+        if (response.ok) {
+          // Refresh project list
+          if (onProjectUpdated) {
+            onProjectUpdated();
+          }
+        } else {
+          console.error("Failed to update project order");
+        }
+      } catch (error) {
+        console.error("Error updating project order:", error);
+      } finally {
+        setDraggedIndex(null);
+        setDropIndicator(null);
+      }
+    },
+    [draggedIndex, dropIndicator, sortedProjects, onProjectUpdated]
   );
 
   const handleDeleteClick = (project: Project) => {
@@ -334,116 +424,176 @@ export function ProjectTimeline({
 
       {/* Timeline Items */}
       <div className="space-y-8">
-        {sortedProjects.map((project, index) => (
-          <div key={project.id} className="relative flex items-start">
-            {/* Timeline Dot */}
-            <div className="relative z-10 flex-shrink-0">
-              <div
-                className={`w-4 h-4 rounded-full border-4 border-white dark:border-gray-900 ${
-                  statusColorsForDots[project.status]
-                } transition-all duration-200 hover:scale-110`}
-              />
-            </div>
+        {sortedProjects.map((project, index) => {
+          const showDropIndicatorBefore =
+            dropIndicator?.index === index &&
+            dropIndicator.position === "before";
+          const showDropIndicatorAfter =
+            dropIndicator?.index === index &&
+            dropIndicator.position === "after";
+          const isDragging = draggedIndex === index;
 
-            {/* Project Card */}
-            <div
-              className="ml-4 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group w-full max-w-full overflow-hidden cursor-pointer"
-              onClick={() => router.push(`/project/${project.id}`)}
-            >
-              {/* Project Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
-                  <span className="text-2xl flex-shrink-0">
-                    {typeIcons[project.type]}
-                  </span>
-                  <div className="min-w-0 flex-1 max-w-full">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate overflow-hidden">
-                      {project.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                      {project.period}
-                    </p>
-                    {project.teamSize && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Users className="w-3 h-3 text-gray-400" />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {project.teamSize} members
-                        </span>
-                      </div>
-                    )}
-                  </div>
+          return (
+            <div key={project.id} className="relative">
+              {/* Drop indicator before */}
+              {showDropIndicatorBefore && (
+                <div className="flex items-center mb-4">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0" />
+                  <div className="flex-1 ml-4 h-1 bg-blue-500 rounded-full" />
                 </div>
+              )}
 
-                <div className="flex items-center gap-2 flex-shrink-0 min-w-fit">
-                  {/* Status Badge */}
+              <div className="relative flex items-start">
+                {/* Timeline Dot */}
+                <div className="relative z-10 flex-shrink-0">
                   <div
-                    className={`px-3 py-1 rounded-full text-xs font-bold text-white flex-shrink-0 flex items-center gap-1 ${
-                      statusColors[project.status]
-                    }`}
-                  >
-                    {project.status === "live" && <Radio className="w-3 h-3" />}
-                    {statusLabels[project.status]}
+                    className={`w-4 h-4 rounded-full border-4 border-white dark:border-gray-900 ${
+                      statusColorsForDots[project.status]
+                    } transition-all duration-200 hover:scale-110`}
+                  />
+                </div>
+
+                {/* Project Card */}
+                <div
+                  className={`ml-4 bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 hover:border-gray-900 dark:hover:border-white transition-all duration-200 hover:scale-[1.02] group w-full max-w-full overflow-hidden cursor-pointer ${
+                    isDragging ? "opacity-50 scale-95" : ""
+                  }`}
+                  onClick={() => router.push(`/project/${project.id}`)}
+                  draggable={isEditMode}
+                  onDragStart={(e) => {
+                    if (!isEditMode) return;
+                    e.stopPropagation();
+                    handleProjectDragStart(index);
+                  }}
+                  onDragEnd={handleProjectDragEnd}
+                  onDragOver={(e) => {
+                    if (!isEditMode) return;
+                    e.stopPropagation();
+                    handleProjectDragOver(e, index);
+                  }}
+                  onDrop={(e) => {
+                    if (!isEditMode) return;
+                    e.stopPropagation();
+                    handleProjectDrop(e, index);
+                  }}
+                >
+                  {/* Project Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                      <span className="text-2xl flex-shrink-0">
+                        {typeIcons[project.type]}
+                      </span>
+                      <div className="min-w-0 flex-1 max-w-full">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate overflow-hidden">
+                          {project.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                          {project.period}
+                        </p>
+                        {project.teamSize && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <Users className="w-3 h-3 text-gray-400" />
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {project.teamSize} members
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0 min-w-fit">
+                      {/* Status Badge */}
+                      <div
+                        className={`px-3 py-1 rounded-full text-xs font-bold text-white flex-shrink-0 flex items-center gap-1 ${
+                          statusColors[project.status]
+                        }`}
+                      >
+                        {project.status === "live" && (
+                          <Radio className="w-3 h-3" />
+                        )}
+                        {statusLabels[project.status]}
+                      </div>
+
+                      {/* Drag Handle - Only show in edit mode */}
+                      {isEditMode && (
+                        <div
+                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors cursor-grab active:cursor-grabbing"
+                          title="Drag to reorder"
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          <GripVertical className="w-4 h-4" />
+                        </div>
+                      )}
+
+                      {/* Edit/Delete Buttons - Only show in edit mode */}
+                      {isEditMode && (
+                        <>
+                          {/* Edit Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(project);
+                            }}
+                            disabled={loadingProjectData}
+                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Edit Project"
+                          >
+                            {loadingProjectData ? (
+                              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                            ) : (
+                              <Edit className="w-4 h-4" />
+                            )}
+                          </button>
+
+                          {/* Delete Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteClick(project);
+                            }}
+                            disabled={deletingProjectId === project.id}
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Delete Project"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Edit/Delete Buttons - Only show in edit mode */}
-                  {isEditMode && (
-                    <>
-                      {/* Edit Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditClick(project);
-                        }}
-                        disabled={loadingProjectData}
-                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Edit Project"
-                      >
-                        {loadingProjectData ? (
-                          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-                        ) : (
-                          <Edit className="w-4 h-4" />
-                        )}
-                      </button>
+                  {/* Project Description */}
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-3 whitespace-pre-line">
+                    {project.description}
+                  </p>
 
-                      {/* Delete Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(project);
-                        }}
-                        disabled={deletingProjectId === project.id}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete Project"
+                  {/* Technologies */}
+                  <div className="flex flex-wrap gap-2">
+                    {project.technologies.map((tech, techIndex) => (
+                      <span
+                        key={techIndex}
+                        className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Simple hover effect */}
+                  <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-200 rounded-b-xl" />
                 </div>
               </div>
 
-              {/* Project Description */}
-              <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-3 whitespace-pre-line">
-                {project.description}
-              </p>
-
-              {/* Technologies */}
-              <div className="flex flex-wrap gap-2">
-                {project.technologies.map((tech, techIndex) => (
-                  <span
-                    key={techIndex}
-                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              {/* Simple hover effect */}
-              <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-200 rounded-b-xl" />
+              {/* Drop indicator after */}
+              {showDropIndicatorAfter && (
+                <div className="flex items-center mt-4">
+                  <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0" />
+                  <div className="flex-1 ml-4 h-1 bg-blue-500 rounded-full" />
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Project Edit Modal */}
