@@ -100,6 +100,7 @@ export interface Project {
   technologies: string[];
   memberIds: string[];
   teamSize?: number;
+  displayOrder?: number;
   media?: ProjectMedia[];
   createdAt: string;
   updatedAt: string;

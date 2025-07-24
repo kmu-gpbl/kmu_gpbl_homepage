@@ -63,6 +63,20 @@ BEGIN
   END IF;
 END $$;
 
+-- Add display_order column to projects table
+ALTER TABLE projects ADD COLUMN display_order INTEGER DEFAULT 0;
+
+-- Update existing projects with display_order based on start_date (newest first = lower order)
+UPDATE projects 
+SET display_order = row_number - 1
+FROM (
+  SELECT 
+    id, 
+    ROW_NUMBER() OVER (ORDER BY start_date DESC) as row_number
+  FROM projects
+) ranked
+WHERE projects.id = ranked.id;
+
 -- Update existing users to have empty certifications array if null
 UPDATE users 
 SET certifications = '[]'::jsonb 

@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
         startDate: project.start_date,
         endDate: project.end_date,
         teamSize: project.team_size,
+        displayOrder: project.display_order,
         status: project.status, // Use actual status from database
         memberIds: [], // Member info handled separately
         media: [], // Media handled separately
