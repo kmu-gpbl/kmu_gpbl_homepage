@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useRef } from "react";
-import type { Project, ProjectMedia } from "@/types/api";
+import { useState, useCallback } from "react";
+import type { Project } from "@/types/api";
 import {
   Users,
   Trash2,
@@ -12,14 +12,13 @@ import {
   Play,
   FileText,
   Link as LinkIcon,
-  ExternalLink,
-  Upload,
   File,
   Radio,
 } from "lucide-react";
 import { Loading } from "./ui/loading";
 import { useEditMode } from "@/contexts/edit-mode-context";
-import MediaEditor, { MediaItem } from "./ui/media-editor";
+import { MediaItem } from "./ui/media-editor";
+import ProjectMediaSection from "./ui/project-media-section";
 
 interface ProjectTimelineProps {
   projects: Project[];
@@ -311,12 +310,12 @@ export function ProjectTimeline({
     }));
   };
 
-  const handleMediaChange = (media: MediaItem[]) => {
+  const handleMediaChange = useCallback((media: MediaItem[]) => {
     setEditFormData((prev) => ({
       ...prev,
       media,
     }));
-  };
+  }, []);
 
   return (
     <div className="relative">
@@ -694,7 +693,7 @@ export function ProjectTimeline({
 
               {/* Media */}
               <div>
-                <MediaEditor
+                <ProjectMediaSection
                   media={editFormData.media}
                   onChange={handleMediaChange}
                   allowUpload={true}

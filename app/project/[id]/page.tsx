@@ -4,7 +4,7 @@ import { notFound, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { PageHeader } from "@/components/page-header";
 import { MediaGallery } from "@/components/ui/media-gallery";
-import MediaEditor, { MediaItem } from "@/components/ui/media-editor";
+import { MediaItem } from "@/components/ui/media-editor";
 import { Loading } from "@/components/ui/loading";
 import { TechStackBadge } from "@/components/ui/tech-stack-badge";
 import { TeamMemberCard } from "@/components/ui/team-member-card";
@@ -17,29 +17,15 @@ import {
   User,
   Edit,
   X,
-  File,
   FileText,
-  Play,
-  LinkIcon,
   Radio,
 } from "lucide-react";
 import type { ProjectWithMembers } from "@/types/api";
 import { smartBackForProject } from "@/lib/navigation-utils";
 
-import * as React from "react";
-
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
 }
-
-const typeColors = {
-  web: "bg-blue-500",
-  mobile: "bg-green-500",
-  ai: "bg-orange-500",
-  infrastructure: "bg-purple-500",
-  desktop: "bg-indigo-500",
-  other: "bg-gray-500",
-};
 
 const typeIcons = {
   web: "🌐",
@@ -64,23 +50,7 @@ const statusLabels = {
   live: "Live",
 };
 
-// Memoized media section to prevent re-rendering when other form fields change
-const ProjectMediaSection = React.memo(
-  ({
-    media,
-    onChange,
-  }: {
-    media: MediaItem[];
-    onChange: (media: MediaItem[]) => void;
-  }) => (
-    <MediaEditor
-      media={media}
-      onChange={onChange}
-      allowUpload={true}
-      maxItems={10}
-    />
-  )
-);
+import ProjectMediaSection from "@/components/ui/project-media-section";
 
 function ProjectPageContent({ params }: ProjectPageProps) {
   const { isEditMode } = useEditMode();
@@ -119,15 +89,6 @@ function ProjectPageContent({ params }: ProjectPageProps) {
     text: string;
   } | null>(null);
 
-  // Media is now handled by MediaEditor component
-
-  const mediaTypes = [
-    { value: "video", label: "Project Video", icon: Play },
-    { value: "presentation", label: "Presentation", icon: FileText },
-    { value: "url", label: "Related Link", icon: LinkIcon },
-    { value: "image", label: "Image", icon: File },
-  ];
-
   useEffect(() => {
     const loadProject = async () => {
       try {
@@ -151,19 +112,6 @@ function ProjectPageContent({ params }: ProjectPageProps) {
 
     loadProject();
   }, [params]);
-
-  const handleMediaUpdated = async () => {
-    // Refresh project info when media is updated
-    try {
-      const projectResponse = await fetch(`/api/projects/${projectId}`);
-      if (projectResponse.ok) {
-        const projectData = await projectResponse.json();
-        setProject(projectData.project);
-      }
-    } catch (error) {
-      console.error("Failed to refresh project info:", error);
-    }
-  };
 
   const handleEditClick = () => {
     if (!project) return;
@@ -262,8 +210,6 @@ function ProjectPageContent({ params }: ProjectPageProps) {
   if (!project) {
     return notFound();
   }
-
-  const colorClass = typeColors[project.type];
 
   const handleBack = () => {
     smartBackForProject(router, project);

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus, X, Radio } from "lucide-react";
 import { Loading } from "./ui/loading";
-import MediaEditor, { MediaItem } from "./ui/media-editor";
+import { MediaItem } from "./ui/media-editor";
+import ProjectMediaSection from "./ui/project-media-section";
 
 interface AddProjectFormProps {
   memberId: string;
@@ -47,10 +48,14 @@ export function AddProjectForm({
   onProjectAdded,
 }: AddProjectFormProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Get current date in YYYY-MM-DD format
+  const getCurrentDate = () => new Date().toISOString().split("T")[0];
+
   const [formData, setFormData] = useState<ProjectFormData>({
     title: "",
     description: "",
-    startDate: "",
+    startDate: getCurrentDate(),
     endDate: "",
     status: "ongoing",
     type: "web",
@@ -84,11 +89,6 @@ export function AddProjectForm({
         period: `${formData.startDate} - ${formData.endDate || "Present"}`,
       };
 
-      console.log("Submitting project with media:", {
-        mediaCount: submitData.media?.length || 0,
-        media: submitData.media,
-      });
-
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
@@ -109,7 +109,7 @@ export function AddProjectForm({
         setFormData({
           title: "",
           description: "",
-          startDate: "",
+          startDate: getCurrentDate(),
           endDate: "",
           status: "ongoing",
           type: "web",
@@ -154,18 +154,18 @@ export function AddProjectForm({
     }));
   };
 
-  const handleMediaChange = (media: MediaItem[]) => {
+  const handleMediaChange = useCallback((media: MediaItem[]) => {
     setFormData((prev) => ({
       ...prev,
       media,
     }));
-  };
+  }, []);
 
   const resetForm = () => {
     setFormData({
       title: "",
       description: "",
-      startDate: "",
+      startDate: getCurrentDate(),
       endDate: "",
       status: "ongoing",
       type: "web",
@@ -462,7 +462,7 @@ export function AddProjectForm({
         </div>
 
         {/* Project Media */}
-        <MediaEditor
+        <ProjectMediaSection
           media={formData.media}
           onChange={handleMediaChange}
           allowUpload={true}

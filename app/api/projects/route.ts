@@ -157,9 +157,6 @@ export async function POST(request: NextRequest) {
 
     // Add project media
     if (body.media && body.media.length > 0) {
-      console.log(
-        `Adding ${body.media.length} media items to project ${createdProject.id}`
-      );
       await projectMediaApi.updateProjectMedia(createdProject.id, body.media);
     }
 
