@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import { FilterTabs } from "@/components/filter-tabs";
 import { AnimatedBackground } from "@/components/animated-background";
 import { Loading } from "@/components/ui/loading";
-import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
+import { EditModeProvider } from "@/contexts/edit-mode-context";
 
 function HomePageContent() {
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isEditMode } = useEditMode();
 
   useEffect(() => {
     const loadMembers = async () => {

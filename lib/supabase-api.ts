@@ -3,7 +3,6 @@ import type { Database } from "./supabase";
 
 type User = Database["public"]["Tables"]["users"]["Row"];
 type Project = Database["public"]["Tables"]["projects"]["Row"];
-type ProjectMember = Database["public"]["Tables"]["project_members"]["Row"];
 type ProjectMedia = Database["public"]["Tables"]["project_media"]["Row"];
 
 // Users API
