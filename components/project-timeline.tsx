@@ -563,12 +563,12 @@ export function ProjectTimeline({
                   </div>
 
                   {/* Project Description */}
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-3 whitespace-pre-line">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-4 whitespace-pre-line">
                     {project.description}
                   </p>
 
                   {/* Technologies */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {project.technologies.map((tech, techIndex) => (
                       <span
                         key={techIndex}
@@ -578,6 +578,75 @@ export function ProjectTimeline({
                       </span>
                     ))}
                   </div>
+
+                  {/* Project Media Preview */}
+                  {project.media && project.media.length > 0 && (
+                    <div className="mb-4">
+                      {(() => {
+                        // Find the first image or video for preview
+                        const firstImage = project.media.find(
+                          (item: any) => item.type === "image"
+                        );
+                        const firstVideo = project.media.find(
+                          (item: any) => item.type === "video"
+                        );
+                        const firstUrl = project.media.find(
+                          (item: any) => item.type === "url"
+                        );
+
+                        const previewItem = firstImage || firstVideo;
+
+                        if (previewItem) {
+                          return (
+                            <div className="relative h-40 w-full rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                              {previewItem.type === "image" ? (
+                                <img
+                                  src={previewItem.url}
+                                  alt={previewItem.title || "Project preview"}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <video
+                                  src={previewItem.url}
+                                  className="w-full h-full object-cover"
+                                  poster=""
+                                />
+                              )}
+                              {/* Media count overlay */}
+                              {project.media.length > 1 && (
+                                <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 text-white text-xs rounded-md">
+                                  +{project.media.length - 1} more
+                                </div>
+                              )}
+                            </div>
+                          );
+                        } else if (firstUrl) {
+                          // Show URL preview
+                          return (
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                              <LinkIcon className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {firstUrl.title || "Project Link"}
+                                </p>
+                                {firstUrl.description && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    {firstUrl.description}
+                                  </p>
+                                )}
+                              </div>
+                              {project.media.length > 1 && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  +{project.media.length - 1} more
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  )}
 
                   {/* Simple hover effect */}
                   <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-200 rounded-b-xl" />

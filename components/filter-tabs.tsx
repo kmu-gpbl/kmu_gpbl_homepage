@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UserSummary } from "@/types/api";
 import { MemberCard } from "./member-card";
 import { AddMemberForm } from "./add-member-form";
+import { Skeleton } from "./ui/skeleton";
 import { useEditMode } from "@/contexts/edit-mode-context";
 import {
   ArrowUpDown,
@@ -16,6 +17,7 @@ import {
 
 interface FilterTabsProps {
   members: UserSummary[];
+  loading?: boolean;
   onMemberAdded?: () => void;
 }
 
@@ -92,7 +94,11 @@ const filterOptions = [
   },
 ];
 
-export function FilterTabs({ members, onMemberAdded }: FilterTabsProps) {
+export function FilterTabs({
+  members,
+  loading = false,
+  onMemberAdded,
+}: FilterTabsProps) {
   const [activeFilter, setActiveFilter] = useState<FilterCategory>("all");
   const [sortBy, setSortBy] = useState<SortOption>("default");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
@@ -250,22 +256,64 @@ export function FilterTabs({ members, onMemberAdded }: FilterTabsProps) {
 
       {/* Members Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-        {sortedMembers.map((member) => (
-          <div key={member.id} className="h-full">
-            <MemberCard member={member} />
-          </div>
-        ))}
+        {loading
+          ? // Show skeleton cards while loading
+            [...Array(8)].map((_, index) => (
+              <div
+                key={index}
+                className="bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden h-full min-h-[280px]"
+              >
+                {/* Header with specialty color skeleton */}
+                <Skeleton className="h-2.5 w-full rounded-none" />
 
-        {/* Add Member Form - Only show in edit mode */}
-        {isEditMode && (
+                <div className="p-6 flex flex-col h-full">
+                  {/* Profile section */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="relative">
+                      <Skeleton className="w-[60px] h-[60px] rounded-full" />
+                      <Skeleton className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-4 rounded-full" />
+                      </div>
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </div>
+
+                  {/* Specialties */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Skeleton className="h-6 w-16 rounded-md" />
+                    <Skeleton className="h-6 w-20 rounded-md" />
+                    <Skeleton className="h-6 w-14 rounded-md" />
+                  </div>
+
+                  {/* View Profile Button - at bottom */}
+                  <div className="mt-auto">
+                    <Skeleton className="h-9 w-full rounded-lg" />
+                  </div>
+                </div>
+              </div>
+            ))
+          : // Show actual member cards when not loading
+            sortedMembers.map((member) => (
+              <div key={member.id} className="h-full">
+                <MemberCard member={member} />
+              </div>
+            ))}
+
+        {/* Add Member Form - Only show in edit mode and when not loading */}
+        {isEditMode && !loading && (
           <div className="h-full">
             <AddMemberForm onMemberAdded={onMemberAdded || (() => {})} />
           </div>
         )}
       </div>
 
-      {/* Empty State */}
-      {filteredMembers.length === 0 && (
+      {/* Empty State - Only show when not loading and no members found */}
+      {!loading && filteredMembers.length === 0 && (
         <div className="text-center py-20">
           <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto mb-6 rounded-xl relative">
             <span className="text-3xl">🔍</span>

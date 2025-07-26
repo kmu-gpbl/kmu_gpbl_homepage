@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { FilterTabs } from "@/components/filter-tabs";
 import { AnimatedBackground } from "@/components/animated-background";
-import { Loading } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EditModeProvider } from "@/contexts/edit-mode-context";
 
 function HomePageContent() {
@@ -36,10 +36,6 @@ function HomePageContent() {
       console.error("Failed to refresh member list:", error);
     }
   };
-
-  if (loading) {
-    return <Loading variant="page" size="lg" text="Loading team members..." />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
@@ -86,7 +82,11 @@ function HomePageContent() {
             <div className="flex flex-wrap justify-center gap-6 mb-5">
               <div className="text-center group">
                 <div className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                  {members.length}+
+                  {loading ? (
+                    <Skeleton className="h-8 md:h-10 w-12 mx-auto bg-gray-300 dark:bg-gray-600" />
+                  ) : (
+                    `${members.length}+`
+                  )}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide">
                   Team Members
@@ -118,7 +118,11 @@ function HomePageContent() {
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12">
         <div className="mx-auto">
-          <FilterTabs members={members} onMemberAdded={handleMemberAdded} />
+          <FilterTabs
+            members={members}
+            loading={loading}
+            onMemberAdded={handleMemberAdded}
+          />
         </div>
       </main>
     </div>
