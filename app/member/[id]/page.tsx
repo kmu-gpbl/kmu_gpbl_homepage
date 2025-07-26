@@ -10,6 +10,7 @@ import { EditContactInfo } from "@/components/edit-contact-info";
 import { EditSkills } from "@/components/edit-skills";
 import { EditCertifications } from "@/components/edit-certifications";
 import { Loading } from "@/components/ui/loading";
+import { MemberSkeleton } from "@/components/ui/member-skeleton";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
 import { smartBackForMember } from "@/lib/navigation-utils";
 
@@ -81,9 +82,7 @@ function MemberPageContent({ params }: MemberPageProps) {
   };
 
   if (loading) {
-    return (
-      <Loading variant="page" size="lg" text="Loading member profile..." />
-    );
+    return <MemberSkeleton />;
   }
 
   if (!member) {

@@ -25,19 +25,24 @@ export async function GET(request: NextRequest) {
       projects = await projectsApi.getAll();
     }
 
-    // Field name mapping (Supabase -> Client)
-    let mappedProjects = projects.map((project: any) => {
-      return {
-        ...project,
-        startDate: project.start_date,
-        endDate: project.end_date,
-        teamSize: project.team_size,
-        displayOrder: project.display_order,
-        status: project.status, // Use actual status from database
-        memberIds: [], // Member info handled separately
-        media: [], // Media handled separately
-      };
-    });
+    // Field name mapping (Supabase -> Client) and load media for each project
+    let mappedProjects = await Promise.all(
+      projects.map(async (project: any) => {
+        // Get media for this project
+        const projectMedia = await projectMediaApi.getByProjectId(project.id);
+
+        return {
+          ...project,
+          startDate: project.start_date,
+          endDate: project.end_date,
+          teamSize: project.team_size,
+          displayOrder: project.display_order,
+          status: project.status, // Use actual status from database
+          memberIds: [], // Member info handled separately
+          media: projectMedia || [], // Include actual media data
+        };
+      })
+    );
 
     // Filtering
     if (type) {

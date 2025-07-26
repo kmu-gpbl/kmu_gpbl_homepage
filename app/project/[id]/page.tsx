@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { MediaGallery } from "@/components/ui/media-gallery";
 import { MediaItem } from "@/components/ui/media-editor";
 import { Loading } from "@/components/ui/loading";
+import { ProjectSkeleton } from "@/components/ui/project-skeleton";
 import { TechStackBadge } from "@/components/ui/tech-stack-badge";
 import { TeamMemberCard } from "@/components/ui/team-member-card";
 import { EditModeProvider, useEditMode } from "@/contexts/edit-mode-context";
@@ -202,9 +203,7 @@ function ProjectPageContent({ params }: ProjectPageProps) {
   }, []);
 
   if (loading) {
-    return (
-      <Loading variant="page" size="lg" text="Loading project details..." />
-    );
+    return <ProjectSkeleton />;
   }
 
   if (!project) {
